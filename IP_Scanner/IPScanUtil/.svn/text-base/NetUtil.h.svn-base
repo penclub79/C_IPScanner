@@ -1,0 +1,240 @@
+//
+// Copyright (C) Since 2010 VISIONHITECH. All rights reserved.
+// 
+// Description: Network Utility Declaration
+// Date: 2010-04-20
+// Author: dcyoon
+//
+#pragma once
+
+#include "NetDef.h"
+
+#pragma pack(push, 1)
+
+typedef struct tagVERINFO { // Verion
+	DWORD	dwFilesys;	// filesystem info
+	DWORD	dwFirmware;	// firmware info
+	DWORD	dwChip;		// chip info
+	DWORD	dwReserved;
+} VERINFO, FAR *PVERINFO;
+
+typedef struct tagSYSINFO { // System
+	BYTE	byCamCount;
+	BYTE	byAudioCount;
+	BYTE	byTimezone;
+	BYTE	byDaylight;
+	DWORD	dwLocalTime;
+	DWORD	dwReserved;
+} SYSINFO, FAR *PSYSINFO;
+
+typedef struct tagHDDINFO { // HDD
+	BYTE	byHddCount;
+	BYTE	byHddType;
+	BYTE	byCD_RW;
+	BYTE	byReserved;
+	BYTE	pszHddName[8][4];
+} HDDINFO, FAR *PHDDINFO;
+
+typedef struct tagSTSINFO { // Status
+	WORD	wLoss;
+	WORD	wAlarm;
+	WORD	wMotion;
+	WORD	wRecord;
+	BYTE	byNetwork;
+	BYTE	byPlayback;
+	BYTE	bySetup;
+	BYTE	byBackup;
+	BYTE	byHdd;
+	BYTE	byFlow;
+} STSINFO, FAR *PSTSINFO;
+const UINT STSINFO_LEN	= sizeof(STSINFO);
+
+typedef struct tagREQLOGIN {
+	BYTE	byLevel;
+	BYTE	bySpeed;
+	BYTE	byCodec;	// 0 - First, 1 - Second stream
+	BYTE	byReserved;
+	BYTE	szID[8];
+	BYTE	szPW[8];
+} REQLOGIN, FAR *PREQLOGIN;
+
+typedef struct tagRESLOGIN {
+	BYTE	byLogin;
+	VERINFO	ver;
+	SYSINFO	sys;
+	HDDINFO	hdd;
+	STSINFO	sts;
+} RESLOGIN, FAR *PRESLOGIN;
+
+typedef struct tagREQCMD {
+	DWORD	dwChannel;
+	DWORD	dwRepTime;
+	BYTE	byControl;
+	BYTE	byLayout;
+	BYTE	bySpeed;
+	BYTE	byMode;
+} REQCMD, FAR *PREQCMD;
+
+typedef struct tagSTMHDR {
+	BYTE byScale;
+	BYTE byVRS;
+	BYTE byVFM;
+	BYTE byVOP;
+
+	BYTE byBlank[2];
+	BYTE byVChID[2];
+
+	BYTE byField;
+	BYTE byCodec;
+	BYTE byFps;
+	BYTE byJoinMode;
+
+	BYTE byPreSkip;
+	BYTE bySeq;
+	WORD nMsec;
+
+	WORD nASize;
+	WORD nAChID;
+
+	WORD nWd;
+	WORD nHi;
+
+	UINT nVer;
+	UINT nTime;
+	UINT nVSize;
+} STMHDR, FAR *PSTMHDR;
+const UINT STMHDR_LEN	= sizeof(STMHDR);
+
+typedef struct tagSTREAM {
+	PSTSINFO pSts;
+	STMHDR hdr;
+	//INT nIndex;
+	BYTE* pData;
+	tagSTREAM() {
+		pSts = NULL; pData = NULL;// nIndex = -1;
+		ZeroMemory(&hdr,STMHDR_LEN);
+	}
+	~tagSTREAM() {
+		if(pSts){delete pSts;pSts=NULL;}
+		if(pData){free(pData);pData=NULL;}
+	}
+	inline tagSTREAM& operator = (tagSTREAM& src)
+	{
+		if ( src.pSts ) {
+			this->pSts = new STSINFO;
+			memcpy(this->pSts,src.pSts,STSINFO_LEN);
+		}
+		memcpy(&(this->hdr),&src.hdr,STMHDR_LEN);
+		UINT nSize = (src.hdr.nASize) ? (UINT)src.hdr.nASize : src.hdr.nVSize;
+		if ( nSize ) {
+			this->pData = (BYTE*)calloc(nSize,1);
+			memcpy(this->pData, src.pData, nSize);
+		}
+		return *this;
+	}
+} STREAM, FAR *PSTREAM;
+
+typedef struct tagSTREAMQ {
+	BYTE nType;
+	PSTREAM pStream;
+	tagSTREAMQ * pNext;
+	tagSTREAMQ(PSTREAM pstream = NULL, BYTE ntype = 0)
+	{
+		pStream = pstream; nType = ntype; pNext = NULL;
+	}
+} STREAMQ, FAR *PSTREAMQ;
+
+#pragma pack(pop)
+
+class CStreamQ 
+{
+public:
+	CStreamQ();
+	virtual ~CStreamQ();
+private:
+	int m_nCount;
+	HANDLE m_hLock;
+	PSTREAMQ m_pHead, m_pTail;
+public:
+	void Clear(void);
+	int GetCount() { return m_nCount; };
+	void Push(PSTREAM pStream, BYTE nType = 0);
+	PSTREAM Pop(BYTE &nType);
+};
+
+enum STREAM_T {
+	STREAM_NONE = 0x00,
+	STREAM_VIDEO = 0x01,
+	STREAM_AUDIO = 0x02
+};
+
+const UINT HDR_SIZE		= 40;
+const UINT FSH_START	= 0x000001FF;
+
+const BYTE SCALE_HD1080	= 0x01;	// 1920 * 1080 (1080p)
+const BYTE SCALE_SXGA	= 0x02;	// 1280 * 1024
+const BYTE SCALE_HD720	= 0x03;	// 1280 * 720
+const BYTE SCALE_D1		= 0x04;	// 720 * 480 (720 join)
+const BYTE SCALE_D1P	= 0x14;	// 720 * 480 (720p)
+const BYTE SCALE_HD1	= 0x05;	// 720 * 240
+const BYTE SCALE_CIF	= 0x06;	// 352 * 240
+const BYTE SCALE_QCIF	= 0x07;	// 176 * 144
+const BYTE SCALE_VGA	= 0x08;	// 640 * 480 (640p)
+const BYTE SCALE_QVGA	= 0x09;	// 320 * 240
+const BYTE SCALE_QQVGA	= 0x0a;	// 160 * 120
+const BYTE SCALE_2CIF	= 0x0c;	// 720 * 240 2 CIF Mode, SDVR22xxAM V4 Format
+const BYTE SCALE_4CIF	= 0x0e;	// 720 * 480 4 CIF Mode, SDVR2204AL V1 Format
+
+const BYTE CODEC_JPEG	= 0x00;
+const BYTE CODEC_H264	= 0x01;
+
+const BYTE VFM_NTSC		= 0x00;
+const BYTE VFM_PAL		= 0x01;
+
+//const BYTE VRS_D1		= 0x02;
+//const BYTE VRS_CIF	= 0x01;
+//const BYTE VRS_HD1	= 0x00;
+
+const BYTE VOP_P		= 0x00;
+const BYTE VOP_I		= 0x01;
+
+const USHORT RTSP_PORT	= 8554;
+const USHORT SEARCH_PORT= 64554;
+
+//const UINT WM_SOCKET		= WM_USER + 201;
+//const UINT WM_NET_MSG		= WM_USER + 202;
+//const UINT WM_NET_ERR		= WM_USER + 203;
+//const UINT WM_TWOWAYC_MSG	= WM_USER + 204;
+
+
+#define POST_MSG(p,m,w,l) { if((p)&&(p)->GetSafeHwnd()){(p)->PostMessage(m,(WPARAM)(w),(LPARAM)(l));} }
+typedef void (*stream_cb_func)(void* object, unsigned char type, void* data);
+
+const u_char BIG_ENDIAN		= 0x01;
+const u_char LITTLE_ENDIAN	= 0x00;
+extern "C" {
+	void check_tom();
+
+	u_int	nswap(u_int dw);
+	u_long	dwswap(u_long dw);
+	u_short	wswap(u_short w);
+
+	void e2null(u_char *buf, u_int *loc, u_int len);
+	void d2null(u_char *buf, u_int *loc, u_int len);
+	void e2char(u_char *buf, u_int *loc, u_char val);
+	void d2char(u_char *buf, u_int *loc, u_char *pval);
+	void e2int(u_char *buf, u_int *loc, u_int val);
+	void d2int(u_char *buf, u_int *loc, u_int *pval);
+	void e2long(u_char *buf, u_int *loc, u_long val);
+	void d2long(u_char *buf, u_int *loc, u_long *pval);
+	void e2short(u_char *buf, u_int *loc, u_short val);
+	void d2short(u_char *buf, u_int *loc, u_short *pval);
+	void e2float(u_char *buf, u_int *loc, float val);
+	void d2float(u_char *buf, u_int *loc, float *pval);
+	void e2double(u_char *buf, u_int *loc, double val);
+	void d2double(u_char *buf, u_int *loc, double *pval);
+	void e2str(u_char *buf, u_int *loc, u_char *pval, int len);
+	void d2str(u_char *buf, u_int *loc, u_char *pval, int len);
+	void e2tm(u_char *buf, u_int *loc, struct tm *pval);
+	void d2tm(u_char *buf, u_int *loc, struct tm *pval);
+}

@@ -1,0 +1,184 @@
+//
+// Copyright (C) Since 2010 VISIONHITECH. All rights reserved.
+// 
+// Description: Network Define
+// Date: 2010-04-20
+// Author: dcyoon
+//
+#pragma once
+
+enum MODE_T {
+	MODE_NONE	= 0x00,
+	MODE_LIVE	= 0x01,
+	MODE_PB		= 0x02,
+	MODE_PBFAST	= 0x04,
+	MODE_BACKUP	= 0x08,
+	MODE_SETUP	= 0x10,
+	MODE_FILE	= 0x20,
+	MODE_AUDIO	= 0x40
+};
+enum CMD_T {
+	CMD_NONE	= 0x00,
+	CMD_INFO	= 0x01,
+	CMD_LOGIN	= 0x02,
+	CMD_LIVE	= 0x03,
+	CMD_STATUS	= 0x04,
+	CMD_OPEN	= 0x06,
+	CMD_CLOSE	= 0x07,
+	CMD_PAUSE	= 0x08,
+	//
+	CMD_PLAYBACK= 0x11,
+	CMD_RSEARCH	= 0x12,
+	CMD_ESEARCH	= 0x13,
+	//
+	CMD_BACKUP	= 0x21,
+	CMD_SETUP	= 0x31,
+	CMD_UPGRADE	= 0x51,
+	CMD_USERDEF	= 0x91,
+	CMD_FINISH	= 0x99,
+	CMD_ERROR	= 0xEE
+};
+
+enum ACT_T {
+	ACT_NONE	= 0x00,
+	ACT_RUN		= 0x01,
+	//
+	ACT_OPEN	= 0x03,
+	ACT_CLOSE	= 0x04,
+	//
+	ACT_AUDIO	= 0x10,
+	ACT_PLAY	= 0x11,
+	ACT_STEP	= 0x12,
+	ACT_FF		= 0x13,
+	ACT_STOP	= 0x14,
+	ACT_PAUSE	= 0x15,
+	ACT_BACKPLAY= 0x16,
+	ACT_BACKSTEP= 0x17,
+	ACT_REW		= 0x18,
+	ACT_STATUS	= 0x19,
+	//
+	ACT_INFO	= 0x21,
+	ACT_ERROR	= 0x22,
+	//
+	ACT_LEFT	= 0x31,
+	ACT_RIGHT	= 0x32,
+	ACT_UP		= 0x33,
+	ACT_DOWN	= 0x34,
+	ACT_ZOOMIN	= 0x35,
+	ACT_ZOOMOUT	= 0x36,
+	ACT_FOCUSFAR= 0x37,
+	ACT_FOCUSNEAR= 0x38,
+	ACT_RESET	= 0x39,
+	//
+	ACT_UPGRADE	= 0x51,	// F/W UPGRADE
+	ACT_SOS		= 0x52,	// Send file size
+	ACT_SOF		= 0x53,	// Send file
+	ACT_EOF		= 0x54,	// Complete sending file
+	//
+	ACT_RECON	= 0x71,
+	ACT_RECOFF	= 0x72,
+	//
+	ACT_ACK		= 0x91,
+	ACT_NACK	= 0x92
+};
+
+enum PTZ_T {
+	IRIS_OPEN = 0,
+	IRIS_CLOSE,
+	ZOOM_TELE,
+	ZOOM_WIDE,
+	FOCUS_NEAR,
+	FOCUS_FAR,
+	MOVE_UP,
+	MOVE_DOWN,
+	MOVE_LEFT,
+	MOVE_RIGHT,
+	FOCUS_STOP,
+	MOVE_STOP,
+	PRESET_GOTO,
+	PRESET_SET,
+	PRESET_DEL
+};
+
+enum NETERR_T {
+	ERR_NONE		= 0x00,
+	ERR_MAGIC_CODE	= 0x01,
+	ERR_BODY_SIZE	= 0x02,
+	ERR_CONNECT_FAIL= 0x03,
+	ERR_DISCONNECTED= 0x04,
+	ERR_TIMEOUT		= 0x05,
+	ERR_LOGIN_FAIL	= 0x06,
+	ERR_STREAM		= 0x07,
+	ERR_PROTOCOL_TYPE = 0x08,
+	ERR_PROTOCOL_MODE = 0x09
+};
+
+enum RES_T {
+	RES_NONE	= 0x00,
+	RES_HEADER	= 0x01,
+	RES_BODY	= 0x02
+};
+
+const USHORT MAGIC_CODE	= 0x5471;
+// 2010-09-07 hkeins : AxLive에서 해상도를 늘렸을 경우 화면이 멈추는 문제 때문에 64 --> 512Kb로 네트워크 버퍼 크기를 늘림
+const UINT NET_BUF_SIZE = 512 * 1024;
+
+#pragma pack(push, 1)
+
+typedef struct tagHEADER {
+	WORD	magic;
+	BYTE	byCmd;
+	BYTE	byMode;
+	UINT	nSize;
+} HEADER, FAR *PHEADER;
+
+typedef struct tagNETBUF {
+	BYTE	byCmd;
+	BYTE	byMode;
+	BYTE	byType;
+	BYTE	byError;
+	UINT	nBodySize;
+	UINT	nSize;
+	UINT	nPos;
+	BYTE	buf[NET_BUF_SIZE];
+} NETBUF, FAR *PNETBUF;
+
+typedef struct tagREQ {
+	UINT	nSize;
+	BYTE*	pPacket;
+	tagREQ*	pNext;
+	tagREQ() {
+		nSize = 0; pPacket = NULL; pNext = NULL;
+	}
+	~tagREQ() {
+		if(pPacket){free(pPacket);pPacket=NULL;}
+	}
+} REQ, FAR *PREQ;
+
+typedef struct tagRES {
+	BYTE byCmd;
+	BYTE* pBuf;
+	tagRES(BYTE _byCmd, BYTE* _pBuf = NULL){
+		byCmd = _byCmd, pBuf = _pBuf;
+	}
+	~tagRES(){
+		if(pBuf){free(pBuf);pBuf=NULL;}
+	}
+} RES, FAR *PRES;
+
+#pragma pack(pop)
+
+const UINT HEADER_SIZE	= (UINT)sizeof(HEADER);
+
+class CReqQueue
+{
+public:
+	CReqQueue();
+	virtual ~CReqQueue();
+private:
+	PREQ m_pHead, m_pTail;
+	void Clear(void);
+public:
+	void Push(PREQ pItem, BOOL bFirst = FALSE);
+	PREQ Pop(void);
+};

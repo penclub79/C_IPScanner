@@ -1,0 +1,540 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 한국어 resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+#ifdef _WIN32
+LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
+#pragma code_page(949)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)\r\n"
+    "LANGUAGE 18, 1\r\n"
+    "#pragma code_page(949)\r\n"
+    "#include ""res\\IPScanUtil.rc2""  // Microsoft Visual C++ 이외의 다른 도구에서 편집한 리소스입니다.\r\n"
+    "#include ""l.KOR\\afxres.rc""      // 표준 구성 요소입니다.\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\IPScanUtil.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_UPGRADE DIALOGEX 0, 0, 581, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Upgrade"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Upgrade",IDC_UPGRADE_BTN,234,189,50,14
+    PUSHBUTTON      "Close",IDC_CLOSE,296,189,50,14
+    CONTROL         "",IDC_UPGRADE_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,66,567,114
+    PUSHBUTTON      "Open File",IDC_OPENFILE_BTN,524,7,50,14
+    EDITTEXT        IDC_OPENFILE_EDIT,7,7,353,14,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Login",IDC_STC_UPGRADE_LOGIN,7,28,354,34
+    LTEXT           "User ID",IDC_STC_UPGRADE_USERID,14,41,35,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_UPGRADE_USERID,54,41,113,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STC_UPGRADE_PASSWORD,183,42,36,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_UPGRADE_PASSWORD,229,42,113,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Model :",IDC_STC_MODEL,379,41,36,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_MODEL_COMBO,480,41,94,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_CAM_IPCHANGE2 DIALOGEX 0, 0, 579, 261
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "IP Change"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Use DHCP Address",IDC_NET_DHCP,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,153,12,108,10
+    GROUPBOX        "",IDC_STATIC,7,24,275,70
+    CONTROL         "Use Static Address",IDC_NET_STATIC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,32,12,108,10
+    LTEXT           "Start IP Address",IDC_STATIC_START_IPADDR,15,36,74,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_START_IPADDR,"SysIPAddress32",WS_TABSTOP,94,36,128,14
+    LTEXT           "Gateway Address",IDC_STATIC_GATEWAY,15,54,74,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_GWADDR,"SysIPAddress32",WS_TABSTOP,94,54,128,14
+    LTEXT           "Subnet Mask",IDC_STATIC_MASK,15,72,74,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_SUBNETMASK,"SysIPAddress32",WS_TABSTOP,94,72,128,15,WS_EX_TRANSPARENT
+    GROUPBOX        "Ports",IDC_STATIC,288,26,274,32
+    LTEXT           "Stream Port",IDC_STATIC,295,37,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_STREAM_PORT_EDIT,362,37,53,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "HTTP Port:",IDC_STATIC,420,37,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_HTTP_PORT_EDIT,493,37,53,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Login",IDC_STC_LOGIN,288,61,273,32
+    LTEXT           "User ID",IDC_STC_USERID,295,71,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_USERID,362,71,53,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STC_PASSWORD,419,71,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_PASSWORD,493,71,53,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Change IP",IDC_APPLY,235,240,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,294,240,50,14
+    CONTROL         "",IDC_SVR_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,100,565,133
+    CONTROL         "Same IP",IDC_CHECK_SAMEIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,229,36,39,14
+END
+
+IDD_FACTORYDEFAULT DIALOGEX 0, 0, 493, 202
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Factory Default"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Factory Default",ID_FACTORY_DEFAULT_BTN,171,181,69,14
+    PUSHBUTTON      "Cancel",ID_FACTORY_DEFAULT_CANCEL,252,181,71,14
+    CONTROL         "",IDC_SVR_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,42,479,133
+    GROUPBOX        "Login",IDC_STC_LOGIN,7,7,273,32
+    LTEXT           "User ID",IDC_STC_USERID,15,17,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_USERID,81,17,53,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STC_PASSWORD,139,17,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_PASSWORD,213,17,53,14,ES_PASSWORD | ES_AUTOHSCROLL
+    CTEXT           "",IDC_STC_PROCESSING,285,17,193,15,SS_CENTERIMAGE,WS_EX_STATICEDGE
+END
+
+IDD_CAM_RESOLCHANGE DIALOGEX 0, 0, 523, 351
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Setup Resolution"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Apply",IDC_BUTTON_APPLY,207,330,50,14
+    PUSHBUTTON      "Cancel",IDC_BUTTON_CANCEL,264,330,50,14
+    CONTROL         "",IDC_DEVICE_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,218,509,110
+    GROUPBOX        "First H.264 Setting",IDC_STATIC_GROUP_STREAM1,264,70,242,66
+    GROUPBOX        "Second H.264 Setting",IDC_STATIC_GROUP_STREAM2,264,139,242,66
+    GROUPBOX        "MJPEG Settion",IDC_STATIC_GROUP_MJPEG,13,153,242,52
+    CONTROL         "",IDC_SLIDER_BITRATE1,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,337,86,73,12
+    RTEXT           "Bitrate :",IDC_STATIC_BITRATE1,276,86,48,12,SS_CENTERIMAGE
+    RTEXT           "Frame Rate :",IDC_STATIC_FRAMERATE1,276,100,48,12,SS_CENTERIMAGE
+    RTEXT           "G.O.P :",IDC_STATIC_GOP1,276,116,48,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_FPS1,341,100,65,30,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP,WS_EX_RTLREADING
+    COMBOBOX        IDC_COMBO_GOP1,341,116,65,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,WS_EX_RTLREADING
+    EDITTEXT        IDC_EDIT_BITRATE1,411,86,51,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "FPS",IDC_STATIC_FPS1,409,100,28,12,SS_CENTERIMAGE
+    CONTROL         "",IDC_SLIDER_BITRATE2,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,337,152,73,12
+    RTEXT           "Bitrate :",IDC_STATIC_BITRATE2,276,152,48,12,SS_CENTERIMAGE
+    RTEXT           "Frame Rate :",IDC_STATIC_FRAMERATE2,276,169,48,12,SS_CENTERIMAGE
+    RTEXT           "G.O.P :",IDC_STATIC_GOP2,276,184,48,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_FPS2,341,169,65,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,WS_EX_RTLREADING
+    COMBOBOX        IDC_COMBO_GOP2,341,184,65,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,WS_EX_RTLREADING
+    EDITTEXT        IDC_EDIT_BITRATE2,411,152,51,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "FPS",IDC_STATIC_FPS2,409,169,28,12,SS_CENTERIMAGE
+    RTEXT           "Quality :",IDC_STATIC_QUALITY,25,167,48,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_MJPEG_QUALITY,90,167,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Frame Rate :",IDC_STATIC_FRAMERATE,25,185,48,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_MJPEG_FPS,90,185,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Model Type :",IDC_STATIC_MODELTYPE,22,13,65,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_MODELTYPE,99,13,143,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "User Info",IDC_STC_GROUP_LOGIN,264,8,249,52
+    LTEXT           "User ID",IDC_STC_USERID,278,21,65,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_USERID,356,21,106,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STC_PASSWORD,278,39,65,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PASSWORD,356,39,106,14,ES_PASSWORD | ES_AUTOHSCROLL
+    RTEXT           "Stream Type :",IDC_STATIC_STREAMTYPE,20,79,65,12,SS_CENTERIMAGE
+    RTEXT           "Codec Combo :",IDC_STATIC_CODEC,20,96,65,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_STREAMTYPE,97,79,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Codec Resolution :",IDC_STATIC_RESOLUTION,20,113,65,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_CODECTYPE,97,96,143,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Rate Control :",IDC_STATIC_RATECONTROL,20,130,65,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_RESOLUTION,97,113,143,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_RATECONTROL,97,130,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "bps",IDC_STATIC_BPS1,464,86,16,12,SS_CENTERIMAGE
+    RTEXT           "bps",IDC_STATIC_BPS2,464,152,16,12,SS_CENTERIMAGE
+    GROUPBOX        "Stream Format",IDC_STATIC_GROUP_STREAMFORMAT,7,63,506,149
+    PUSHBUTTON      "Lens Initialize",IDC_BUTTON_LENS_INIT,39,41,192,14
+    GROUPBOX        "Function",IDC_STC_GROUP_FUNCTION,7,30,249,30
+END
+
+IDD_CAM_OSDCHANGE DIALOGEX 0, 0, 457, 205
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Setup OSD"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Apply",IDC_BUTTON_APPLY,175,184,50,14
+    PUSHBUTTON      "Cancel",IDC_BUTTON_CANCEL,232,184,50,14
+    CONTROL         "",IDC_DEVICE_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,66,443,110
+    GROUPBOX        "User Info",IDC_STC_GROUP_LOGIN,7,7,181,52
+    LTEXT           "User ID",IDC_STC_USERID,21,20,45,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_USERID,74,20,106,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STC_PASSWORD,21,38,45,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_PASSWORD,74,38,106,14,ES_PASSWORD | ES_AUTOHSCROLL
+    GROUPBOX        "Text Setting",IDC_STC_GROUP_LOGIN2,194,7,256,52
+    CONTROL         "Set address text",IDC_CHECK_SETOSD_IPADD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,38,77,14
+    EDITTEXT        IDC_EDIT_OVERLAYTEXT,347,20,95,14,ES_AUTOHSCROLL
+    LTEXT           "Overlay Text",IDC_STC_OVERLAYTEXT,285,20,55,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_POSITION,348,38,95,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Used Text",IDC_CHECK_USED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,20,77,14
+    LTEXT           "Text Position",IDC_STC_TEXTPOSITION,285,38,55,14,SS_CENTERIMAGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_UPGRADE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 574
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 203
+    END
+
+    IDD_CAM_IPCHANGE2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 572
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 254
+    END
+
+    IDD_FACTORYDEFAULT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 486
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 195
+    END
+
+    IDD_CAM_RESOLCHANGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 516
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 344
+    END
+
+    IDD_CAM_OSDCHANGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 450
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 198
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CHECKBOXES          BITMAP                  "res\\checkboxes.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "About IPScanUtil (&A)..."
+    IDS_ADDRESS             "Address"
+    IDP_SOCKETS_INIT_FAILED "Windows socket initialized failed."
+    IDS_PORT                "Port"
+    IDS_STREAM              "Stream"
+    IDS_STATUS_SCANNING     "Scanning"
+    IDS_STATUS_STOP         "Stopped"
+    IDS_STOP                "Stop"
+    IDS_SCAN                "Scan"
+    IDS_IP_CHANGE           "IP Change"
+    IDS_MEMORY              "Memory exceeded"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_RECEIVE_FAILED      "recvfrom function failed cause recevie data is too big."
+    IDS_BIND_FAILED         "UDP Port(%d) is already used. Cannot proceed server scan."
+    IDS_UNKNOWN_ERROR       "Unknown error"
+    IDS_SOCKET_ERROR        "Socket error"
+    IDS_ENTER_LOGIN_INFO    "Enter User ID"
+    IDS_FIRMWARE_VERSION    "Firmware Version"
+    IDS_MODEL               "Model"
+    IDS_SERVER_NAME         "Server Name"
+    IDS_N_AND_A             "N/A"
+    IDS_RESOLUTIONS         "Resolutions"
+    IDS_VIDEO_FORMAT        "Video format"
+    IDS_ALARM_IN_COUNT      "Alarm In Count"
+    IDS_ALARM_OUT_COUNT     "Alarm Out Count"
+    IDS_AUDIO_IN_COUNT      "Audio In Count"
+    IDS_AUDIO_OUT_COUNT     "Audio Out Count"
+    IDS_UPGRADE_PROGRESS    "Progress"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_ENTER_PASSWORD_INFO "Enter User Password"
+    IDS_USER_ID             "ID"
+    IDS_USER_PW             "PW"
+    IDS_DHCP                "DHCP"
+    IDS_STATIC              "Static"
+    IDS_IP_TYPE             "IP Type"
+    IDS_PROGRESS_STATUS     "Status"
+    IDS_STREAM_CHECK        "Stream check"
+    IDS_EVENT_CHECK         "Event check"
+    IDS_DIFFERENT_BAND      "Gateway Address and the IP address is a different band."
+    IDS_MCU_VERSION         "MCU Model"
+    IDS_MCU_MODEL           "MCU Version"
+END
+
+#endif    // 한국어 resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 영어(미국) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About IPScan Utility"
+FONT 9, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
+    LTEXT           "IPScan Utility",IDC_STATIC_PROGRAME_INFO,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2011",IDC_STATIC,42,26,114,8
+    DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
+END
+
+IDD_IPSCANUTIL_DIALOG DIALOGEX 0, 0, 501, 277
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "IPScan Utility"
+FONT 9, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Scan",IDC_SCAN_BTN,7,4,99,32
+    PUSHBUTTON      "IP Change",IDC_CHANGEIP_BTN,173,4,60,14
+    PUSHBUTTON      "Upgrade",IDC_UPGRADE_BTN,235,4,60,14
+    PUSHBUTTON      "Factory Default",IDC_FACTORY_BTN,297,4,60,14
+    PUSHBUTTON      "Clear",IDC_CLEAR_BTN,111,4,60,14
+    COMBOBOX        IDC_ADAPTOR_CMB,174,20,184,195,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_PROTOCAL_COMBO,434,20,60,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_SVR_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,42,487,212
+    PUSHBUTTON      "Test",IDC_TEST_BTN,225,256,50,14,NOT WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    PUSHBUTTON      "Test",IDC_TEST_BTN2,273,256,50,14,NOT WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    DEFPUSHBUTTON   "Close",IDC_CLOSE,444,256,50,14
+    CTEXT           "Count : 0",IDC_STC_SNUM,434,4,60,14,SS_CENTERIMAGE,WS_EX_STATICEDGE
+    LTEXT           "Network Card:",IDC_STATIC_NETWORK,115,20,50,14,SS_CENTERIMAGE
+    LTEXT           "Protocol :",IDC_STATIC_VERSION,393,20,35,12,SS_CENTERIMAGE
+    LTEXT           "Stopped",IDC_STATIC_STATUES,7,256,211,14,SS_CENTERIMAGE
+END
+
+IDD_CAM_IPCHANGE DIALOGEX 0, 0, 272, 202
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "IP Change"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Target MAC Address",IDC_STATIC,3,2,108,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_MACADDR,136,2,132,14,ES_AUTOHSCROLL | NOT WS_TABSTOP
+    CONTROL         "Use DHCP Address",IDC_NET_DHCP,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,11,23,108,10
+    GROUPBOX        "",IDC_STATIC,3,40,265,70
+    CONTROL         "Use Static Address",IDC_NET_STATIC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,11,40,108,10
+    LTEXT           "IP Address",IDC_STATIC_IPADDR,11,52,108,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_IPADDR,"SysIPAddress32",WS_TABSTOP,136,52,128,14
+    LTEXT           "Gateway Address",IDC_STATIC_GATEWAY,11,70,108,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_GWADDR,"SysIPAddress32",WS_TABSTOP,136,70,128,14
+    LTEXT           "Subnet Mask",IDC_STATIC_MASK,11,88,108,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_SUBNETMASK,"SysIPAddress32",WS_TABSTOP,136,88,128,15,WS_EX_TRANSPARENT
+    GROUPBOX        "Ports",IDC_STATIC,4,113,265,32
+    LTEXT           "Stream Port",IDC_STATIC,11,124,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_STREAM_PORT_EDIT,78,124,53,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "HTTP Port:",IDC_STATIC,136,124,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_HTTP_PORT_EDIT,209,124,53,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Login",IDC_STC_LOGIN,4,148,265,32
+    LTEXT           "User ID",IDC_STC_USERID,11,159,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_USERID,78,159,53,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STC_PASSWORD,135,159,62,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_PASSWORD,209,159,53,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Change IP",IDOK,166,185,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,219,185,50,14
+    PUSHBUTTON      "Reset",IDC_BUT_RESET,4,185,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 163
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+
+    IDD_IPSCANUTIL_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 494
+        VERTGUIDE, 7
+        VERTGUIDE, 63
+        VERTGUIDE, 121
+        VERTGUIDE, 234
+        VERTGUIDE, 305
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 270
+    END
+
+    IDD_CAM_IPCHANGE, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 199
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,1,17
+ PRODUCTVERSION 1,0,1,17
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041203b5"
+        BEGIN
+            VALUE "CompanyName", "IPScan Utility"
+            VALUE "FileVersion", "1, 0, 1, 17"
+            VALUE "InternalName", "IPScan Utility.exe"
+            VALUE "LegalCopyright", "All rights reserved."
+            VALUE "OriginalFilename", "IPScan Utility.exe"
+            VALUE "ProductVersion", "1, 0, 1, 17"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x412, 949
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_POPUP_MENU MENU 
+BEGIN
+    POPUP "Setup"
+    BEGIN
+        MENUITEM "Setup Resolution",            ID_SETUP_SETUP
+        MENUITEM "Setup OSD ",                  ID_SETUP_OSDSETUP
+    END
+END
+
+IDR_POPUP_MENU_UPGRADE MENU 
+BEGIN
+    POPUP "Setup"
+    BEGIN
+        MENUITEM "Retry Upgrade",               ID_UPGRADE_RETRAY
+    END
+END
+
+#endif    // 영어(미국) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+LANGUAGE 18, 1
+#pragma code_page(949)
+#include "res\IPScanUtil.rc2"  // Microsoft Visual C++ 이외의 다른 도구에서 편집한 리소스입니다.
+#include "l.KOR\afxres.rc"      // 표준 구성 요소입니다.
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

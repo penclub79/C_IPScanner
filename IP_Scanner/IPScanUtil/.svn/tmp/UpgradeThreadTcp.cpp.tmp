@@ -1,0 +1,1744 @@
+//
+// Copyright (C) Since 2013 VISIONHITECH. All rights reserved.
+// 
+// Description: Firmware upgrade by TCP class
+//
+// History:
+//    2013-05-07 made by cgkim and source copy by hkeins
+//
+#include "stdafx.h"
+#include "UpgradeThreadTcp.h"
+
+
+CUpgradeThreadTcp::CUpgradeThreadTcp( HWND pParent, int nIndex, CString sIPAddress, int nPort, CString sUserName, CString sPassword,CString sFilePath,CString sFileName)
+{
+//	TRACE(L"###### CUpgradeThreadTcp Start! nIndex = %d\n", nIndex);
+	m_hThreadUpgrade		= NULL;
+	m_dwThreadUpgradeID		= 0;
+	m_hThreadUpgradeEvent	= NULL;
+
+	memset (&m_szDisplayMessage[0], 0, sizeof(m_szDisplayMessage) );
+	m_iPercentage			= 0;
+
+
+	m_sFilePath				= sFilePath;
+	m_sFileName				= sFileName;
+
+	m_hThreadSocket			= NULL;
+	m_dwThreadSocketID		= 0;
+
+	m_pSockUpgrade			= INVALID_SOCKET;
+
+	m_hwndParent			= pParent;
+	m_nIndex				= nIndex;
+
+	m_sIPAddress			= sIPAddress;
+	m_nUpgradePort			= nPort;
+
+	m_sUserName				= sUserName;
+	m_sPassword				= sPassword;
+
+	m_iVersionCheckCount	= 0;
+	m_iConnectCheckCount	= 0;
+	m_iLastError			= 0;
+	m_hDisocnnectLock       = CreateMutex(NULL, FALSE, NULL);
+
+	
+
+
+	// ==================================== Message Queue Initialize
+	m_MessageQueue.InitQueue();	
+	// ==================================== Message Queue Initialize
+
+	m_hThreadUpgradeEvent	= ::CreateEvent( NULL, TRUE, FALSE, NULL );
+	m_hThreadUpgrade		= ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ProcUpgrade, this, 0, &this->m_dwThreadUpgradeID );	
+
+
+//	TRACE(L"###### CUpgradeThreadTcp Start! \n");
+}
+
+CUpgradeThreadTcp::~CUpgradeThreadTcp(void)
+{
+	m_hwndParent	= NULL;
+	DWORD exitCode	= 0;
+
+	Disconnect();
+
+	m_dwThreadUpgradeID	= 0;
+
+	if( NULL != m_hThreadUpgrade )
+	{
+		if( NULL != m_hThreadUpgradeEvent )
+		{
+			SetEvent( m_hThreadUpgradeEvent );
+		}
+
+		if( WAIT_TIMEOUT == WaitForSingleObject( m_hThreadUpgrade, 100000 ) )
+		{
+			:: TerminateThread(m_hThreadUpgrade, exitCode);
+		}
+
+		if(m_hThreadUpgrade)
+		{
+			::CloseHandle(m_hThreadUpgrade);
+			m_hThreadUpgrade = NULL;
+		}
+
+		if( m_hThreadUpgradeEvent )
+		{
+			::CloseHandle(m_hThreadUpgradeEvent);
+			m_hThreadUpgradeEvent	= NULL;
+		}
+	}
+	if(m_hDisocnnectLock)
+	{
+		ReleaseMutex(m_hDisocnnectLock);
+		CloseHandle(m_hDisocnnectLock);
+		m_hDisocnnectLock = NULL;
+	}
+
+	m_MessageQueue.UnInitQueue();
+}
+
+DWORD WINAPI CUpgradeThreadTcp::ProcUpgrade  ( LPVOID _lpParam )
+{
+	CUpgradeThreadTcp* pThis = (CUpgradeThreadTcp*)_lpParam;
+	if(pThis == NULL)
+		return 0;
+
+	pThis->funcUpgrade();
+
+	TRACE( L"Thread Exit ProcUpgrade ///////////////////////////////////////////\n" );
+	return 0xAAAAAAAA;
+}
+
+BOOL CUpgradeThreadTcp::funcUpgrade()
+{
+	//	TRACE(L"###### funcUpgrade Start!\n");
+	BOOL bReturn = FALSE;
+	MESSAGE_QUEUE_ITEM		QueueItem							= {0};
+	int  i = 0;
+
+	while( 0 < m_dwThreadUpgradeID )
+	{
+		if( WAIT_TIMEOUT == WaitForSingleObject( m_hThreadUpgradeEvent, 1000 ) )
+		{
+			continue;
+		}
+
+		if( TRUE == m_MessageQueue.IsEmpty() )
+		{
+			if( 0 == m_dwThreadUpgradeID )
+				break;
+
+			Sleep(500);
+			continue;
+		}
+		else
+		{
+			m_MessageQueue.PopQueue( &QueueItem );
+
+			switch( QueueItem.iCommandID )
+			{
+			case MESSAGE_CONNECT_FOR_START		:
+				{
+					TRACE( L"MESSAGE_CONNECT_FOR_START\n" );
+
+					if( 1024 > m_nUpgradePort )
+					{
+						if( NULL != m_hwndParent )
+						{
+							wsprintf( m_szDisplayMessage, L"Failed(This IP camera does not support the upgrade file.)" );
+							PostMessage(m_hwndParent, 
+								WM_UPGRADE_MSG, 
+								MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+								(LPARAM)_UPGRADE_ERROR_NOT_SUPPORT_UPGRAE_FILE );
+
+							return FALSE;
+						}
+					}
+					else
+					{
+						if( TRUE == ConnectForStart() )
+						{
+							if( NULL != m_hwndParent )
+							{
+								wsprintf( m_szDisplayMessage, L"Ready to File Transfering" );
+								PostMessage(m_hwndParent, 
+									WM_UPGRADE_MSG, 
+									MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+									(LPARAM)_UPGRADE_STATUS_READY_TO_FILE_TRANSFERRING );
+							}
+						}
+						else
+						{
+							if( NULL != m_hwndParent )
+							{
+								wsprintf( m_szDisplayMessage, L"Failed(Can not connect.)" );
+								PostMessage(m_hwndParent, 
+									WM_UPGRADE_MSG, 
+									MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+									(LPARAM)_UPGRADE_ERROR_CONNECT_FAILED);
+							}
+						}
+					}
+				}
+				break;
+			case MESSAGE_CONNECT_FOR_RESTART:
+				{
+					TRACE( L"<<<<<<<<< MESSAGE_CONNECT_FOR_RESTART\n" );
+
+					if( 1024 > m_nUpgradePort )
+					{
+						if( NULL != m_hwndParent )
+						{
+							wsprintf( m_szDisplayMessage, L"Failed(This IP camera does not support the upgrade file.)" );
+							PostMessage(m_hwndParent, 
+								WM_UPGRADE_MSG, 
+								MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+								(LPARAM)_UPGRADE_ERROR_NOT_SUPPORT_UPGRAE_FILE );
+
+							return FALSE;
+						}
+					}
+					else
+					{
+						if( FALSE == ConnectForStart() )
+						{
+							if( MAX_REBOOT_CHECK_COUNT > m_iConnectCheckCount )
+							{
+								MESSAGE_QUEUE_ITEM QueueItem	= {0};
+								QueueItem.iCommandID		= MESSAGE_CONNECT_FOR_RESTART;
+								m_MessageQueue.PushQueue( QueueItem );
+								SetEvent(m_hThreadUpgradeEvent);
+								Sleep(500);
+								TRACE( L"MESSAGE_CONNECT_FOR_RESTART>>>>>>>>>>\n" );
+							}
+							else
+							{
+								if( NULL != m_hwndParent )
+								{
+									wsprintf( m_szDisplayMessage, L"Failed(Can not connect.)" );
+									PostMessage(m_hwndParent, 
+										WM_UPGRADE_MSG, 
+										MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+										(LPARAM)_UPGRADE_ERROR_CONNECT_FAILED);
+								}
+							}
+
+							m_iConnectCheckCount++;
+						}
+						else
+						{
+							m_iConnectCheckCount	= 0;
+						}
+					}
+
+					TRACE( L"MESSAGE_CONNECT_FOR_RESTART>>>>>>>>>>\n" );
+				}
+				break;
+			case MESSAGE_WAIT_FOR_REBOOT_FILE_NOT_EXIST:
+				{
+					TRACE( L"<<<<<<<<< MESSAGE_WAIT_FOR_REBOOT_FILE_NOT_EXIST\n" );
+					Disconnect();
+
+					m_iConnectCheckCount	= 1;
+
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Reboot for the upgrade. Please wait." );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+							(LPARAM)_UPGRADE_STATUS_RESTARTING );
+					}
+
+					for( int i=0; i<MAX_WAIT_CHECK_COUNT; i++ )
+					{
+						Sleep(500);
+						TRACE( L"MESSAGE_WAIT_FOR_REBOOT_FILE_NOT_EXIST %d \n", i );
+						if( 0 == m_dwThreadUpgradeID )
+							break;
+					}
+
+					MESSAGE_QUEUE_ITEM QueueItem	= {0};
+					QueueItem.iCommandID		= MESSAGE_CONNECT_FOR_RESTART;
+					m_MessageQueue.PushQueue( QueueItem );
+					SetEvent(m_hThreadUpgradeEvent);
+
+					TRACE( L"MESSAGE_WAIT_FOR_REBOOT_FILE_NOT_EXIST>>>>>>>>>>\n" );
+				}
+				break;
+			case MESSAGE_WAIT_FOR_REBOOT_NOT_ENOUGHMEMORY:
+				{
+					TRACE( L"<<<<<<<<< MESSAGE_WAIT_FOR_REBOOT_NOT_ENOUGHMEMORY\n" );
+
+					// reboot 명령 전송해야 합니다. 
+
+					SendUpgradeReStart();
+					Disconnect();
+
+					m_iConnectCheckCount	= 1;
+
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Reboot for the upgrade. Please wait." );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+							(LPARAM)_UPGRADE_STATUS_RESTARTING );
+					}
+
+					for( int i=0; i<MAX_WAIT_CHECK_COUNT; i++ )
+					{
+						Sleep(500);
+						TRACE( L"MESSAGE_WAIT_FOR_REBOOT_NOT_ENOUGHMEMORY %d \n", i );
+						if( 0 == m_dwThreadUpgradeID )
+							break;
+					}
+
+					MESSAGE_QUEUE_ITEM QueueItem	= {0};
+					QueueItem.iCommandID		= MESSAGE_CONNECT_FOR_RESTART;
+					m_MessageQueue.PushQueue( QueueItem );
+					SetEvent(m_hThreadUpgradeEvent);
+
+
+					TRACE( L"MESSAGE_WAIT_FOR_REBOOT_NOT_ENOUGHMEMORY>>>>>>>>>>\n" );
+				}
+				break;
+
+			case MESSAGE_CONNECT_FOR_VERIONCHECK	:
+				{	
+					TRACE( L"<<<<<<<<< MESSAGE_CONNECT_FOR_VERIONCHECK Index = %d \n", m_nIndex );
+
+					if( 1024 > m_nUpgradePort )
+					{
+						if( NULL != m_hwndParent )
+						{
+							wsprintf( m_szDisplayMessage, L"Failed(This IP camera does not support the upgrade file.)" );
+							PostMessage(m_hwndParent, 
+								WM_UPGRADE_MSG, 
+								MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+								(LPARAM)_UPGRADE_ERROR_NOT_SUPPORT_UPGRAE_FILE  );
+
+							return FALSE;
+						}
+					}
+					else
+					{
+						if( FALSE == ConnectForCheckComplete() )
+						{
+							if( MAX_REBOOT_CHECK_COUNT > m_iVersionCheckCount )
+							{
+								MESSAGE_QUEUE_ITEM QueueItem	= {0};
+								QueueItem.iCommandID		= MESSAGE_CONNECT_FOR_VERIONCHECK;
+								m_MessageQueue.PushQueue( QueueItem );
+								SetEvent(m_hThreadUpgradeEvent);
+								Sleep(500);
+								TRACE( L"MESSAGE_CONNECT_FOR_VERIONCHECK>>>>>>>>>>\n" );
+
+								m_iVersionCheckCount++;
+
+								if( NULL != m_hwndParent )
+								{
+									wsprintf( m_szDisplayMessage, L"Wait for rebooting" );
+									PostMessage(m_hwndParent, 
+										WM_UPGRADE_MSG, 
+										MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+										(LPARAM)_UPGRADE_STATUS_ATTEMPT_REBOOT );
+								}
+
+							}
+							else
+							{
+								if( NULL != m_hwndParent )
+								{
+									wsprintf( m_szDisplayMessage, L"Failed(In order to check the version, can not connect.)" );
+									PostMessage(m_hwndParent, 
+										WM_UPGRADE_MSG, 
+										MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+										(LPARAM)_UPGRADE_ERROR_IN_ORDER_TO_VERSION_CHECKING_CAN_NOT_CONNECT );
+								}
+							}
+						}
+						else
+						{
+							m_iVersionCheckCount	= 0;
+						}
+					}
+
+					TRACE( L"<<<<<<<<< MESSAGE_CONNECT_FOR_VERIONCHECK \n" );
+				}
+				break;
+			case MESSAGE_WAIT_FOR_REBOOT_VERSIONCHECK:
+				{
+					Disconnect();
+
+					m_iVersionCheckCount	= 1;
+
+					TRACE( L"<<<<<<<<< MESSAGE_WAIT_FOR_REBOOT_VERSIONCHECK\n" );
+					if( NULL != m_hwndParent )
+					{
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+							(LPARAM)_UPGRADE_STATUS_WAITFOR_REBOOT );
+					}
+
+					for( int i=0; i<MAX_WAIT_CHECK_COUNT; i++ )
+					{
+						Sleep(500);
+						TRACE( L"MESSAGE_WAIT_FOR_REBOOT_VERSIONCHECK %d \n", i );
+						if( 0 == m_dwThreadUpgradeID )
+							break;
+					}
+
+					MESSAGE_QUEUE_ITEM QueueItem	= {0};
+					QueueItem.iCommandID		= MESSAGE_CONNECT_FOR_VERIONCHECK;
+					m_MessageQueue.PushQueue( QueueItem );
+					SetEvent(m_hThreadUpgradeEvent);
+
+					TRACE( L"MESSAGE_WAIT_FOR_REBOOT_VERSIONCHECK>>>>>>>>>>\n" );
+				}
+				break;
+
+			case MESSAGE_SEND_REQ_UPGRADE_START	:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Ready to File Transfering" );
+						m_iPercentage = 0;
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+							(LPARAM)_UPGRADE_STATUS_READY_TO_FILE_TRANSFERRING );
+						PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+					}
+
+					// 인증이 끝나면 업그래이드 스타트를 한다. 
+					if( TRUE ==  SendUpgradeStart() )
+					{
+						MESSAGE_QUEUE_ITEM QueueItem	= {0};
+						QueueItem.iCommandID		= MESSAGE_WAIT_FOR_FILE_TRANSFERING;
+						m_MessageQueue.PushQueue( QueueItem );
+						SetEvent(m_hThreadUpgradeEvent);
+						Sleep(500);
+					}
+					else
+					{
+						Disconnect();
+
+						if( NULL != m_hwndParent )
+						{
+							wsprintf( m_szDisplayMessage, L"Failed(This file can not be opened.)" );
+							PostMessage(m_hwndParent, 
+								WM_UPGRADE_MSG, 
+								MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+								(LPARAM)_UPGRADE_ERROR_OPEN_ERROR );
+						}
+
+					}
+				}
+				break;
+			case MESSAGE_WAIT_FOR_FILE_TRANSFERING:
+				{
+					TRACE( L"<<<<<<<<< MESSAGE_WAIT_FOR_FILE_TRANSFERING\n" );
+					for( int i=0; i<MAX_WAIT_CHECK_COUNT; i++ )
+					{
+						Sleep(500);
+						TRACE( L"MESSAGE_WAIT_FOR_FILE_TRANSFERING %d \n", i );
+						if( 0 == m_dwThreadUpgradeID )
+							break;
+						if( 0 <  m_MessageQueue.GetQueueCount() )
+							break;
+
+						if( 10 >= m_iPercentage )
+						{
+							m_iPercentage = i/3;
+							PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+						}
+					}
+				}
+				break;
+			case MESSAGE_WAIT_FOR_UPGRADE_READY:
+				{
+					TRACE( L"<<<<<<<<< MESSAGE_WAIT_FOR_UPGRADE_READY\n" );
+					for( int i=0; i<MAX_WAIT_CHECK_COUNT; i++ )
+					{
+						Sleep(500);
+						TRACE( L"MESSAGE_WAIT_FOR_UPGRADE_READY %d \n", i );
+						if( 0 == m_dwThreadUpgradeID )
+							break;
+						if( 0 <  m_MessageQueue.GetQueueCount() )
+							break;
+
+						if( 60 >= m_iPercentage )
+						{
+							m_iPercentage = 50 + i/3;
+							PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+						}
+					}
+				}
+				break;
+			case MESSAGE_SEND_UPGRADE_FILE_RESTART_WAIT:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Re-request file transfering" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+							(LPARAM)_UPGRADE_STATUS_FILE_RETRANSFERING );
+					}
+
+					// 네트워크 라인에서 보내어지고 있는 데이터를 처리 할때까지 대기
+					for( i=0; i<10; i++ )
+					{
+						Sleep(500);
+						TRACE( L"WAIT FOR ReTransfering %d \n", i );
+						if( 0 == m_dwThreadUpgradeID )
+							break;
+					}
+
+					// 대기할 동안 보내어진 메시지를 버린다. 
+					MESSAGE_QUEUE_ITEM	QueueItemTemp			= {0};
+					int					iQueuecount				= m_MessageQueue.GetQueueCount();
+					TRACE( L"Restart Queue Count = %d \n", iQueuecount );
+
+					for( i=0; i<iQueuecount; i++)
+					{
+						m_MessageQueue.GetFirstQueue( &QueueItemTemp );
+						if( MESSAGE_SEND_UPGRADE_FILE_RESTART_WAIT == QueueItemTemp.iCommandID )
+						{
+							// 받은 데이터 중 제일 마지막에 받은넘을 기억한다. 
+							m_MessageQueue.PopQueue( &QueueItem );
+						}
+
+						TRACE( L"Restart Queue Count = %d \n", m_MessageQueue.GetQueueCount() );
+					}
+
+					iQueuecount	= m_MessageQueue.GetQueueCount();
+					TRACE( L"Restart Queue Count = %d \n", iQueuecount );
+
+					MESSAGE_QUEUE_ITEM QueueItemUpgrade	= {0};
+					QueueItemUpgrade.iCommandID			= MESSAGE_SEND_UPGRADE_FILE_START;
+					QueueItemUpgrade.iArg1				= QueueItem.iArg1;
+					m_MessageQueue.PushQueue( QueueItemUpgrade );
+					SetEvent(m_hThreadUpgradeEvent);
+
+					TRACE( L"Restart Index = %d \n", QueueItemUpgrade.iArg1 );
+				}
+				break;
+			case MESSAGE_SEND_UPGRADE_FILE_START:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"File Transfering" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+							(LPARAM)_UPGRADE_STATUS_FILE_TRANSFERING );
+					}
+
+					if(!SendUpgradeFile(QueueItem.iArg1))
+					{
+						Disconnect();
+						wsprintf( m_szDisplayMessage, L"Failed (File open error)" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_OPEN_ERROR  );
+					}
+				}
+				break;
+			case MESSAGE_UPGRADE_COMPLETE	:
+				{
+					Disconnect();
+
+					PostMessage(m_hwndParent, 
+						WM_UPGRADE_MSG, 
+						MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+						(LPARAM)_UPGRADE_STATUS_COMPLETE );
+				}
+				break;
+			case MESSAGE_AUTHENTIFICATION_FAIL	:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Failed(Authentification)" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_AUTH_FAILED );
+					}
+
+					Disconnect();
+				}
+				break;
+			case MESSAGE_ERROR_INVALID_FIRMWARE	:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Failed(Invalid firmware)" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_INVALID_FIRMWARE );
+					}
+
+					Disconnect();
+				}
+				break;
+			case MESSAGE_ERROR_NO_MATCH_MODEL	:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Failed(No match model)" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_NO_MATCH_MODEL );
+					}
+
+					Disconnect();
+				}
+				break;
+			case MESSAGE_ERROR_NO_MATCH_VERSION	:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Failed(No match version)" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_NO_MATCH_VERSION );
+					}
+
+					Disconnect();
+				}
+				break;
+			case MESSAGE_ERROR_BAD_COMMAND:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Upgrade is working in other places" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_UPGRADE_IS_WORKING_IN_OTHER_PLACE );
+					}
+
+					Disconnect();
+				}
+				break;
+			case MESSAGE_ERROR_TIMEOUT:
+				{
+					if( NULL != m_hwndParent )
+					{
+						wsprintf( m_szDisplayMessage, L"Failed(Receive Timeout.)" );
+						PostMessage(m_hwndParent, 
+							WM_UPGRADE_MSG, 
+							MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+							(LPARAM)_UPGRADE_ERROR_RECEIVE_TIME_OUT );
+					}
+
+					Disconnect();
+				}
+				break;
+			case MESSAGE_ERROR_DISCONNECTED		:
+				{
+					if( 0 == m_iConnectCheckCount	&& 
+						0 == m_iVersionCheckCount	&&
+						0 == m_iLastError			)
+					{
+						if( NULL != m_hwndParent )
+						{
+							wsprintf( m_szDisplayMessage, L"Failed(Disconnected.)" );
+							PostMessage(m_hwndParent, 
+								WM_UPGRADE_MSG, 
+								MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+								(LPARAM)_UPGRADE_ERROR_DISCONNECTED );
+						}
+					}
+
+					Disconnect();
+				}
+				break;
+
+			}
+
+			if( 0 < m_MessageQueue.GetQueueCount() )
+				SetEvent(m_hThreadUpgradeEvent );
+		}
+
+		Sleep( 1 );
+	}
+
+	return bReturn;
+}
+
+DWORD WINAPI CUpgradeThreadTcp::ProcReceiveSocket  ( LPVOID _lpParam )
+{
+	SOCKET_MODE_INFO*		pModeInfo	= (SOCKET_MODE_INFO*)_lpParam;
+	CUpgradeThreadTcp*		pThis		= (CUpgradeThreadTcp*)pModeInfo->pThis;
+
+	pThis->funcReceive(pModeInfo->iSocketMode);
+
+	delete pModeInfo;
+	pModeInfo	= NULL;
+
+	TRACE( L"Thread Exit ProcReceiveSocket ///////////////////////////////////////////\n" );
+	return 0xBBBBBBBB;
+}
+
+
+BOOL CUpgradeThreadTcp::funcReceive(int	iSocketMode)
+{
+	int							nReceiverAddrLen	= sizeof(SOCKADDR_IN);
+	SOCKADDR_IN					ReceiverAddr;
+	UPGRADE_HEADER				UpgradeHeader;
+	UPGRADE_PROTOCOL_VERSION_RSP UpgradeVersionInfoRsp;
+	UPGRADE_AUTH_RSP			UpgradeRspAuth;
+	UPGRADE_FILE_STREAM_RSP		UpgradeFileStreamRsp;
+	UPGRADE_NAND_WRITE_RSP		UpgradeNandWriteRsp;
+	UPGRADE_SW_VERSION_RSP		UpgradeSWVersionRsp;
+	UPGRADE_START_INFO_RSP		UpgradeStartInfoRsp;
+	BOOL						bVersionReceive	= FALSE;
+	int							iProtocalVersion	= 0;
+	int							iUpgradeStatus		= 0;
+
+	SendProtocolVersion();
+
+	while( 0 < m_dwThreadSocketID )
+	{
+		nReceiverAddrLen	= 0;
+		if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof(UpgradeHeader), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+		{
+			MESSAGE_QUEUE_ITEM QueueItem	= {0};
+			QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+			QueueItem.iArg1				= WSAGetLastError();
+			m_MessageQueue.PushQueue( QueueItem );
+			SetEvent(m_hThreadUpgradeEvent);
+			m_dwThreadSocketID	= 0;
+
+			break;
+		}
+
+		if( FALSE == bVersionReceive )
+		{
+			if( MAGIC_CODE				== UpgradeHeader.magic_code		&&
+				PROTOCOL_TYPE_UPGRADE	== UpgradeHeader.protocol_type	)
+			{
+				switch ( UpgradeHeader.protocol_mode )
+				{
+				case _UPGRADE_RSP_PROTOCOL_VERSION:
+					{
+						if( sizeof(UPGRADE_PROTOCOL_VERSION_RSP) == UpgradeHeader.body_size )
+						{
+							if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeVersionInfoRsp, sizeof(UpgradeVersionInfoRsp), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+							{
+								MESSAGE_QUEUE_ITEM QueueItem	= {0};
+								QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+								QueueItem.iArg1				= WSAGetLastError();
+								m_MessageQueue.PushQueue( QueueItem );
+								SetEvent(m_hThreadUpgradeEvent);
+								m_dwThreadSocketID	= 0;
+								break;
+							}
+
+							if( _UPGRADE_RSP_MSG_PROTOCOL_VERSION_SUCCESS == UpgradeVersionInfoRsp.messages )
+							{
+								bVersionReceive		= TRUE;
+								iProtocalVersion	= UpgradeVersionInfoRsp.protocol_version;
+
+								if( _UPGRADESOCKET_MODE_UPGRADE == iSocketMode )
+								{
+									SendAuth();
+								}
+								else if( _UPGRADESOCKET_MODE_CHECKCOMPLETE == iSocketMode )
+								{
+									SendReqSWVersion();
+								}
+							}
+						}
+					}
+					break;
+				}
+			}
+		}
+		else
+		{
+			if( 1 == iProtocalVersion )
+			{
+				if( MAGIC_CODE				== UpgradeHeader.magic_code		&&
+					PROTOCOL_TYPE_UPGRADE	== UpgradeHeader.protocol_type	)
+				{
+					switch ( UpgradeHeader.protocol_mode )
+					{
+					case _UPGRADE_RSP_AUTH			:
+						{	
+							if( sizeof(UPGRADE_AUTH_RSP) == UpgradeHeader.body_size )
+							{
+								if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeRspAuth, sizeof(UpgradeRspAuth), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+								{
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+									QueueItem.iArg1				= WSAGetLastError();
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+									break;
+								}
+
+								if( _UPGRADE_RSP_MSG_AUTH_SUCCESS == UpgradeRspAuth.messages )
+								{
+									TRACE( L"Index = %d, Authentification SUCESS , protocol_version = %d\n", m_nIndex, iProtocalVersion );
+
+									if( _UPGRADESOCKET_MODE_UPGRADE == iSocketMode )
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID		= MESSAGE_SEND_REQ_UPGRADE_START;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+
+									}
+								}
+								else if( _UPGRADE_RSP_MSG_BADCOMMAND == UpgradeRspAuth.messages )
+								{
+									TRACE( L"Authentification Badcommand\n" );
+
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_ERROR_BAD_COMMAND;
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+								}
+								else
+								{
+									TRACE( L"Authentification FAIL\n" );
+
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_AUTHENTIFICATION_FAIL;
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+								}
+							}
+						}				
+						break;
+					case _UPGRADE_RSP_FILE_INFO		:				
+						{				
+							if( sizeof(UpgradeStartInfoRsp) == UpgradeHeader.body_size )
+							{
+								if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeStartInfoRsp, sizeof(UpgradeStartInfoRsp), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+								{
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+									QueueItem.iArg1				= WSAGetLastError();
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+									break;
+								}
+
+								switch ( UpgradeStartInfoRsp.messages )
+								{
+								case _UPGRADE_RSP_MSG_FILE_INFO_SUCCESS		:	
+									{
+										if( _UPGRADE_STATUS_FILE_TRANSFERING != iUpgradeStatus )
+										{
+											MESSAGE_QUEUE_ITEM QueueItem	= {0};
+											QueueItem.iCommandID	= MESSAGE_SEND_UPGRADE_FILE_START;
+											QueueItem.iArg1			= 0;
+											m_MessageQueue.PushQueue( QueueItem );
+											SetEvent(m_hThreadUpgradeEvent);
+
+
+											iUpgradeStatus	= _UPGRADE_STATUS_FILE_TRANSFERING;
+										}
+
+										TRACE( L"_UPGRADE_RSP_FILE_INFO_SUCCESS		\n" );	
+									}
+									break;
+								case _UPGRADE_RSP_MSG_NO_AUTHORITY			:	
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_ERROR_AUTHORITY;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+										TRACE( L"_UPGRADE_RSP_NO_AUTHORITY	\n" );	
+									}
+									break;
+								case _UPGRADE_RSP_MSG_BADCOMMAND			:	
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_ERROR_BAD_COMMAND;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+										TRACE( L"_UPGRADE_RSP_BADCOMMAND	\n" );	
+									}
+									break;
+								case _UPGRADE_RSP_MSG_NO_MATCH_MODEL		:	
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_ERROR_NO_MATCH_MODEL;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+										TRACE( L"_UPGRADE_RSP_NO_MATCH_MODEL	\n" );	
+									}
+									break;
+								case _UPGRADE_RSP_MSG_INVALID_FIRMWARE		:	
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_ERROR_INVALID_FIRMWARE;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+										TRACE( L"_UPGRADE_RSP_INVALID_FIRMWARE	\n" );	
+									}
+									break;
+								case _UPGRADE_RSP_MSG_MEMORY_IS_NOT_ENOUGH	:	
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_WAIT_FOR_REBOOT_NOT_ENOUGHMEMORY;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+										TRACE( L"MESSAGE_WAIT_FOR_REBOOT_NOT_ENOUGHMEMORY	\n" );	
+									}
+									break;
+								}
+							}
+						}				
+						break;
+					case _UPGRADE_RSP_FILE_STREAM	:				
+						{		
+							if( sizeof(UpgradeFileStreamRsp) == UpgradeHeader.body_size )
+							{
+								if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeFileStreamRsp, sizeof(UpgradeFileStreamRsp), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+								{
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+									QueueItem.iArg1				= WSAGetLastError();
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+									break;
+								}
+
+								switch( UpgradeFileStreamRsp.messages )
+								{
+								case _UPGRADE_RSP_MSG_BADCOMMAND:
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_ERROR_BAD_COMMAND;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+
+										TRACE( L"_UPGRADE_RSP_BADCOMMAND Index = %d	Message = %d\n" ,
+											UpgradeFileStreamRsp.index,
+											UpgradeFileStreamRsp.messages);
+
+									}
+									break;
+								case _UPGRADE_RSP_MSG_NO_MATCH_FILE_INDEX:
+									{
+										TRACE( L"_UPGRADE_RSP_NO_MATCH_FILE_INDEX Index = %d	Message = %d\n" ,
+											UpgradeFileStreamRsp.index,
+											UpgradeFileStreamRsp.messages);
+
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_SEND_UPGRADE_FILE_RESTART_WAIT;
+										QueueItem.iArg1			= UpgradeFileStreamRsp.index;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+
+										TRACE( L"_UPGRADE_RSP_NO_MATCH_FILE_INDEX Push Queue Count = %d \n", m_MessageQueue.GetQueueCount() );
+									}
+									break;
+								case _UPGRADE_RSP_MSG_FILE_RECEIVED_OK:
+									{
+										TRACE( L"_UPGRADE_RSP_FILE_RECEIVED_OK Index = %d	Message = %d\n" ,
+											UpgradeFileStreamRsp.index,
+											UpgradeFileStreamRsp.messages);
+									}
+									break;
+
+								case _UPGRADE_RSP_MSG_TIMEOUT:
+									{
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID	= MESSAGE_ERROR_TIMEOUT;
+										QueueItem.iArg1			= 0;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+										TRACE( L"_UPGRADE_RSP_TIMEOUT	\n" );	
+									}
+								}
+							}
+						}				
+						break;
+					case _UPGRADE_RSP_NAND_WRITE	:				
+						{
+							if( sizeof(UpgradeNandWriteRsp) == UpgradeHeader.body_size )
+							{
+								if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeNandWriteRsp, sizeof(UpgradeNandWriteRsp), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+								{
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+									QueueItem.iArg1				= WSAGetLastError();
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+									break;
+								}
+
+								switch( UpgradeNandWriteRsp.messages )
+								{
+								case _UPGRADE_RSP_MSG_FILE_NOT_EXIST:
+									{
+										TRACE( L"_UPGRADE_RSP_FILE_NOT_EXIST		\n" );
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID		= MESSAGE_WAIT_FOR_REBOOT_FILE_NOT_EXIST;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+									}
+									break;
+								case _UPGRADE_RSP_MSG_READY_TO_UPGRADE:
+									{
+										TRACE( L"_UPGRADE_RSP_READY_TO_UPGRADE	\n" );
+
+										if( _UPGRADE_STATUS_READY_UPGRADE != iUpgradeStatus )
+										{
+											if( NULL != m_hwndParent )
+											{
+												wsprintf( m_szDisplayMessage, L"Ready to upgrade" );
+												PostMessage(m_hwndParent, 
+													WM_UPGRADE_MSG, 
+													MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+													(LPARAM)_UPGRADE_STATUS_READY_UPGRADE );
+											}
+
+											MESSAGE_QUEUE_ITEM QueueItem	= {0};
+											QueueItem.iCommandID		= MESSAGE_WAIT_FOR_UPGRADE_READY;
+											m_MessageQueue.PushQueue( QueueItem );
+											SetEvent(m_hThreadUpgradeEvent);
+
+											iUpgradeStatus	= _UPGRADE_STATUS_READY_UPGRADE;
+										}
+									}
+									break;
+								case _UPGRADE_RSP_MSG_NO_MATCH_MODEL:
+									{
+										TRACE( L"_UPGRADE_RSP_NO_MATCH_MODEL		\n" );
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID		= MESSAGE_ERROR_NO_MATCH_MODEL;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+									}
+									break;
+								case _UPGRADE_RSP_MSG_INVALID_FIRMWARE:
+									{
+										TRACE( L"_UPGRADE_RSP_INVALID_FIRMWARE	\n" );
+										MESSAGE_QUEUE_ITEM QueueItem	= {0};
+										QueueItem.iCommandID		= MESSAGE_ERROR_INVALID_FIRMWARE;
+										m_MessageQueue.PushQueue( QueueItem );
+										SetEvent(m_hThreadUpgradeEvent);
+									}
+									break;
+								case _UPGRADE_RSP_MSG_UPGRADING_OS:
+									{
+//										TRACE( L"_UPGRADE_RSP_UPGRADING_OS		\n" );
+
+										if( _UPGRADE_STATUS_UPGRADE_OS != iUpgradeStatus )
+										{
+											if( NULL != m_hwndParent )
+											{
+												wsprintf( m_szDisplayMessage, L"Upgrade OS" );
+												PostMessage(m_hwndParent, 
+													WM_UPGRADE_MSG, 
+													MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+													(LPARAM)_UPGRADE_STATUS_UPGRADE_OS );
+											}
+
+											iUpgradeStatus	= _UPGRADE_STATUS_UPGRADE_OS;
+										}
+
+										if( NULL != m_hwndParent )
+										{
+											if( m_iPercentage != 60+( UpgradeNandWriteRsp.written_percent/5) )
+											{
+												m_iPercentage = 60+( UpgradeNandWriteRsp.written_percent/5);
+												PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+											}
+										}
+									}
+									break;
+								case _UPGRADE_RSP_MSG_UPGRADED_OS:
+									{
+										TRACE( L"_UPGRADE_RSP_UPGRADED_OS		\n" );
+
+										if( NULL != m_hwndParent )
+										{
+											if( m_iPercentage != 80 )
+											{
+												m_iPercentage = 80;
+												PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+											}
+										}
+									}
+									break;
+								case _UPGRADE_RSP_MSG_UPGRADING_APPLICATION:
+									{
+//										TRACE( L"_UPGRADE_RSP_UPGRADING_APPLICATION \n" );
+
+										if( _UPGRADE_STATUS_UPGRADE_APPLICATION != iUpgradeStatus )
+										{
+											if( NULL != m_hwndParent )
+											{
+												wsprintf( m_szDisplayMessage, L"Upgrade Application" );
+												PostMessage(m_hwndParent, 
+													WM_UPGRADE_MSG, 
+													MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+													(LPARAM)_UPGRADE_STATUS_UPGRADE_APPLICATION );
+											}
+											iUpgradeStatus	= _UPGRADE_STATUS_UPGRADE_APPLICATION;
+										}
+
+
+										if( NULL != m_hwndParent )
+										{
+											if( m_iPercentage != 80+( UpgradeNandWriteRsp.written_percent/5) )
+											{
+												m_iPercentage = 80+( UpgradeNandWriteRsp.written_percent/5);
+												PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+											}
+										}
+									}
+									break;
+								case _UPGRADE_RSP_MSG_UPGRADED_APPLICATION:
+									{
+										if( NULL != m_hwndParent )
+										{
+											if( m_iPercentage != 100 )
+											{
+												m_iPercentage	= 100;
+												PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+											}
+										}
+										TRACE( L"_UPGRADE_RSP_UPGRADED_APPLICATION \n" );
+									}
+									break;
+								case _UPGRADE_RSP_MSG_FINISHED_UPGRADE:
+									{
+										if( NULL != m_hwndParent )
+										{
+											if( m_iPercentage != 100 )
+											{
+												m_iPercentage	= 100;
+												PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+											}
+										}
+										TRACE( L"_UPGRADE_RSP_FINISHED_UPGRADE \n" );
+									}
+									break;
+								case _UPGRADE_RSP_MSG_SYSTEM_RESTARTING:
+									{
+										TRACE( L"_UPGRADE_RSP_SYSTEM_RESTARTING \n" );
+										if( NULL != m_hwndParent )
+										{
+											if( m_iPercentage != 100 )
+											{
+												m_iPercentage	= 100;
+												PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+											}
+										}
+										if( _UPGRADE_STATUS_RESTARTING != iUpgradeStatus )
+										{
+											if( NULL != m_hwndParent )
+											{
+												wsprintf( m_szDisplayMessage, L"Wait for rebooting" );
+												PostMessage(m_hwndParent, 
+													WM_UPGRADE_MSG, 
+													MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+													(LPARAM)_UPGRADE_STATUS_RESTARTING );
+											}
+
+											MESSAGE_QUEUE_ITEM QueueItem	= {0};
+											QueueItem.iCommandID		= MESSAGE_WAIT_FOR_REBOOT_VERSIONCHECK;
+											m_MessageQueue.PushQueue( QueueItem );
+											SetEvent(m_hThreadUpgradeEvent);
+
+											iUpgradeStatus = _UPGRADE_STATUS_RESTARTING;
+											m_dwThreadSocketID	= 0;
+										}
+									}
+									break;
+								}
+							}
+						}				
+						break;
+					case _UPGRADE_RSP_SW_VERSION	:				
+						{		
+							if( sizeof(UpgradeSWVersionRsp) == UpgradeHeader.body_size )
+							{
+								if( SOCKET_ERROR == recvfrom( m_pSockUpgrade, (char*)&UpgradeSWVersionRsp, sizeof(UpgradeSWVersionRsp), 0, (SOCKADDR*)&ReceiverAddr,&nReceiverAddrLen ) )
+								{
+									MESSAGE_QUEUE_ITEM QueueItem	= {0};
+									QueueItem.iCommandID		= MESSAGE_ERROR_DISCONNECTED;
+									QueueItem.iArg1				= WSAGetLastError();
+									m_MessageQueue.PushQueue( QueueItem );
+									SetEvent(m_hThreadUpgradeEvent);
+									m_dwThreadSocketID	= 0;
+									break;
+								}
+
+								switch( UpgradeSWVersionRsp.messages )
+								{
+								case _UPGRADE_RSP_MSG_SW_VERSION_SUCCESS:
+									{
+										TRACE( L"Index = %d, _UPGRADE_RSP_MSG_SW_VERSION_SUCCESS \n", m_nIndex );
+
+										if( 255 == m_UpgradeFileInfo.modelType )
+										{
+											if( NULL != m_hwndParent )
+											{
+												wsprintf( m_szDisplayMessage, L"Completed" );
+												PostMessage(m_hwndParent, 
+													WM_UPGRADE_MSG, 
+													MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+													(LPARAM)_UPGRADE_STATUS_COMPLETE );
+											}
+
+											MESSAGE_QUEUE_ITEM QueueItem	= {0};
+											QueueItem.iCommandID		= MESSAGE_UPGRADE_COMPLETE;
+											m_MessageQueue.PushQueue( QueueItem );
+											SetEvent(m_hThreadUpgradeEvent);
+											m_dwThreadSocketID	= 0;
+										}
+										else
+										{
+											if( 0 == strcmp( m_UpgradeFileInfo.szSWVersion, UpgradeSWVersionRsp.sw_version ) )
+											{
+												if( NULL != m_hwndParent )
+												{
+													wsprintf( m_szDisplayMessage, L"Completed" );
+													PostMessage(m_hwndParent, 
+														WM_UPGRADE_MSG, 
+														MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+														(LPARAM)_UPGRADE_STATUS_COMPLETE );
+												}
+
+												MESSAGE_QUEUE_ITEM QueueItem	= {0};
+												QueueItem.iCommandID		= MESSAGE_UPGRADE_COMPLETE;
+												m_MessageQueue.PushQueue( QueueItem );
+												SetEvent(m_hThreadUpgradeEvent);
+												m_dwThreadSocketID	= 0;
+											}										
+											else
+											{
+												TRACE( L"Index = %d, _UPGRADE_RSP_MSG_SW_VERSION_SUCCESS FAIL >>>>>>>>>>>>>>>>>>>>\n", m_nIndex );
+
+												MESSAGE_QUEUE_ITEM QueueItem	= {0};
+												QueueItem.iCommandID		= MESSAGE_ERROR_NO_MATCH_VERSION;
+												m_MessageQueue.PushQueue( QueueItem );
+												SetEvent(m_hThreadUpgradeEvent);
+
+												m_iLastError	= _UPGRADE_ERROR_NO_MATCH_VERSION;
+											}
+										}
+									}
+									break;
+								}
+							}
+						}				
+						break;
+					case _UPGRADE_RSP_STATUS		:				
+						{				
+							TRACE( L"_UPGRADE_RSP_STATUS Message = %d \n", UpgradeHeader.protocol_mode );
+						}
+						break;
+					case _UPGRADE_RSP_STOP			:				
+						{				
+							TRACE( L"_UPGRADE_RSP_STOP Message = %d \n", UpgradeHeader.protocol_mode );
+						}				
+						break;
+					}
+
+				}
+			}
+		}
+
+		Sleep( 2 );
+	}
+
+	return TRUE;
+}
+
+void CUpgradeThreadTcp::Disconnect()
+{
+	if(m_hDisocnnectLock)
+		WaitForSingleObject(m_hDisocnnectLock, INFINITE);
+	DWORD exitCode	= 0;
+
+	if( INVALID_SOCKET != m_pSockUpgrade )
+	{
+		closesocket( m_pSockUpgrade );
+		m_pSockUpgrade = INVALID_SOCKET;
+	}
+
+	if( NULL != m_hThreadSocket )
+	{
+		m_dwThreadSocketID	= 0;
+		if( WAIT_TIMEOUT == WaitForSingleObject( m_hThreadSocket, 10000 ) )
+		{
+			:: TerminateThread(m_hThreadSocket, exitCode);
+		}
+
+		if(m_hThreadSocket)
+		{
+			::CloseHandle(m_hThreadSocket);
+			m_hThreadSocket = NULL;
+		}
+	}
+	if(m_hDisocnnectLock)
+		ReleaseMutex(m_hDisocnnectLock);
+}
+
+ULONG CUpgradeThreadTcp::GetIPAddress( LPCTSTR strHostName )
+{
+	LPHOSTENT lphostent;
+	ULONG uAddr = INADDR_NONE;
+
+	if ( NULL != strHostName )
+	{
+#ifdef _UNICODE
+		char strHost[256] = { 0 };
+		WideCharToMultiByte(CP_ACP, 0, strHostName, -1, strHost, sizeof(strHost), NULL, NULL );
+#else
+		LPCTSTR strHost = strHostName;
+#endif
+		// Check for an Internet Protocol dotted address string
+		uAddr = inet_addr( strHost );
+
+		if ( (INADDR_NONE == uAddr) && (strcmp( strHost, "255.255.255.255" )) )
+		{
+			// It's not an address, then try to resolve it as a hostname
+			if ( lphostent = gethostbyname( strHost ) )
+				uAddr = *((ULONG *) lphostent->h_addr_list[0]);
+		}
+	}
+
+	return ntohl( uAddr );
+}
+
+BOOL CUpgradeThreadTcp::SendUpgradeFile(int iReqIndex)
+{
+	HANDLE				hFile				= NULL;
+	DWORD				dwReadSizeTotal		= 0;
+	DWORD				dwReadSize			= 0;
+	DWORD				dwFileTotalSize		= 0; 
+	DWORD				dwFileRequestSize	= 0; 
+	UPGRADE_FILE_STREAM	UpgradeFileStream;
+	UPGRADE_HEADER		UpgradeHeader;
+
+	hFile	= CreateFile(	m_sFilePath,
+							GENERIC_READ,
+							FILE_SHARE_READ,
+							NULL, 
+							OPEN_EXISTING, 
+							FILE_ATTRIBUTE_NORMAL ,
+							NULL );
+
+	if( INVALID_HANDLE_VALUE == hFile )
+	{
+		return FALSE;
+	}
+
+	dwFileTotalSize		= GetFileSize( hFile, 0 );
+	TRACE( L"File Size = %d \n", dwFileTotalSize );
+	dwFileRequestSize = dwFileTotalSize-1024*iReqIndex;
+	TRACE( L"Requset Size = %d \n", dwFileRequestSize );
+
+	LARGE_INTEGER	liMovePointerNew;
+	LARGE_INTEGER	liMovePointer;
+
+	liMovePointerNew.QuadPart	= 0;
+	liMovePointer.QuadPart		= iReqIndex;
+	liMovePointer.QuadPart		= liMovePointer.QuadPart*1024;
+
+	SetFilePointerEx( hFile, liMovePointer , &liMovePointerNew, FILE_BEGIN );
+
+	TRACE( L"Move Point %lld \n", liMovePointer.QuadPart );
+	TRACE( L"Move result Point %lld \n", liMovePointerNew.QuadPart );
+
+	int	iPercentage	= 0;
+	int iIndex		= 0;
+	int	iIndexCount	= (int)(dwFileTotalSize/1024);
+	MESSAGE_QUEUE_ITEM		QueueItem							= {0};
+	bool bReRequest	= false;
+
+	TRACE( L"Requset index Count = %d \n", iIndexCount );
+
+	for( iIndex=iReqIndex; iIndex<iIndexCount;iIndex++ )
+	{
+		if( 0 == m_dwThreadUpgradeID )
+			break;
+
+		if( 0 < m_MessageQueue.GetQueueCount() )
+		{
+			bReRequest	= TRUE;
+			TRACE( L"MessageQueue Count Error Queue Count = %d\n" ,  m_MessageQueue.GetQueueCount());
+			break;
+		}
+
+		UpgradeHeader.magic_code		= MAGIC_CODE;
+		UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+		UpgradeHeader.protocol_mode		= _UPGRADE_REQ_FILE_STREAM;
+		UpgradeHeader.body_size			= sizeof(UPGRADE_FILE_STREAM);
+
+		SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+
+		ReadFile( hFile, &UpgradeFileStream.data[0], 1024, &dwReadSize, NULL );
+		if( dwReadSize != 1024 )
+		{
+			DWORD dwCurrent	= ::SetFilePointer( hFile, 0, 0, FILE_CURRENT );
+			TRACE( L"Read Error index = %d, ReadSize = %d, Current Position = %d ", iIndex, dwReadSize, dwCurrent );
+		}
+
+		dwReadSizeTotal	+= dwReadSize;
+
+		UpgradeFileStream.index		= iIndex;
+		UpgradeFileStream.length	= dwReadSize;
+
+		SendData(m_pSockUpgrade, (char*)&UpgradeFileStream, sizeof(UpgradeFileStream) );
+
+		iPercentage	= (iIndex*100/iIndexCount)*2/5+10;
+
+		if( NULL != m_hwndParent )
+		{
+			if( m_iPercentage != iPercentage )
+			{
+				m_iPercentage = iPercentage ;
+				PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+			}
+
+			//TRACE( L"RequestIndex = %d, Index = %d, iIndexCount = %d, iPercentage = %d \n", iReqIndex, iIndex, iIndexCount, iPercentage );
+		}
+	}
+
+	TRACE( L"Send index Count = %d \n", iIndex );
+	TRACE( L"bReRequest = %d \n", bReRequest );
+	TRACE( L"Send Size = %d \n", dwReadSizeTotal );
+
+
+	if( 0 != m_dwThreadUpgradeID && FALSE == bReRequest )
+	{
+		if( dwFileRequestSize > dwReadSizeTotal )
+		{
+			UpgradeHeader.magic_code		= MAGIC_CODE;
+			UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+			UpgradeHeader.protocol_mode		= _UPGRADE_REQ_FILE_STREAM;
+			UpgradeHeader.body_size			= sizeof(UPGRADE_FILE_STREAM);
+
+			SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+
+			ReadFile( hFile, &UpgradeFileStream.data[0], dwFileRequestSize-dwReadSizeTotal ,&dwReadSize, NULL );
+			dwReadSizeTotal	+= dwReadSize;
+
+			UpgradeFileStream.index		= iIndex;
+			UpgradeFileStream.length	= dwReadSize;
+
+			SendData(m_pSockUpgrade, (char*)&UpgradeFileStream, sizeof(UpgradeFileStream) );
+		}
+
+		if( NULL != m_hwndParent )
+		{
+			if( m_iPercentage != 50 )
+			{
+				m_iPercentage = 50;
+				PostMessage( m_hwndParent, WM_UPGRADE_MSG, MAKEWPARAM(UPGRADE_PROGRESS, m_nIndex), m_iPercentage );
+			}
+		}
+	}
+
+	TRACE( L"SendUpgradeFile COMPLETE \n", iIndex );
+	TRACE( L"SendUpgradeFile Total Size = %d \n", dwReadSizeTotal );
+
+
+	CloseHandle(hFile);
+	hFile	= NULL;
+
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::SendReqSWVersion()
+{
+	UPGRADE_HEADER		UpgradeHeader;
+	UpgradeHeader.magic_code		= MAGIC_CODE;
+	UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+	UpgradeHeader.protocol_mode		= _UPGRADE_REQ_SW_VERSION;
+	UpgradeHeader.body_size			= 0;
+
+	SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+	TRACE( L"Send _UPGRADE_REQ_SW_VERSION\n" );
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::SendUpgradeReStart()
+{
+	UPGRADE_HEADER		UpgradeHeader;
+
+	UpgradeHeader.magic_code		= MAGIC_CODE;
+	UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+	UpgradeHeader.protocol_mode		= _UPGRADE_REQ_REBOOT;
+	UpgradeHeader.body_size			= sizeof(UPGRADE_START_INFO);
+
+	SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+
+	TRACE( L"Send _UPGRADE_REQ_RESTART\n" );
+
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::SendUpgradeStart()
+{
+	DWORD				dwReadSize;
+	DWORD				dwFileTotalSize; 
+	HANDLE				hFile;
+	UPGRADE_HEADER		UpgradeHeader;
+	UPGRADE_START_INFO	UpgradeStartInfo;
+
+	memset( &m_UpgradeFileInfo, 0, sizeof(m_UpgradeFileInfo) );
+
+	hFile	= CreateFile( m_sFilePath,
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL, 
+		OPEN_EXISTING, 
+		FILE_ATTRIBUTE_NORMAL ,
+		NULL );
+
+	if( INVALID_HANDLE_VALUE == hFile )
+	{
+		return FALSE;
+	}
+
+	dwFileTotalSize	= GetFileSize( hFile, 0 );
+
+
+	SetFilePointer( hFile, 0, 0, FILE_BEGIN );
+	ReadFile( hFile, &m_UpgradeFileInfo, sizeof(m_UpgradeFileInfo), &dwReadSize, NULL );
+
+	CloseHandle(hFile);
+	hFile	= NULL;
+
+
+	UpgradeHeader.magic_code		= MAGIC_CODE;
+	UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+	UpgradeHeader.protocol_mode		= _UPGRADE_REQ_START;
+	UpgradeHeader.body_size			= sizeof(UPGRADE_START_INFO);
+
+	SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+
+	UpgradeStartInfo.model_type	= m_UpgradeFileInfo.modelType;
+	UpgradeStartInfo.dsp_type	= m_UpgradeFileInfo.dsptype;
+	UpgradeStartInfo.oem_type	= m_UpgradeFileInfo.oemtype;
+	UpgradeStartInfo.length		= dwFileTotalSize;
+	USES_CONVERSION;
+	strcpy( UpgradeStartInfo.name		, W2A(m_sFileName) );
+
+	SendData( m_pSockUpgrade, (char*)&UpgradeStartInfo, sizeof( UpgradeStartInfo ) );
+	TRACE( L"Send _UPGRADE_REQ_START\n" );
+
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::SendProtocolVersion()
+{
+	UPGRADE_HEADER		UpgradeHeader;
+	UpgradeHeader.magic_code		= MAGIC_CODE;
+	UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+	UpgradeHeader.protocol_mode		= _UPGRADE_REQ_PROTOCOL_VERSION;
+	UpgradeHeader.body_size			= 0;
+
+	SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+
+	return TRUE;
+}
+
+
+BOOL CUpgradeThreadTcp::SendAuth()
+{
+	UPGRADE_HEADER		UpgradeHeader;
+	UpgradeHeader.magic_code		= MAGIC_CODE;
+	UpgradeHeader.protocol_type		= PROTOCOL_TYPE_UPGRADE;
+	UpgradeHeader.protocol_mode		= _UPGRADE_REQ_AUTH;
+	UpgradeHeader.body_size			= sizeof(UPGRADE_AUTH);
+
+	SendData( m_pSockUpgrade, (char*)&UpgradeHeader, sizeof( UpgradeHeader ) );
+
+	UPGRADE_AUTH		UpgradeAuth;
+
+	USES_CONVERSION;
+	strcpy( UpgradeAuth.id			, W2A(m_sUserName.GetBuffer(255)));
+	strcpy( UpgradeAuth.password		, W2A(m_sPassword.GetBuffer(255)));
+	SendData( m_pSockUpgrade, (char*)&UpgradeAuth, sizeof( UpgradeAuth ) );
+	m_sUserName.ReleaseBuffer();
+	m_sPassword.ReleaseBuffer();
+	TRACE( L"Send _UPGRADE_REQ_AUTH\n" );
+
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::ConnectForCheckComplete()
+{
+	Disconnect();
+
+	if( 1024 > m_nUpgradePort )
+	{
+		if( NULL != m_hwndParent )
+		{
+			wsprintf( m_szDisplayMessage, L"Failed(This version does not support.)" );
+			PostMessage(m_hwndParent, 
+				WM_UPGRADE_MSG, 
+				MAKEWPARAM(UPGRADE_ERROR, m_nIndex), 
+				(LPARAM)_UPGRADE_ERROR_THIS_VERSION_DOES_NOT_SUPPORT  );
+			return FALSE;
+		}
+	}
+
+
+	struct sockaddr_in	server;
+
+	server.sin_family		= AF_INET;
+	server.sin_port			= htons( (int)m_nUpgradePort );
+	server.sin_addr.s_addr	= htonl( GetIPAddress( m_sIPAddress ) );
+
+	m_pSockUpgrade = socket(AF_INET, SOCK_STREAM, 0 );	// SOCK_STREAM(TCP), SOCK_DGRAM(UDP)
+	if( m_pSockUpgrade == INVALID_SOCKET) 
+	{
+		TRACE( L"Client: Error Opening socket: Error %d\n", WSAGetLastError() );
+		Disconnect();
+		return FALSE;		
+	}
+
+	if( SOCKET_ERROR == connect( m_pSockUpgrade,(struct sockaddr*)&server, sizeof(server) ) ) 
+	{
+		TRACE( L"connect() failed: %d\n", WSAGetLastError() );
+
+		Disconnect();
+		return FALSE;		
+	} 
+
+	SOCKET_MODE_INFO*	pSocketMode	= new SOCKET_MODE_INFO;
+	pSocketMode->pThis			= this;
+	pSocketMode->iSocketMode	= _UPGRADESOCKET_MODE_CHECKCOMPLETE;
+
+
+	m_hThreadSocket = ::CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)ProcReceiveSocket, (LPVOID)pSocketMode, 0, &this->m_dwThreadSocketID );
+	if( NULL == m_hThreadSocket ) 
+	{
+		Disconnect();
+		return FALSE;		
+	}
+
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::StartUpgrade()
+{
+	if( NULL != m_hwndParent )
+	{
+		wsprintf( m_szDisplayMessage, L"Attempt to connect" );
+		PostMessage(m_hwndParent, 
+			WM_UPGRADE_MSG, 
+			MAKEWPARAM(UPGRADE_SETSTATUS, m_nIndex), 
+			(LPARAM)_UPGRADE_STATUS_CONNECTING );
+	}
+
+	MESSAGE_QUEUE_ITEM QueueItemUpgrade	= {0};
+	QueueItemUpgrade.iCommandID			= MESSAGE_CONNECT_FOR_START;
+	QueueItemUpgrade.iArg1				= 0;
+	m_MessageQueue.PushQueue( QueueItemUpgrade );
+	SetEvent(m_hThreadUpgradeEvent);
+	return TRUE;
+}
+
+BOOL CUpgradeThreadTcp::ConnectForStart()
+{
+	Disconnect();
+
+	struct sockaddr_in	server;
+
+	server.sin_family		= AF_INET;
+	server.sin_port			= htons( (int)m_nUpgradePort );
+	server.sin_addr.s_addr	= htonl( GetIPAddress( m_sIPAddress ) );
+
+	m_pSockUpgrade = socket(AF_INET, SOCK_STREAM, 0 );	// SOCK_STREAM(TCP), SOCK_DGRAM(UDP)
+	if( m_pSockUpgrade == INVALID_SOCKET) 
+	{
+		TRACE( L"Client: Error Opening socket: Error %d\n", WSAGetLastError() );
+
+		Disconnect();
+		return FALSE;		
+	}
+
+	if( SOCKET_ERROR == connect( m_pSockUpgrade,(struct sockaddr*)&server, sizeof(server) ) ) 
+	{
+		TRACE( L"connect() failed: %d\n", WSAGetLastError() );
+
+		Disconnect();
+		return FALSE;		
+	} 
+
+	SOCKET_MODE_INFO*	pSocketMode	= new SOCKET_MODE_INFO;
+	pSocketMode->pThis			= this;
+	pSocketMode->iSocketMode	= _UPGRADESOCKET_MODE_UPGRADE;
+
+
+	m_hThreadSocket = ::CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)ProcReceiveSocket, (LPVOID)pSocketMode, 0, &this->m_dwThreadSocketID );
+	if( NULL == m_hThreadSocket ) 
+	{
+		Disconnect();
+		return FALSE;		
+	}
+
+	return TRUE;
+}
+
+
+INT  CUpgradeThreadTcp::SendData       ( SOCKET _sock, char* _pbtSendPacket, int _iBytesToSend )
+{
+	int iSendBytes   = 0;
+	int iRemainBytes = 0;
+	int iSend        = 0;
+
+	iRemainBytes = _iBytesToSend ;
+
+	while( iRemainBytes > 0 )
+	{
+		iSend = send(_sock, (char*)(_pbtSendPacket + iSendBytes), _iBytesToSend, 0);
+		if( iSend <= 0 )
+		{
+			break;
+		}
+		iSendBytes    += iSend;
+		iRemainBytes  -= iSendBytes;
+	}
+
+	return iSendBytes;
+}
+
+BOOL CUpgradeThreadTcp::StopUpgrade()
+{
+	// end upgrading
+
+	Disconnect();
+
+	return TRUE;
+}
+
