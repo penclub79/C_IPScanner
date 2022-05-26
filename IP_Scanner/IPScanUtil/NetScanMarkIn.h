@@ -5,9 +5,17 @@ enum MARKIN_VERSION_PROTOCAL {
 	MARKIN_VERSION_2
 };
 
+const UINT32 SCAN_INFO_RECEIVE_BUFFER_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
+const UINT32 SCAN_ERR_NONE = 0x00000000;
+const UINT32 SCAN_ERR_SOCKET_OPT = 0x00000001;
+const UINT32 SCAN_ERR_BIND = 0x00000002;
+const UINT32 SCAN_ERR_MEMORY = 0x00000003;
+const UINT32 SCAN_ERR_RECV = 0x00000004;
+
 
 // pragma pack(push, 1) ~ pragma pack(pop) 범위까지 최소 단위는 1바이트로 표현된다.
-// 컴파일러에 의해서 다르지만 __attribute__((packed)) 이랑 같은 문법이다.
+// 컴파일러에 의해서 다르지만 __attribute__((packed)) 이랑 같은 문법이다.
+
 #pragma pack(push, 1)
 
 // Protocol Header
@@ -60,15 +68,27 @@ typedef struct _DEVICE_INFO
 
 class CNetScanMarkIn
 {
+
 public:
 	CNetScanMarkIn();
 	~CNetScanMarkIn(void);
 
 	BOOL StartScan();
+	BOOL StopScan();
+	void thrMarkInReceiver();
+
 protected:
+	
 
+	
 private:
-	HANDLE m_hScanThread;
-
-
+	HANDLE	m_hScanThread; // Thread Handle
+	DWORD	m_dwScanThreadID; // Tread ID
+	SOCKET	m_hSockReceive;
+	HWND	m_hNotifyWnd;
+	HWND	m_hCloseMsgRecvWnd;
+	LONG	m_lNotifyMsg;
+	LONG	m_lCloseMsg;
+	BOOL	m_bUserCancel;
+	
 };
