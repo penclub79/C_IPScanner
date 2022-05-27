@@ -176,6 +176,9 @@
     <ClInclude Include="NetScanMarkIn.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="NetCommon.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\checkboxes.bmp">

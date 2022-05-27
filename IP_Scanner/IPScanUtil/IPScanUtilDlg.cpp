@@ -23,7 +23,6 @@
 const UINT IPSCAN_WINDOW_MIN_WIDTH  = 890;
 const UINT IPSCAN_WINDOW_MIN_HEIGHT = 491;
 
-
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
 class CAboutDlg : public CDialog

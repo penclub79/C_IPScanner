@@ -7,8 +7,10 @@
 #include "afxwin.h"
 
 #include "NetDef_IPUTIL.h"
+#include "NetCommon.h"
 #include "NetScanVision.h"
 #include "NetScanMarkIn.h"
+
 #include "ConnectCheckThread.h"
 #include <vector>
 //#include "MyListCtrl.h"

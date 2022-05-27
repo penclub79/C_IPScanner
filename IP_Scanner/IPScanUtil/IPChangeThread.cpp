@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include <afxinet.h>
 #include "IPChangeThread.h"
+#include "NetCommon.h"
 #include "NetScanVision.h"
 
 CIPChangeThread::CIPChangeThread()

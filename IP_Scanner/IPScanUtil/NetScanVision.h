@@ -8,17 +8,17 @@
 //
 #pragma once
 
-enum VERSION_PROTOCAL {
-	VERSION_1	= 0x00,
-	VERSION_2	
-};
-
-const UINT32 SCAN_INFO_RECEIVE_BUFFER_SIZE	= 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
-const UINT32 SCAN_ERR_NONE					= 0x00000000;
-const UINT32 SCAN_ERR_SOCKET_OPT			= 0x00000001;
-const UINT32 SCAN_ERR_BIND					= 0x00000002;
-const UINT32 SCAN_ERR_MEMORY				= 0x00000003;
-const UINT32 SCAN_ERR_RECV					= 0x00000004;
+//enum VERSION_PROTOCAL {
+//	VERSION_1 = 0x00,
+//	VERSION_2
+//};
+//
+//const UINT32 SCAN_INFO_RECEIVE_BUFFER_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
+//const UINT32 SCAN_ERR_NONE = 0x00000000;
+//const UINT32 SCAN_ERR_SOCKET_OPT = 0x00000001;
+//const UINT32 SCAN_ERR_BIND = 0x00000002;
+//const UINT32 SCAN_ERR_MEMORY = 0x00000003;
+//const UINT32 SCAN_ERR_RECV = 0x00000004;
 
 // 2012-08-07 hkeins : tagSCAN_EXT_INFO_STRUCT = operation 시 메모리 삭제 버그 수정
 typedef struct tagSCAN_EXT_INFO_STRUCT

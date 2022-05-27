@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "NetCommon.h"
 #include "NetScanVision.h"
 #include "NetDef_IPUtil.h"
 #include <atlconv.h>

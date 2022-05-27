@@ -4,7 +4,11 @@
 #include "afxcmn.h"
 #include "afxwin.h"
 #include "OXMaskedEdit.h"
+
+#include "NetCommon.h"
 #include "NetScanVision.h"
+#include "NetScanMarkIn.h"
+
 #include "ProgressListCtrl.h"
 #include "IPChangeThread.h"
 #include "ListItem.h"

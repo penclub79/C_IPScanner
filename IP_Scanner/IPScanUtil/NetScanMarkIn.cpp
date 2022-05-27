@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "NetCommon.h"
 #include "NetScanMarkIn.h"
 #include "NetDef_IPUtil.h"
 #include <atlconv.h>
@@ -61,7 +62,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
 		if (m_hNotifyWnd)
 		{
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT1);
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT);
 			goto EXIT_LOOP;
 		}
 	}

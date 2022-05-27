@@ -157,6 +157,7 @@
     <ClInclude Include="IPScanUtilDlg.h" />
     <ClInclude Include="ListItem.h" />
     <ClInclude Include="MessageQueue.h" />
+    <ClInclude Include="NetCommon.h" />
     <ClInclude Include="NetDef_IPUTIL.h" />
     <ClInclude Include="NetScanMarkIn.h" />
     <ClInclude Include="NetScanVision.h" />

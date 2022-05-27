@@ -3,7 +3,9 @@
 
 #include "stdafx.h"
 #include "IPChangeDlg.h"
+#include "NetCommon.h"
 #include "NetScanVision.h"
+#include "NetScanMarkIn.h"
 
 IMPLEMENT_DYNAMIC(CIPChangeDlg, CDialog)
 
