@@ -1,8 +1,8 @@
-﻿빌드 시작: 2022-05-27 오전 10:32:32
+﻿빌드 시작: 2022-05-27 오후 5:58:45
      1>2 노드의 "D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트(Build 대상)입니다.
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\IP_Installer.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt IPChangeDlg.cpp
-         IPChangeDlg.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\IP_Installer.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt NetScanMarkIn.cpp
+         NetScanMarkIn.cpp
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.exe" /INCREMENTAL /NOLOGO iphlpapi.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.lib" /MACHINE:X86 /SAFESEH Debug\IPScanUtil.res
          Debug\ARP.obj
@@ -35,4 +35,4 @@
 
 빌드했습니다.
 
-경과 시간: 00:00:07.25
+경과 시간: 00:00:02.56

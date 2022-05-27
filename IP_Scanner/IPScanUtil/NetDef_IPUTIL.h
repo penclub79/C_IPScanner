@@ -21,6 +21,8 @@
 //#pragma pack(pop)
 
 #define VH_UDP_SCAN_PORT 64988
+#define MK_UDP_SCAN_PORT 9011
+#define MK_UDP_SCAN_PORT2 9010
 
 const BYTE PROTOCOL_TYPE_IPUTILITY				= 0x01;
 

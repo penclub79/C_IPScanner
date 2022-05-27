@@ -391,13 +391,17 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		msg.LoadString(IDS_STATUS_SCANNING);
 		SetStatusMsg(msg);
 
-		// start
-		m_pScannerVision->SetBindAddress(m_ulAcceptAddress);
-		m_pScannerVision->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
-		m_pScannerVision->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
+		//// Vision start
+		//m_pScannerVision->SetBindAddress(m_ulAcceptAddress);
+		//m_pScannerVision->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
+		//m_pScannerVision->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
 
-		// Vision Start
-		m_pScannerVision->StartScan();
+		// MarkIn Start
+		m_pScannerMarkIn->SetBindAddress(m_ulAcceptAddress);
+
+
+		//// Vision Start
+		//m_pScannerVision->StartScan();
 		// MarkIn Start
 		m_pScannerMarkIn->StartScan();
 
@@ -831,10 +835,18 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if( 0 == m_nScanAniCount )
 			{
-				if( VERSION_1 == m_iSelectVersion )
-					m_pScannerVision->SendScanRequest();
-				else if( VERSION_2 == m_iSelectVersion )
-					m_pScannerVision->SendScanRequestExt();
+				if (m_pScannerVision)
+				{
+					if (VERSION_1 == m_iSelectVersion)
+						m_pScannerVision->SendScanRequest();
+					else if (VERSION_2 == m_iSelectVersion)
+						m_pScannerVision->SendScanRequestExt();
+				}
+
+				if (m_pScannerMarkIn)
+				{
+					m_pScannerMarkIn->SendScanRequest();
+				}
 			}
 
 			int i;

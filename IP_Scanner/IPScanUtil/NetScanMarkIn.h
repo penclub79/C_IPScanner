@@ -5,7 +5,7 @@
 //	MARKIN_VERSION_2
 //};
 //
-//const UINT32 SCAN_INFO_RECEIVE_BUFFER_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
+//const UINT32 SCAN_INFO_m_pReceive_buffer_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
 //const UINT32 SCAN_ERR_NONE = 0x00000000;
 //const UINT32 SCAN_ERR_SOCKET_OPT = 0x00000001;
 //const UINT32 SCAN_ERR_BIND = 0x00000002;
@@ -65,6 +65,12 @@ typedef struct _DEVICE_INFO
 
 #pragma pack(pop)
 
+typedef struct _HEADER_BODY
+{
+	_PACKET_HEADER stPacket;
+	_DEVICE_INFO   stDevInfo;
+}HEADER_BODY;
+
 class CNetScanMarkIn
 {
 
@@ -75,7 +81,8 @@ public:
 	BOOL StartScan();
 	BOOL StopScan();
 	void thrMarkInReceiver();
-
+	void SetBindAddress(ULONG _ulBindAddress);
+	BOOL SendScanRequest();
 protected:
 	
 
@@ -88,6 +95,7 @@ private:
 	HWND	m_hCloseMsgRecvWnd;
 	LONG	m_lNotifyMsg;
 	LONG	m_lCloseMsg;
+	ULONG	m_ulBindAddress;
 	BOOL	m_bUserCancel;
-	
+	char*	m_pReceiverBuff;
 };

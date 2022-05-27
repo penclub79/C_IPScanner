@@ -134,7 +134,7 @@ CNetScanVision::CNetScanVision()
 	m_hScanThread		= NULL;
 	m_dwScanThreadID	= 0;
 	m_hSockReceive		= 0;
-	receive_buffer		= NULL;
+	m_pReceive_buffer		= NULL;
 	//m_hSockSend = 0;
 	m_ulBindAddress     = 0;
 }
@@ -333,16 +333,16 @@ void CNetScanVision::thrReceiver()
 	SOCKADDR_IN SenderAddr;
 	int nSenderAddrLen = sizeof(SOCKADDR_IN);
 
-	receive_buffer = new char[SCAN_INFO_RECEIVE_BUFFER_SIZE]; // allocate 64 k bytes buffer
-	if(receive_buffer == NULL)
+	m_pReceive_buffer = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
+	if(m_pReceive_buffer == NULL)
 	{
 		if(m_hNotifyWnd)
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
 		goto EXIT_LOOP;
 	}
 
-	memset(receive_buffer, 0, SCAN_INFO_RECEIVE_BUFFER_SIZE);
-	HEADER2*			pReceive		= (HEADER2*)receive_buffer;
+	memset(m_pReceive_buffer, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
+	HEADER2*			pReceive		= (HEADER2*)m_pReceive_buffer;
 	IPUTIL_INFO*		pInfo			= NULL;
 	IPUTIL_INFO2*		pInfo2			= NULL;
 	SCAN_INFO*			pScanInfo		= NULL;
@@ -364,7 +364,8 @@ void CNetScanVision::thrReceiver()
 
 	while( m_dwScanThreadID )
 	{
-		if(recvfrom(m_hSockReceive, receive_buffer, SCAN_INFO_RECEIVE_BUFFER_SIZE, 0, (SOCKADDR*)&SenderAddr,&nSenderAddrLen) == SOCKET_ERROR)
+		
+		if(recvfrom(m_hSockReceive, m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&SenderAddr,&nSenderAddrLen) == SOCKET_ERROR)
 		{
 			DWORD dwLastError = WSAGetLastError();
 			TRACE("recvfrom error = %d\n", dwLastError);
@@ -378,8 +379,8 @@ void CNetScanVision::thrReceiver()
 			// parsing and update list
 			if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO_EXT)
 			{
-				pInfo		= (IPUTIL_INFO *)(receive_buffer+sizeof(HEADER2));
-				pInfo2		= (IPUTIL_INFO2*)(receive_buffer+sizeof(HEADER2));
+				pInfo		= (IPUTIL_INFO *)(m_pReceive_buffer + sizeof(HEADER2));
+				pInfo2		= (IPUTIL_INFO2*)(m_pReceive_buffer + sizeof(HEADER2));
 
 				pScanInfo	= new SCAN_INFO;
 				if ( pScanInfo ) 
@@ -393,7 +394,7 @@ void CNetScanVision::thrReceiver()
 					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
 					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
 					pScanInfo->version      = VERSION_2; // IPUTIL version 1
-
+					 
 					if(pReceive->body_size >= sizeof(IPUTIL_INFO2)) // read extend field
 					{
 						pScanInfo->cIsDHCP      = pInfo2->cIsDHCP;
@@ -410,7 +411,7 @@ void CNetScanVision::thrReceiver()
 						i = 0;
 						nItemCount = 0;
 						lpCapt     = NULL;
-						pExtField = (BYTE*)(receive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // set pointer
+						pExtField = (BYTE*)(m_pReceive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // set pointer
 						nToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
 
 						while(nToRead > 0)
@@ -423,7 +424,7 @@ void CNetScanVision::thrReceiver()
 						}
 
 						// read data into array
-						pExtField = (BYTE*)(receive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // reset pointer
+						pExtField = (BYTE*)(m_pReceive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // reset pointer
 						if(nItemCount > 0)
 						{
 							nToRead = pReceive->body_size - (sizeof(HEADER2) + sizeof(IPUTIL_INFO2));
@@ -491,8 +492,8 @@ void CNetScanVision::thrReceiver()
 			{
 				//TRACE("Response received\n");
 				// 정보를 찍어준다
-				pInfo   = (IPUTIL_INFO *)(receive_buffer+sizeof(HEADER2));
-				pInfo2  = (IPUTIL_INFO2*)(receive_buffer+sizeof(HEADER2));
+				pInfo   = (IPUTIL_INFO *)(m_pReceive_buffer+sizeof(HEADER2));
+				pInfo2  = (IPUTIL_INFO2*)(m_pReceive_buffer+sizeof(HEADER2));
 
 /*				TRACE("1IP  : %s\n",			pInfo->szIPAddress);
 				TRACE("Gateway: %s\n",		pInfo->szGatewayIP);
@@ -535,10 +536,10 @@ EXIT_LOOP:
 	m_hSockReceive = NULL;
 	//m_hSockSend = NULL;
 
-	if(receive_buffer)
+	if(m_pReceive_buffer)
 	{
-		delete[] receive_buffer;
-		receive_buffer = NULL;
+		delete[] m_pReceive_buffer;
+		m_pReceive_buffer = NULL;
 	}
 
 	if(m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))

@@ -13,7 +13,7 @@
 //	VERSION_2
 //};
 //
-//const UINT32 SCAN_INFO_RECEIVE_BUFFER_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
+//const UINT32 SCAN_INFO_m_pReceive_buffer_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
 //const UINT32 SCAN_ERR_NONE = 0x00000000;
 //const UINT32 SCAN_ERR_SOCKET_OPT = 0x00000001;
 //const UINT32 SCAN_ERR_BIND = 0x00000002;
@@ -186,7 +186,7 @@ public:
 protected:
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
 
-	char  *receive_buffer; // allocate 64 kbytes memory
+	char*  m_pReceive_buffer; // allocate 64 kbytes memory
 	// 2010-08-26 hkeins : scanner routine
 	SOCKET m_hSockReceive;
 	CWnd*  m_pScanDlg; // scan wait dialog
