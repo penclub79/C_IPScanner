@@ -78,16 +78,16 @@ public:
 	CNetScanMarkIn();
 	~CNetScanMarkIn(void);
 
-	BOOL StartScan();
-	BOOL StopScan();
-	void thrMarkInReceiver();
-	void SetBindAddress(ULONG _ulBindAddress);
-	BOOL SendScanRequest();
-
+	BOOL	StartScan();
+	BOOL	StopScan();
+	void	thrMarkInReceiver();
+	void	SetBindAddress(ULONG _ulBindAddress);
+	void	SetNotifyWindow(HWND hWnd, LONG msg);
+	void	SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/);
+	BOOL	SendScanRequest();
 protected:
 	
 
-	
 private:
 	HANDLE	m_hScanThread;		// Thread Handle
 	DWORD	m_dwScanThreadID;	// Tread ID
@@ -101,4 +101,6 @@ private:
 	char*	m_pReceiverBuff;
 
 	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
+	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
+
 };

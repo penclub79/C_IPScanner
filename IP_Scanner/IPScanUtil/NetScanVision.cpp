@@ -22,6 +22,8 @@ int   tagSCAN_STRUCT::_PrintValues()
 
 	return 0;
 }
+
+// Ä¸¼Ç NAME ´Þ±â
 CString tagSCAN_STRUCT::_ReadValue(WCHAR* szCaption)
 {
 	CString str;
@@ -364,7 +366,6 @@ void CNetScanVision::thrReceiver()
 
 	while( m_dwScanThreadID )
 	{
-		
 		if(recvfrom(m_hSockReceive, m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&SenderAddr,&nSenderAddrLen) == SOCKET_ERROR)
 		{
 			DWORD dwLastError = WSAGetLastError();

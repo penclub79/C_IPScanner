@@ -391,17 +391,18 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		msg.LoadString(IDS_STATUS_SCANNING);
 		SetStatusMsg(msg);
 
-		//// Vision start
-		//m_pScannerVision->SetBindAddress(m_ulAcceptAddress);
-		//m_pScannerVision->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
-		//m_pScannerVision->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
+		// Vision start
+		m_pScannerVision->SetBindAddress(m_ulAcceptAddress);
+		m_pScannerVision->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
+		m_pScannerVision->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
 
 		// MarkIn Start
 		m_pScannerMarkIn->SetBindAddress(m_ulAcceptAddress);
+		m_pScannerMarkIn->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
+		m_pScannerMarkIn->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
 
-
-		//// Vision Start
-		//m_pScannerVision->StartScan();
+		// Vision Start
+		m_pScannerVision->StartScan();
 		// MarkIn Start
 		m_pScannerMarkIn->StartScan();
 
@@ -460,6 +461,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn()
 		_Lock();
 		// delete current item for validation
 		SCAN_INFO* pInfo = NULL;
+
 		// MAC 주소를 리스트에서 찾아 있으면 삭제해준다
 		for(i = 0; i < m_cSvrList.GetItemCount(); i++)
 		{
@@ -835,18 +837,33 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if( 0 == m_nScanAniCount )
 			{
-				if (m_pScannerVision)
+				if (VERSION_1 == m_iSelectVersion)
 				{
-					if (VERSION_1 == m_iSelectVersion)
+					if (m_pScannerVision)
+					{
 						m_pScannerVision->SendScanRequest();
-					else if (VERSION_2 == m_iSelectVersion)
+					}
+
+					if (m_pScannerMarkIn)
+					{
+						//m_pScannerMarkIn->SendScanRequest();
+					}
+					
+					
+				}						
+				else if (VERSION_2 == m_iSelectVersion)
+				{
+					if (m_pScannerVision)
+					{
 						m_pScannerVision->SendScanRequestExt();
+					}
+
+					if (m_pScannerMarkIn)
+					{
+						//m_pScannerMarkIn->SendScanRequestExt();
+					}
 				}
 
-				if (m_pScannerMarkIn)
-				{
-					m_pScannerMarkIn->SendScanRequest();
-				}
 			}
 
 			int i;

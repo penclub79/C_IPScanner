@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "NetCommon.h"
+#include "NetScanVision.h"
 #include "NetScanMarkIn.h"
 #include "NetDef_IPUtil.h"
 #include <atlconv.h>
@@ -76,13 +77,32 @@ BOOL CNetScanMarkIn::StopScan()
 	return TRUE;
 }
 
+void CNetScanMarkIn::WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString)
+{
+	USES_CONVERSION;
+	wcscpy_s(wszStrig, nMaxBufferLen, A2W(aszString));
+}
+
 // Thread -> MarkIn Data Receiver
 void CNetScanMarkIn::thrMarkInReceiver()
 {
 	sockaddr_in		ReceiverAddr;
-	BOOL			bEnable			= TRUE;
-	int				iSenderAddrLen	= 0;
-	HEADER_BODY*	pReceive = NULL;
+	BOOL			bEnable				= TRUE;
+	int				iSenderAddrLen		= 0;
+	HEADER_BODY*	pReceive			= NULL;
+	IPUTIL_INFO*	pInfo				= NULL;
+	IPUTIL_INFO2*	pInfo2				= NULL;
+	SCAN_INFO*		pScanInfo			= NULL;
+	TCHAR			awszIp[30]			= { 0 };
+	TCHAR			awszSubnet[30]		= { 0 };
+	TCHAR			awszGateway[30]		= { 0 };
+	TCHAR			awszMac[40]			= { 0 };
+	TCHAR			awszModelName[128]	= { 0 };
+	CString			strIp;
+	
+	
+
+
 
 	// IPv4, UDP 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
@@ -123,12 +143,10 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
 		}
 	}
-	
 	m_pReceiverBuff = new char[sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO)];
 	memset(m_pReceiverBuff, 0, sizeof(char)* sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO));
 
 	pReceive = (HEADER_BODY*)m_pReceiverBuff;
-	//pReceive->stPacket.uiCommand = 0x00001001;
 
 	// Recev Data Thread live
 	while (m_dwScanThreadID)
@@ -141,10 +159,8 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			{
 				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV);
 			}
-			
 			goto EXIT_LOOP;
 		}
-
 
 		if (m_pReceiverBuff)
 		{
@@ -154,16 +170,45 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			// Data Respose Success
 			if (MARKIN_PACKET_RSP_HEADER == pReceive->stPacket.uiCommand)
 			{
+				pInfo =	(IPUTIL_INFO*)(m_pReceiverBuff + sizeof(HEADER2));
+				pInfo2 = (IPUTIL_INFO2*)(m_pReceiverBuff + sizeof(HEADER2));
 				
+				if (pReceive)
+				{
+					// Model Name
+					
 
+					// IP
+					strIp.Format(_T("%d.%d.%d.%d"), pReceive->stDevInfo.stNetwork_info.uszIp[0], pReceive->stDevInfo.stNetwork_info.uszIp[1], pReceive->stDevInfo.stNetwork_info.uszIp[2], pReceive->stDevInfo.stNetwork_info.uszIp[3]);
+					wsprintf(awszIp, strIp.GetBuffer(0));
+					WideCharToMultiByte(CP_ACP, 0, awszIp, -1, pInfo->szIPAddress, 16, NULL, NULL);
 
+					// Subnet
+					strIp.Format(_T("%d.%d.%d.%d"), pReceive->stDevInfo.stNetwork_info.uszSubnet[0], pReceive->stDevInfo.stNetwork_info.uszSubnet[1], pReceive->stDevInfo.stNetwork_info.uszSubnet[2], pReceive->stDevInfo.stNetwork_info.uszSubnet[3]);
+					wsprintf(awszSubnet, strIp.GetBuffer(0));
+
+					// Gateway
+					strIp.Format(_T("%d.%d.%d.%d"), pReceive->stDevInfo.stNetwork_info.uszGateway[0], pReceive->stDevInfo.stNetwork_info.uszGateway[1], pReceive->stDevInfo.stNetwork_info.uszGateway[2], pReceive->stDevInfo.stNetwork_info.uszGateway[3]);
+					wsprintf(awszGateway, strIp.GetBuffer(0));
+					WideCharToMultiByte(CP_ACP, 0, awszGateway, strIp.GetLength(), pInfo->szGatewayIP, 16, NULL, NULL);
+
+					// MAC
+					WideCharToMultiByte(CP_ACP, 0, awszMac, strIp.GetLength(), pInfo->szMACAddress, 20, NULL, NULL);
+
+					/*WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
+					WideCopyStringFromAnsi(pScanInfo->szMAC, 30, pInfo->szMACAddress);*/
+
+					/*pScanInfo->nStreamPort	= pInfo->dwStreamPort;
+					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;*/
+					//pScanInfo->version		= VERSION_2; // IPUTIL version 1
+
+					
+				}
 			}
 
 		}
 
 	}
-
-
 
 
 
@@ -194,6 +239,17 @@ BOOL CNetScanMarkIn::SendScanRequest()
 	return TRUE;
 }
 
+void CNetScanMarkIn::SetNotifyWindow(HWND hWnd, LONG msg)
+{
+	m_hNotifyWnd = hWnd;
+	m_lNotifyMsg = msg;
+}
+
+void CNetScanMarkIn::SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/)
+{
+	m_hCloseMsgRecvWnd = hWnd;
+	m_lCloseMsg = msg;
+}
 
 
 void CNetScanMarkIn::SetBindAddress(ULONG _ulBindAddress)
