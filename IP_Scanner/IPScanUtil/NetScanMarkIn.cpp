@@ -83,8 +83,6 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	BOOL			bEnable			= TRUE;
 	int				iSenderAddrLen	= 0;
 	HEADER_BODY*	pReceive = NULL;
-	IPUTIL_INFO*	pInfo			= NULL;
-	IPUTIL_INFO2*	pInfo2			= NULL;
 
 	// IPv4, UDP 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
@@ -102,7 +100,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 	// 서버 주소정보 초기화
 	ReceiverAddr.sin_family			= AF_INET;
-	ReceiverAddr.sin_port			= htons(9011);
+	ReceiverAddr.sin_port			= htons(MK_UDP_RSP_PORT);
 	ReceiverAddr.sin_addr.s_addr	= m_ulBindAddress;
 
 	// 서버 주소정보 할당
@@ -150,7 +148,17 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 		if (m_pReceiverBuff)
 		{
-			TRACE("%s\n", m_pReceiverBuff);
+			// Data Little Endian -> Big Endian all Change
+			ToBigEndian(pReceive);
+
+			// Data Respose Success
+			if (MARKIN_PACKET_RSP_HEADER == pReceive->stPacket.uiCommand)
+			{
+				
+
+
+			}
+
 		}
 
 	}
@@ -191,4 +199,24 @@ BOOL CNetScanMarkIn::SendScanRequest()
 void CNetScanMarkIn::SetBindAddress(ULONG _ulBindAddress)
 {
 	m_ulBindAddress = _ulBindAddress;
+}
+
+// 빅엔디언 치환 함수
+void CNetScanMarkIn::ToBigEndian(HEADER_BODY* _pstReceiveData)
+{
+	HEADER_BODY*	pstHeaderBody	= NULL;
+	int				iByte[4]		= { 0 };
+	int				iCommandVal		= 0;
+	
+	pstHeaderBody = _pstReceiveData;
+	
+	iByte[0] = ((pstHeaderBody->stPacket.uiCommand >> 24) & 0xff);
+	iByte[1] = ((pstHeaderBody->stPacket.uiCommand >> 16) & 0xff);
+	iByte[2] = ((pstHeaderBody->stPacket.uiCommand >> 8) & 0xff);
+	iByte[3] = ((pstHeaderBody->stPacket.uiCommand >> 0) & 0xff);
+
+	pstHeaderBody->stPacket.uiCommand = ((unsigned int)iByte[0]) |
+		((unsigned int)iByte[1] << 8) |
+		((unsigned int)iByte[2] << 16) |
+		((unsigned int)iByte[3] << 24);
 }

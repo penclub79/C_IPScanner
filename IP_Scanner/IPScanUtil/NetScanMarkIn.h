@@ -83,6 +83,7 @@ public:
 	void thrMarkInReceiver();
 	void SetBindAddress(ULONG _ulBindAddress);
 	BOOL SendScanRequest();
+
 protected:
 	
 
@@ -98,4 +99,6 @@ private:
 	ULONG	m_ulBindAddress;
 	BOOL	m_bUserCancel;
 	char*	m_pReceiverBuff;
+
+	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
 };
