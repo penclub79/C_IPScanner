@@ -352,7 +352,7 @@ void CNetScanVision::thrReceiver()
 	int					nToRead			= pReceive->body_size - sizeof(IPUTIL_INFO2);
 	int					nItemCount		= 0;
 	int					i;
-
+	
 	typedef struct tagCAPTION_HEADER
 	{
 		char szCaption[32];
@@ -363,7 +363,7 @@ void CNetScanVision::thrReceiver()
 	SCAN_EXT_INFO* pExtInfos = NULL;
 
 	USES_CONVERSION;
-
+	
 	while( m_dwScanThreadID )
 	{
 		if(recvfrom(m_hSockReceive, m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&SenderAddr,&nSenderAddrLen) == SOCKET_ERROR)

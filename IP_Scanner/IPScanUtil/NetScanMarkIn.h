@@ -67,8 +67,9 @@ typedef struct _DEVICE_INFO
 
 typedef struct _HEADER_BODY
 {
-	_PACKET_HEADER stPacket;
-	_DEVICE_INFO   stDevInfo;
+	_PACKET_HEADER	stPacket;
+	_DEVICE_INFO	stDevInfo;
+	DWORD			ulBodySize;
 }HEADER_BODY;
 
 class CNetScanMarkIn
@@ -102,5 +103,8 @@ private:
 
 	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
+	void ConversionNetInfo(unsigned char* _upszIp, TCHAR* _pwszVal);
+	void ConversionMac(char* _pszMac, TCHAR* _pwszVal);
+	void UChartoTChar(unsigned char* _puszStr, TCHAR* _pwszVal);
 
 };
