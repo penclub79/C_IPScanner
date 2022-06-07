@@ -306,7 +306,7 @@ BOOL CNetScanMarkIn::SendScanRequest()
 	char			szSendBuff[12]	= { 0 };
 	int				aiByte[4]		= { 0 };
 	BOOL			bEnable			= FALSE;
-	PACKET_HEADER*	pSender = NULL;
+	PACKET_HEADER*	pSender			= NULL;
 
 	stSockaddr.sin_family = AF_INET;
 	stSockaddr.sin_port = htons(MK_UDP_REQ_PORT);

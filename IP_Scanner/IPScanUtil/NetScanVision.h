@@ -69,7 +69,7 @@ typedef struct tagSCAN_STRUCT
 	WCHAR	szGateWay[30];
 	int		nStreamPort;
 	int		nHTTPPort;
-	//int		version;
+	int		version;
 	char	cIsDHCP; // 0 - static, 1 - DHCP
 	WCHAR	szSubnetMask[30];
 	int		nExtraFieldCount;
@@ -96,7 +96,7 @@ typedef struct tagSCAN_STRUCT
 		wcscpy_s(this->szSubnetMask,  30, src.szSubnetMask);
 		this->nStreamPort	= src.nStreamPort;
 		this->nHTTPPort		= src.nHTTPPort;
-		//this->version		= src.version;
+		this->version		= src.version;
 		this->cIsDHCP		= src.cIsDHCP;
 		this->tReceiveTime	= src.tReceiveTime;
 
@@ -129,7 +129,7 @@ typedef struct tagSCAN_STRUCT
 
 		if( this->nStreamPort			!= src.nStreamPort		)			return FALSE;
 		if( this->nHTTPPort				!= src.nHTTPPort		)			return FALSE;
-		//if( this->version				!= src.version			)			return FALSE;
+		if( this->version				!= src.version			)			return FALSE;
 		if( this->cIsDHCP				!= src.cIsDHCP			)			return FALSE;
 		if( this->nExtraFieldCount		!= src.nExtraFieldCount	)			return FALSE;
 

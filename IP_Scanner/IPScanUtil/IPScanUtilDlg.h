@@ -60,7 +60,7 @@ protected:
 	CButton m_btnChangeIP;
 	CButton m_btnClearList;
 	CButton m_btnUpgrade;
-	//CComboBox m_cmbProtocol;
+	CComboBox m_cmbProtocol;
 	CComboBox m_cmbNetAdaptor;
 
 	/////////////////// Scanning Class 
@@ -149,4 +149,5 @@ public:
 	afx_msg LRESULT OnSortRequest(WPARAM wParam, LPARAM lParam);
 	
 	afx_msg void OnCbnSelchangeAdaptorCmb();
+	afx_msg void OnCbnSelchangeProtocalCombo();
 };

@@ -136,6 +136,7 @@ void CIPScanUtilDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CLEAR_BTN		, m_btnClearList);
 	DDX_Control(pDX, IDC_CHANGEIP_BTN	, m_btnChangeIP);
 	DDX_Control(pDX, IDC_UPGRADE_BTN	, m_btnUpgrade);
+	//DDX_Control(pDX, IDC_PROTOCAL_COMBO	, m_cmbProtocol);
 	DDX_Control(pDX, IDC_ADAPTOR_CMB	, m_cmbNetAdaptor);
 }
 
@@ -159,7 +160,7 @@ BEGIN_MESSAGE_MAP(CIPScanUtilDlg, CDialog)
 	ON_NOTIFY(NM_CLICK, IDC_SVR_LIST,			&CIPScanUtilDlg::OnNMClickSvrList)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SVR_LIST,	&CIPScanUtilDlg::OnLvnItemchangedSvrList)
 	ON_NOTIFY(NM_DBLCLK, IDC_SVR_LIST,			&CIPScanUtilDlg::OnNMDblclkSvrList3)
-	//ON_CBN_SELCHANGE(IDC_PROTOCAL_COMBO,		&CIPScanUtilDlg::OnCbnSelchangeProtocalCombo)
+	ON_CBN_SELCHANGE(IDC_PROTOCAL_COMBO,		&CIPScanUtilDlg::OnCbnSelchangeProtocalCombo)
 	ON_BN_CLICKED(IDOK,							&CIPScanUtilDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL,						&CIPScanUtilDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_SCAN_BTN,					&CIPScanUtilDlg::OnBnClickedScanBtn)
@@ -171,6 +172,7 @@ BEGIN_MESSAGE_MAP(CIPScanUtilDlg, CDialog)
 	ON_BN_CLICKED(IDC_UPGRADE_BTN,				&CIPScanUtilDlg::OnBnClickedUpgradeBtn)
 	ON_BN_CLICKED(IDC_FACTORY_BTN,				&CIPScanUtilDlg::OnBnClickedFactoryBtn)
 	ON_CBN_SELCHANGE(IDC_ADAPTOR_CMB,			&CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb)
+	//ON_COMMAND(IDC_PROTOCAL_COMBO, &CIPScanUtilDlg::OnProtocalCombo)
 END_MESSAGE_MAP()
 
 
@@ -307,7 +309,7 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 //	//Model Combo에 Model 추가
 //	//m_cmbProtocol.ResetContent();
 //	/*m_cmbProtocol.AddString(L"Version1");*/
-//	//m_cmbProtocol.AddString(L"Version2");
+//	m_cmbProtocol.AddString(L"Version2");
 //
 //	m_cmbProtocol.SetCurSel(m_iSelectVersion);
 //}
@@ -407,6 +409,7 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 
 		m_nScanAniCount = 0;
 		SetTimer(TM_SCANNING_ANI	, 1000		, NULL);
+	
 	}
 	else
 	{
@@ -445,7 +448,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn()
 		dlg.m_strGatewayAddress = pInfo->szGateWay;
 		dlg.m_nStreamPort		= pInfo->nStreamPort;
 		dlg.m_nHTTPPort			= pInfo->nHTTPPort;
-		//dlg.m_nVersion			= pInfo->version;
+		dlg.m_nVersion			= pInfo->version;
 		dlg.m_strSubnetMask		= pInfo->szSubnetMask;
 		dlg.m_nIsDHCP			= pInfo->cIsDHCP;
 	}
@@ -455,7 +458,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn()
 		dlg.m_nHTTPPort			= 80;
 		dlg.m_nIsDHCP			= TRUE;
 		dlg.m_strSubnetMask		= L"0.0.0.0";
-		//dlg.m_nVersion			= VERSION_2;
+		dlg.m_nVersion			= VERSION_2;
 	}
 
 	if(dlg.DoModal() == IDOK)
@@ -494,6 +497,10 @@ void CIPScanUtilDlg::OnBnClickedClose()
 	// Stop scan before close dialog
 	if (m_pScannerVision)
 		m_pScannerVision->StopScan();
+
+	if (m_pScannerMarkIn)
+		m_pScannerMarkIn->StopScan();
+	
 
 	SAFE_DELETE(m_pScannerVision);
 	ClearScanList();
@@ -553,10 +560,11 @@ void CIPScanUtilDlg::OnBnClickedClearBtn()
 LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 {
 	CString		strTemp;
-	SCAN_INFO*	pScanInfo = (SCAN_INFO*)wParam;
-	SCAN_INFO*	pOldScanInfo = NULL;
-	int			nCurrentItem = -1;
-	int			i;
+	SCAN_INFO*	pScanInfo		= (SCAN_INFO*)wParam;
+	SCAN_INFO*	pOldScanInfo	= NULL;
+	int			nCurrentItem	= -1;
+	int			i				= 0;
+	int			iCount			= 0;
 
 	if(wParam == NULL)
 	{
@@ -782,8 +790,6 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			item.iSubItem = SUBITEM_AUDIOOUTCOUNT;
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
-
-
 		}
 		else
 		{
@@ -801,6 +807,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		// update count;
 		m_nListItemCount++;
 
+		//iCount = m_nScanAniCount + m_nScanMarkInCount;
 		SetCountMsg(m_nListItemCount);
 		//delete pScanInfo;
 		pScanInfo = NULL;
@@ -862,7 +869,7 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 
 						m_pScannerMarkIn->SendScanRequest();	
 				}*/
-				m_pScannerVision->SendScanRequest();
+				m_pScannerVision->SendScanRequestExt();
 				m_pScannerMarkIn->SendScanRequest();
 
 			}
@@ -890,6 +897,9 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 				CNetScanVision::SendScanRequestExt();
 		}
 	}*/
+	
+
+
 
 	CDialog::OnTimer(nIDEvent);
 }
@@ -935,7 +945,7 @@ void CIPScanUtilDlg::OnNMDblclkSvrList(NMHDR *pNMHDR, LRESULT *pResult)
 				dlg.m_strGatewayAddress = pInfo->szGateWay;
 				dlg.m_nStreamPort	= pInfo->nStreamPort;
 				dlg.m_nHTTPPort		= pInfo->nHTTPPort;
-				//dlg.m_nVersion      = pInfo->version;
+				dlg.m_nVersion      = pInfo->version;
 				dlg.m_strSubnetMask = pInfo->szSubnetMask;
 				dlg.m_nIsDHCP       = pInfo->cIsDHCP;
 			}
@@ -1548,7 +1558,7 @@ void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
 	CUpgradeDlg dlg;
 	dlg.SetScaninfo ( nUpgradeCnt, pScanInfo ); // SCAN_INFO[] 배열을 UpgradeDlg에 파라메터로 넘겨준다
 
-	/*if( dlg.DoModal() == IDOK)
+	if( dlg.DoModal() == IDOK)
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
@@ -1557,7 +1567,7 @@ void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
-	}*/
+	}
 
 	if(	pScanInfo )
 	{
@@ -1635,7 +1645,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 	pDlg->SetScanInfo( nScanInfoCount, pScanInfo, nSelScanInfoCount, pSelScanInfo);
 	pDlg->SetScanner(m_pScannerVision);
 
-	/*if(pDlg->DoModal() == IDOK)
+	if(pDlg->DoModal() == IDOK)
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
@@ -1644,7 +1654,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
-	}*/
+	}
 
 	delete pDlg;
 	pDlg	= NULL;
@@ -1823,7 +1833,7 @@ void CIPScanUtilDlg::OnBnClickedFactoryBtn()
 	dlg.m_nSelectedCnt = nSelectedCnt;
 	dlg.m_pScanInfo = pSelectedInfo;
 
-	/*if(dlg.DoModal() == IDOK)
+	if(dlg.DoModal() == IDOK)
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
@@ -1832,7 +1842,7 @@ void CIPScanUtilDlg::OnBnClickedFactoryBtn()
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
-	}*/
+	}
 
 	if( TRUE == bScanning )
 	{
@@ -2099,4 +2109,22 @@ void CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	OnBnClickedClearBtn();
+}
+
+
+void CIPScanUtilDlg::OnCbnSelchangeProtocalCombo()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+		if( m_iSelectVersion != m_cmbProtocol.GetCurSel() )
+		{
+			if( TRUE == m_bScanning )
+			{
+				OnBnClickedScanBtn();
+			}
+	
+	
+			m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+			OnBnClickedClearBtn();
+			OnBnClickedScanBtn();
+		}
 }

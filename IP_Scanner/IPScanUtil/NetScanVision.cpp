@@ -489,42 +489,42 @@ void CNetScanVision::thrReceiver()
 						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
 				}
 			}
-			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
-			{
-				//TRACE("Response received\n");
-				// 정보를 찍어준다
-				pInfo   = (IPUTIL_INFO *)(m_pReceive_buffer+sizeof(HEADER2));
-				pInfo2  = (IPUTIL_INFO2*)(m_pReceive_buffer+sizeof(HEADER2));
-
-/*				TRACE("1IP  : %s\n",		pInfo->szIPAddress);
-				TRACE("Gateway: %s\n",		pInfo->szGatewayIP);
-				TRACE("MAC : %s\n",			pInfo->szMACAddress);
-				TRACE("StreamPort: %d\n",	pInfo->dwStreamPort);
-				TRACE("HttpPort: %d\n",		pInfo->dwHTTPPort);
-*/
-				pScanInfo = new SCAN_INFO;
-				if ( pScanInfo )
-				{
-					//USES_CONVERSION;
-
-					WideCopyStringFromAnsi(pScanInfo->szAddr,    30 ,pInfo->szIPAddress);
-					WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
-					WideCopyStringFromAnsi(pScanInfo->szMAC,     30, pInfo->szMACAddress);
-
-					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
-					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
-					//pScanInfo->version      = VERSION_1; // IPUTIL version 1
-
-					if(pReceive->body_size == sizeof(IPUTIL_INFO2)) // read extend field
-					{
-						pScanInfo->cIsDHCP      = pInfo2->cIsDHCP;
-						WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo2->szGatewayIP);
-					}
-
-					if(m_hNotifyWnd)
-						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
-				}
-			}
+//			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
+//			{
+//				//TRACE("Response received\n");
+//				// 정보를 찍어준다
+//				pInfo   = (IPUTIL_INFO *)(m_pReceive_buffer+sizeof(HEADER2));
+//				pInfo2  = (IPUTIL_INFO2*)(m_pReceive_buffer+sizeof(HEADER2));
+//
+///*				TRACE("1IP  : %s\n",		pInfo->szIPAddress);
+//				TRACE("Gateway: %s\n",		pInfo->szGatewayIP);
+//				TRACE("MAC : %s\n",			pInfo->szMACAddress);
+//				TRACE("StreamPort: %d\n",	pInfo->dwStreamPort);
+//				TRACE("HttpPort: %d\n",		pInfo->dwHTTPPort);
+//*/
+//				pScanInfo = new SCAN_INFO;
+//				if ( pScanInfo )
+//				{
+//					//USES_CONVERSION;
+//
+//					WideCopyStringFromAnsi(pScanInfo->szAddr,    30 ,pInfo->szIPAddress);
+//					WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
+//					WideCopyStringFromAnsi(pScanInfo->szMAC,     30, pInfo->szMACAddress);
+//
+//					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
+//					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
+//					//pScanInfo->version      = VERSION_1; // IPUTIL version 1
+//
+//					if(pReceive->body_size == sizeof(IPUTIL_INFO2)) // read extend field
+//					{
+//						pScanInfo->cIsDHCP      = pInfo2->cIsDHCP;
+//						WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo2->szGatewayIP);
+//					}
+//
+//					if(m_hNotifyWnd)
+//						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
+//				}
+//			  }
 			else
 			{
 			}
