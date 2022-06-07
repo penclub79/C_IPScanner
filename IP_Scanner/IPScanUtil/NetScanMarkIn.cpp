@@ -215,8 +215,6 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 						pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
 						pScanInfo->nStreamPort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
-						pScanInfo->version = VERSION_1;
-
 
 						if (m_hNotifyWnd)
 						{

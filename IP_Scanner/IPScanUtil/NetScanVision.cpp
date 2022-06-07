@@ -394,7 +394,7 @@ void CNetScanVision::thrReceiver()
 
 					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
 					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
-					pScanInfo->version      = VERSION_2; // IPUTIL version 1
+					//pScanInfo->version      = VERSION_2; // IPUTIL version 1
 					 
 					if(pReceive->body_size >= sizeof(IPUTIL_INFO2)) // read extend field
 					{
@@ -513,7 +513,7 @@ void CNetScanVision::thrReceiver()
 
 					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
 					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
-					pScanInfo->version      = VERSION_1; // IPUTIL version 1
+					//pScanInfo->version      = VERSION_1; // IPUTIL version 1
 
 					if(pReceive->body_size == sizeof(IPUTIL_INFO2)) // read extend field
 					{
@@ -658,6 +658,7 @@ BOOL CNetScanVision::RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP
 	pInfo->dwStreamPort	= nStreamPort;
 	pInfo->cIsDHCP = (char)cIsDHCP;
 	strcpy_s(pInfo->szSubnetmask, W2A(strNewsubnetMask));
+
 	// ID가 설정된 경우에는 Login 정보를 패킷에 함께 보낸다
 	if(szID != NULL && wcscmp(szID, L"") != 0)
 	{
@@ -743,9 +744,9 @@ BOOL CNetScanVision::SendScanRequestExt()
 	//	return FALSE;
 	//}
 
-	TargetAddr.sin_family = AF_INET;
-	TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
-	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
+	TargetAddr.sin_family		= AF_INET;
+	TargetAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
+	TargetAddr.sin_addr.s_addr	= INADDR_BROADCAST; // FIX ME : TEST
 
 	memset(send_buffer, 0, sizeof(send_buffer));
 

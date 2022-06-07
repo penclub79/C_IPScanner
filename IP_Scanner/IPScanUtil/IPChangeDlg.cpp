@@ -77,13 +77,13 @@ BOOL CIPChangeDlg::OnInitDialog()
 		GetDlgItem(IDC_USERID)->EnableWindow(TRUE);
 		GetDlgItem(IDC_PASSWORD)->EnableWindow(TRUE);
 	}
-	/*else
+	else
 	{
 		GetDlgItem(IDC_NET_DHCP)->EnableWindow(FALSE);
 		GetDlgItem(IDC_SUBNETMASK)->EnableWindow(FALSE);
 		GetDlgItem(IDC_USERID)->EnableWindow(FALSE);
 		GetDlgItem(IDC_PASSWORD)->EnableWindow(FALSE);
-	}*/
+	}
 
 /////
 	OnBnClickedButReset();
@@ -152,19 +152,19 @@ void CIPChangeDlg::OnBnClickedOk()
 	m_nIsDHCP     = m_nCurrentIsDHCP;
 	// 데이터 유효성 검사?
 	// 변경 요청 후 다이얼로그 닫기
-	/*if(m_nVersion == VERSION_1)
+	if(m_nVersion == VERSION_1)
 	{
 		CNetScanVision::RequestIPChange(
 			(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
 			m_nStreamPort, m_nHTTPPort);
-	}*/
+	}
 	if(m_nVersion == VERSION_2)
 	{
-		CNetScanVision::RequestIPChange2(
-			(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
-			m_nStreamPort, m_nHTTPPort, m_nIsDHCP, (LPTSTR)(LPCTSTR)m_strSubnetMask, m_strID.GetBuffer(1024), m_strPassword.GetBuffer(1024), 0);
-		m_strID.ReleaseBuffer();
-		m_strPassword.ReleaseBuffer();
+	CNetScanVision::RequestIPChange2(
+		(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
+		m_nStreamPort, m_nHTTPPort, m_nIsDHCP, (LPTSTR)(LPCTSTR)m_strSubnetMask, m_strID.GetBuffer(1024), m_strPassword.GetBuffer(1024), 0);
+	m_strID.ReleaseBuffer();
+	m_strPassword.ReleaseBuffer();
 	}
 	else
 	{
@@ -214,16 +214,16 @@ void CIPChangeDlg::SetDHCPMode(BOOL bMode)
 	GetDlgItem(IDC_IPADDR)->EnableWindow(!bMode);
 	GetDlgItem(IDC_STATIC_GATEWAY)->EnableWindow(!bMode);
 	GetDlgItem(IDC_GWADDR)->EnableWindow(!bMode);
-	/*if(m_nVersion == VERSION_1)
+	if(m_nVersion == VERSION_1)
 	{
 		GetDlgItem(IDC_STATIC_MASK)->EnableWindow(FALSE);
 		GetDlgItem(IDC_SUBNETMASK)->EnableWindow(FALSE);
 	}
 	else
-	{*/
+	{
 		GetDlgItem(IDC_STATIC_MASK)->EnableWindow(!bMode);
 		GetDlgItem(IDC_SUBNETMASK)->EnableWindow(!bMode);
-	//}
+	}
 }
 
 BOOL CIPChangeDlg::_ValidateMacAddress()

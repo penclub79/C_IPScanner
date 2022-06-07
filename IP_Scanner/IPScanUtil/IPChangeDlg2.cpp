@@ -157,7 +157,7 @@ BOOL CIPChangeDlg2::OnInitDialog()
 	m_strGatewayAddress		= m_pSelScanInfo[0].szGateWay;
 	m_nStreamPort			= m_pSelScanInfo[0].nStreamPort;
 	m_nHTTPPort				= m_pSelScanInfo[0].nHTTPPort;
-	m_nVersion				= m_pSelScanInfo[0].version;
+	//m_nVersion				= m_pSelScanInfo[0].version;
 	m_strSubnetMask			= m_pSelScanInfo[0].szSubnetMask;
 	m_nIsDHCP				= m_pSelScanInfo[0].cIsDHCP;
 	m_nCurrentIsDHCP		= m_nIsDHCP;
@@ -436,12 +436,12 @@ LRESULT CIPChangeDlg2::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		return 0L;
 	}
 
-	if( m_nVersion != pScanInfo->version )
-	{
-		// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
-		delete pScanInfo; 
-		return 0L;
-	}
+	//if( m_nVersion != pScanInfo->version )
+	//{
+	//	// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
+	//	delete pScanInfo; 
+	//	return 0L;
+	//}
 
 	if(pScanInfo)
 	{
@@ -549,11 +549,14 @@ LRESULT CIPChangeDlg2::OnIPChangeMessage(WPARAM wParam, LPARAM lParam)
 	{
 		if( m_pScanner )
 		{
-			/*if( VERSION_1 == m_nVersion )
+			if( VERSION_1 == m_nVersion )
 				m_pScanner->SendScanRequest();
-			else */if( VERSION_2 == m_nVersion )
+			else if (VERSION_2 == m_nVersion)
+			{
 				m_pScanner->SendScanRequestExt();
-				//m_pMKScanner->SendScanRequest();
+				m_pMKScanner->SendScanRequest();
+			}
+				
 		}
 
 		m_iCheckCount = (m_iCheckCount+1)%5;
@@ -1288,7 +1291,7 @@ void CIPChangeDlg2::OnBnClickedApply()
 		pScanInfo = (SCAN_INFO*)m_cSvrList.GetItemData(iItem);
 
 		m_aSettingThread[iItem]	= new CIPChangeThread();
-		m_aSettingThread[iItem]->SetThreadInfo( this->GetSafeHwnd()	, m_nVersion, iItem, apIPChangeItem[iItem]	);
+		m_aSettingThread[iItem]->SetThreadInfo(this->GetSafeHwnd(), m_nVersion, iItem, apIPChangeItem[iItem]);
 		m_aSettingThread[iItem]->StartIPChanage();
 
 	}

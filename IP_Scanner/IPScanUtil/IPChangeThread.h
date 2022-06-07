@@ -5,7 +5,7 @@
 typedef enum  _tagIPCHANGE_MESSAGE
 {
 	MESSAGE_CLOSE_THREAD			= 0,
-	//MESSAGE_SUCESS_CONNECT			= 1,
+	//MESSAGE_SUCESS_CONNECT		= 1,
 	//MESSAGE_SUCESS_LOGIN			= 2,
 	MESSAGE_SUCESS_MAC				= 3,
 
@@ -64,7 +64,6 @@ typedef struct tagIPCHANGEITEM
 		memset( &szToIPAddress		, 0, sizeof(szToIPAddress ) );
 		memset( &szToGWAddress		, 0, sizeof(szToGWAddress ) );
 		memset( &szToSubnetMask		, 0, sizeof(szToSubnetMask ) );
-		
 
 		iFromHttpPort	= 80;
 		iFromStreamPort	= 2700;

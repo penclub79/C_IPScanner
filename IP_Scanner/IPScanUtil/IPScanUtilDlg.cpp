@@ -424,6 +424,9 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		// stop
 		if (m_pScannerVision)
 			m_pScannerVision->StopScan();
+
+		if (m_pScannerMarkIn)
+			m_pScannerMarkIn->StopScan();
 	}
 }
 
@@ -442,7 +445,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn()
 		dlg.m_strGatewayAddress = pInfo->szGateWay;
 		dlg.m_nStreamPort		= pInfo->nStreamPort;
 		dlg.m_nHTTPPort			= pInfo->nHTTPPort;
-		dlg.m_nVersion			= pInfo->version;
+		//dlg.m_nVersion			= pInfo->version;
 		dlg.m_strSubnetMask		= pInfo->szSubnetMask;
 		dlg.m_nIsDHCP			= pInfo->cIsDHCP;
 	}
@@ -452,7 +455,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn()
 		dlg.m_nHTTPPort			= 80;
 		dlg.m_nIsDHCP			= TRUE;
 		dlg.m_strSubnetMask		= L"0.0.0.0";
-		dlg.m_nVersion			= VERSION_2;
+		//dlg.m_nVersion			= VERSION_2;
 	}
 
 	if(dlg.DoModal() == IDOK)
@@ -563,12 +566,12 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		return 0L;
 	}
 
-	if( m_iSelectVersion != pScanInfo->version )
-	{
-		// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
-		delete pScanInfo; 
-		return 0L;
-	}
+	//if( m_iSelectVersion != pScanInfo->version )
+	//{
+	//	// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
+	//	delete pScanInfo; 
+	//	return 0L;
+	//}
 
 	_Lock();
 	if(pScanInfo)
@@ -738,7 +741,6 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
 
-
 			strTemp = pScanInfo->_ReadValue(L"Support Resolution");
 			item.mask = LVIF_TEXT;
 			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
@@ -837,7 +839,7 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if( 0 == m_nScanAniCount )
 			{
-				if (VERSION_1 == m_iSelectVersion)
+				/*if (VERSION_1 == m_iSelectVersion)
 				{
 					if (m_pScannerVision)
 					{
@@ -858,11 +860,10 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 						m_pScannerVision->SendScanRequestExt();
 					}
 
-					if (m_pScannerMarkIn)
-					{
-						m_pScannerMarkIn->SendScanRequest();
-					}
-				}
+						m_pScannerMarkIn->SendScanRequest();	
+				}*/
+				m_pScannerVision->SendScanRequest();
+				m_pScannerMarkIn->SendScanRequest();
 
 			}
 
@@ -879,16 +880,16 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nScanAniCount = m_nScanAniCount % 10;
 		}
 	}
-	//else if(TM_SCANNING == nIDEvent)
-	//{
-	//	if(m_bScanning)
-	//	{
-	//		//if( VERSION_1 == m_iSelectVersion )
-	//		//	CNetScanVision::SendScanRequest();
-	//		//else if( VERSION_2 == m_iSelectVersion )
-	//		//	CNetScanVision::SendScanRequestExt();
-	//	}
-	//}
+	/*else if(TM_SCANNING == nIDEvent)
+	{
+		if(m_bScanning)
+		{
+			if( VERSION_1 == m_iSelectVersion )
+				CNetScanVision::SendScanRequest();
+			else if( VERSION_2 == m_iSelectVersion )
+				CNetScanVision::SendScanRequestExt();
+		}
+	}*/
 
 	CDialog::OnTimer(nIDEvent);
 }
@@ -934,7 +935,7 @@ void CIPScanUtilDlg::OnNMDblclkSvrList(NMHDR *pNMHDR, LRESULT *pResult)
 				dlg.m_strGatewayAddress = pInfo->szGateWay;
 				dlg.m_nStreamPort	= pInfo->nStreamPort;
 				dlg.m_nHTTPPort		= pInfo->nHTTPPort;
-				dlg.m_nVersion      = pInfo->version;
+				//dlg.m_nVersion      = pInfo->version;
 				dlg.m_strSubnetMask = pInfo->szSubnetMask;
 				dlg.m_nIsDHCP       = pInfo->cIsDHCP;
 			}
@@ -1099,23 +1100,23 @@ BOOL CIPScanUtilDlg::CallLayoutManager()
 	//pClearBtn->MoveWindow(&rcNewRect);
 
 
-	CWnd* pVersionStatic     = GetDlgItem(IDC_STATIC_VERSION);
-	pVersionStatic->GetWindowRect(&rcControlRect);
-	rcOriginateRect = rcNewRect; // 이전 위치를 기준으로
-	rcNewRect.left = rcOriginateRect.right + 14;
-	rcNewRect.top  = rcClientRect.top + 14;
-	rcNewRect.right=rcNewRect.left + rcControlRect.Width();
-	rcNewRect.bottom=rcNewRect.top + rcControlRect.Height();
+	//CWnd* pVersionStatic     = GetDlgItem(IDC_STATIC_VERSION);
+	//pVersionStatic->GetWindowRect(&rcControlRect);
+	//rcOriginateRect = rcNewRect; // 이전 위치를 기준으로
+	//rcNewRect.left = rcOriginateRect.right + 14;
+	//rcNewRect.top  = rcClientRect.top + 14;
+	//rcNewRect.right=rcNewRect.left + rcControlRect.Width();
+	//rcNewRect.bottom=rcNewRect.top + rcControlRect.Height();
 	//pVersionStatic->MoveWindow(&rcNewRect);
 
 
-	CWnd* pProtocolcombo       = GetDlgItem(IDC_PROTOCAL_COMBO);
-	pProtocolcombo->GetWindowRect(&rcControlRect);
-	rcOriginateRect = rcNewRect; // 이전 위치를 기준으로
-	rcNewRect.left = rcOriginateRect.right + 10;
-	rcNewRect.top  = rcClientRect.top + 16;
-	rcNewRect.right=rcNewRect.left + rcControlRect.Width();
-	rcNewRect.bottom=rcNewRect.top + rcControlRect.Height();
+	//CWnd* pProtocolcombo       = GetDlgItem(IDC_PROTOCAL_COMBO);
+	//pProtocolcombo->GetWindowRect(&rcControlRect);
+	//rcOriginateRect = rcNewRect; // 이전 위치를 기준으로
+	//rcNewRect.left = rcOriginateRect.right + 10;
+	//rcNewRect.top  = rcClientRect.top + 16;
+	//rcNewRect.right=rcNewRect.left + rcControlRect.Width();
+	//rcNewRect.bottom=rcNewRect.top + rcControlRect.Height();
 	//pProtocolcombo->MoveWindow(&rcNewRect);
 
 
@@ -1634,7 +1635,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 	pDlg->SetScanInfo( nScanInfoCount, pScanInfo, nSelScanInfoCount, pSelScanInfo);
 	pDlg->SetScanner(m_pScannerVision);
 
-	if(pDlg->DoModal() == IDOK)
+	/*if(pDlg->DoModal() == IDOK)
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
@@ -1643,7 +1644,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
-	}
+	}*/
 
 	delete pDlg;
 	pDlg	= NULL;
@@ -1822,7 +1823,7 @@ void CIPScanUtilDlg::OnBnClickedFactoryBtn()
 	dlg.m_nSelectedCnt = nSelectedCnt;
 	dlg.m_pScanInfo = pSelectedInfo;
 
-	if(dlg.DoModal() == IDOK)
+	/*if(dlg.DoModal() == IDOK)
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
@@ -1831,7 +1832,7 @@ void CIPScanUtilDlg::OnBnClickedFactoryBtn()
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
-	}
+	}*/
 
 	if( TRUE == bScanning )
 	{
