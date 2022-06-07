@@ -204,7 +204,7 @@ DWORD CIPChangeThread::ProcIPChange	( LPVOID _lpParam )
 
 			if( MESSAGE_SUCESS_MAC == pIPChanageThreadInfo->IPChangeItem.iStatus	)
 			{
-				if(pIPChanageThreadInfo->iVersion == VERSION_1)
+				/*if(pIPChanageThreadInfo->iVersion == VERSION_1)
 				{
 					CNetScanVision::RequestIPChange(	(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szMACAddress, 
 						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToIPAddress, 
@@ -224,7 +224,8 @@ DWORD CIPChangeThread::ProcIPChange	( LPVOID _lpParam )
 					PostMessage( pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
 					pIPChanageThreadInfo->IPChangeItem.iStatus	= MESSAGE_REQUEST_IPCHANGE;
 				}
-				else if(pIPChanageThreadInfo->iVersion == VERSION_2)
+				else*/ 
+				if(pIPChanageThreadInfo->iVersion == VERSION_2)
 				{
 					CNetScanVision::RequestIPChange2(	(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szMACAddress, 
 						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToIPAddress, 

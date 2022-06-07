@@ -16,13 +16,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 한국어 resources
+// 한국어(대한민국) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
-#ifdef _WIN32
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
 #pragma code_page(949)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -70,7 +68,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\IPScanUtil.ico"
+IDR_MAINFRAME           ICON                    "res\\IP-scaner_Icon.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -225,7 +223,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_UPGRADE, DIALOG
     BEGIN
@@ -282,7 +280,7 @@ IDB_CHECKBOXES          BITMAP                  "res\\checkboxes.bmp"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ABOUTBOX            "About IPScanUtil (&A)..."
     IDS_ADDRESS             "Address"
@@ -297,7 +295,7 @@ BEGIN
     IDS_MEMORY              "Memory exceeded"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_RECEIVE_FAILED      "recvfrom function failed cause recevie data is too big."
     IDS_BIND_FAILED         "UDP Port(%d) is already used. Cannot proceed server scan."
@@ -317,7 +315,7 @@ BEGIN
     IDS_UPGRADE_PROGRESS    "Progress"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ENTER_PASSWORD_INFO "Enter User Password"
     IDS_USER_ID             "ID"
@@ -333,7 +331,7 @@ BEGIN
     IDS_MCU_MODEL           "MCU Model"
 END
 
-#endif    // 한국어 resources
+#endif    // 한국어(대한민국) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -341,10 +339,8 @@ END
 // 영어(미국) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -374,14 +370,12 @@ BEGIN
     PUSHBUTTON      "Factory Default",IDC_FACTORY_BTN,297,4,60,14
     PUSHBUTTON      "Clear",IDC_CLEAR_BTN,111,4,60,14
     COMBOBOX        IDC_ADAPTOR_CMB,174,20,184,195,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_PROTOCAL_COMBO,434,20,60,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_SVR_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,42,487,212
     PUSHBUTTON      "Test",IDC_TEST_BTN,225,256,50,14,NOT WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
     PUSHBUTTON      "Test",IDC_TEST_BTN2,273,256,50,14,NOT WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
     DEFPUSHBUTTON   "Close",IDC_CLOSE,444,256,50,14
     CTEXT           "Count : 0",IDC_STC_SNUM,434,4,60,14,SS_CENTERIMAGE,WS_EX_STATICEDGE
     LTEXT           "Network Card:",IDC_STATIC_NETWORK,115,20,50,14,SS_CENTERIMAGE
-    LTEXT           "Protocol :",IDC_STATIC_VERSION,393,20,35,12,SS_CENTERIMAGE
     LTEXT           "Stopped",IDC_STATIC_STATUES,7,256,211,14,SS_CENTERIMAGE
 END
 
@@ -423,7 +417,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -496,7 +490,7 @@ END
 // Menu
 //
 
-IDR_POPUP_MENU MENU 
+IDR_POPUP_MENU MENU
 BEGIN
     POPUP "Setup"
     BEGIN
@@ -505,7 +499,7 @@ BEGIN
     END
 END
 
-IDR_POPUP_MENU_UPGRADE MENU 
+IDR_POPUP_MENU_UPGRADE MENU
 BEGIN
     POPUP "Setup"
     BEGIN

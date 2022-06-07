@@ -15,7 +15,7 @@ CIPChangeDlg2::CIPChangeDlg2(CWnd* pParent /*=NULL*/)
 , m_nStreamPort(0)
 , m_nHTTPPort(0)
 , m_nScanCount(0)
-, m_nVersion(1)
+, m_nVersion(2)
 , m_nIsDHCP(0)
 , m_nCurrentIsDHCP(0)
 , m_strSubnetMask(L"255.255.255.0")
@@ -30,6 +30,7 @@ CIPChangeDlg2::CIPChangeDlg2(CWnd* pParent /*=NULL*/)
 	m_pSelScanInfo		= NULL;
 
 	m_pScanner			= NULL;
+	m_pMKScanner		= NULL;
 
 	m_pListItem			= NULL;
 	m_hMutexScanInfo	= NULL;
@@ -260,6 +261,14 @@ BOOL CIPChangeDlg2::OnInitDialog()
 		m_pScanner->SetNotifyWindow( this->GetSafeHwnd(), WM_SCAN_MSG );
 		m_hMutexScanInfo	= CreateMutex(NULL, FALSE, NULL);
 		m_pScanner->StartScan();
+	}
+
+	if (m_pMKScanner)
+	{
+		m_pMKScanner->SetNotifyWindow(this->GetSafeHwnd(), WM_SCAN_MSG);
+		// Mutex - 자원 한번에 한번의 Thread나 프로세스가 접근하기 위해 사용, 사용할때는 잠그고, 빠져오면 풀어준다.
+		m_hMutexScanInfo	= CreateMutex(NULL, FALSE, NULL);
+		//m_pMKScanner->StartScan();
 	}
 
 
@@ -534,15 +543,17 @@ LRESULT CIPChangeDlg2::OnIPChangeMessage(WPARAM wParam, LPARAM lParam)
 	else if( MESSAGE_SCAN_START == iMessage )
 	{
 		m_pScanner->StartScan();
+		//m_pMKScanner->StartScan();
 	}
 	else if( MESSAGE_CHECK_IPCHANGE == iMessage )
 	{
 		if( m_pScanner )
 		{
-			if( VERSION_1 == m_nVersion )
+			/*if( VERSION_1 == m_nVersion )
 				m_pScanner->SendScanRequest();
-			else if( VERSION_2 == m_nVersion )
+			else */if( VERSION_2 == m_nVersion )
 				m_pScanner->SendScanRequestExt();
+				//m_pMKScanner->SendScanRequest();
 		}
 
 		m_iCheckCount = (m_iCheckCount+1)%5;

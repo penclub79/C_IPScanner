@@ -55,8 +55,8 @@ typedef struct _DEVICE_INFO
 	unsigned char	uszDevice_type;	// 2: Camera, 6: NVR
 	unsigned char	uszMax_channel;
 	char			szModel_name[32];
-	NET_INFO		stNetwork_info;
-	VER_INFO		stSw_version;
+	NET_INFO		stNetwork_info; //53
+	VER_INFO		stSw_version; //3
 	VER_INFO		stHw_version;
 	unsigned int	uiReserved1;
 	unsigned int	uiReserved2;
@@ -69,8 +69,31 @@ typedef struct _HEADER_BODY
 {
 	_PACKET_HEADER	stPacket;
 	_DEVICE_INFO	stDevInfo;
-	DWORD			ulBodySize;
 }HEADER_BODY;
+
+typedef struct tagCAPTION_HEADER
+{
+	char szCaption[32];
+	int  iDataLen;
+}CAPTION_HEADER, *LPCAPTION_HEADER;
+
+typedef struct tagSCAN_MK_STRUCT
+{
+	//WCHAR	szAddr[30];
+	//WCHAR	szMAC[30];
+	//WCHAR	szGateWay[30];
+	//int		nStreamPort;
+	//int		nHTTPPort;
+	//int		version;
+	//char	cIsDHCP; // 0 - static, 1 - DHCP
+	//WCHAR	szSubnetMask[30];
+	//int		nExtraFieldCount;
+	//time_t	tReceiveTime;
+	//SCAN_EXT_INFO* pExtScanInfos;
+
+
+
+}SCAN_MK_INFO, *LPSCAN_MK_INFO;
 
 class CNetScanMarkIn
 {
@@ -103,8 +126,9 @@ private:
 
 	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
-	void ConversionNetInfo(unsigned char* _upszIp, TCHAR* _pwszVal);
-	void ConversionMac(char* _pszMac, TCHAR* _pwszVal);
-	void UChartoTChar(unsigned char* _puszStr, TCHAR* _pwszVal);
+	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
+	void ConversionMac(char* _pszMac, char* _pszVal);
+	void DeviceType(unsigned char* _puszDeviceType, int* _iVal);
+	void ChartoUnChar(char _pszStr, unsigned char* _puszStr);
 
 };

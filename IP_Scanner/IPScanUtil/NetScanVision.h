@@ -100,7 +100,6 @@ typedef struct tagSCAN_STRUCT
 		this->cIsDHCP		= src.cIsDHCP;
 		this->tReceiveTime	= src.tReceiveTime;
 
-
 		SAFE_DELETEA(this->pExtScanInfos);
 		this->nExtraFieldCount = src.nExtraFieldCount;
 		if(src.nExtraFieldCount > 0 && src.pExtScanInfos)

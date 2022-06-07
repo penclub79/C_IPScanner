@@ -96,7 +96,7 @@ protected:
 protected:
 	HICON			m_hIcon;
 
-	void AddProtocolToCombo();
+	//void AddProtocolToCombo();
 	void SetStatusMsg(WCHAR* szMsg);
 	void SetStatusMsg(CString& strMsg);
 	void SetCountMsg(int nCount);
@@ -143,7 +143,7 @@ public:
 	afx_msg void OnNMDblclkSvrList2(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMDblclkSvrList3(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedFactoryBtn();
-	afx_msg void OnCbnSelchangeProtocalCombo();
+	//afx_msg void OnCbnSelchangeProtocalCombo();
 	LRESULT OnConnectCheck(WPARAM wParam, LPARAM lParam);
 	//WM_SORT_REQUEST
 	afx_msg LRESULT OnSortRequest(WPARAM wParam, LPARAM lParam);

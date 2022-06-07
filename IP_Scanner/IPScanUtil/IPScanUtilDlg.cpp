@@ -136,7 +136,6 @@ void CIPScanUtilDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CLEAR_BTN		, m_btnClearList);
 	DDX_Control(pDX, IDC_CHANGEIP_BTN	, m_btnChangeIP);
 	DDX_Control(pDX, IDC_UPGRADE_BTN	, m_btnUpgrade);
-	DDX_Control(pDX, IDC_PROTOCAL_COMBO	, m_cmbProtocol);
 	DDX_Control(pDX, IDC_ADAPTOR_CMB	, m_cmbNetAdaptor);
 }
 
@@ -160,7 +159,7 @@ BEGIN_MESSAGE_MAP(CIPScanUtilDlg, CDialog)
 	ON_NOTIFY(NM_CLICK, IDC_SVR_LIST,			&CIPScanUtilDlg::OnNMClickSvrList)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SVR_LIST,	&CIPScanUtilDlg::OnLvnItemchangedSvrList)
 	ON_NOTIFY(NM_DBLCLK, IDC_SVR_LIST,			&CIPScanUtilDlg::OnNMDblclkSvrList3)
-	ON_CBN_SELCHANGE(IDC_PROTOCAL_COMBO,		&CIPScanUtilDlg::OnCbnSelchangeProtocalCombo)
+	//ON_CBN_SELCHANGE(IDC_PROTOCAL_COMBO,		&CIPScanUtilDlg::OnCbnSelchangeProtocalCombo)
 	ON_BN_CLICKED(IDOK,							&CIPScanUtilDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL,						&CIPScanUtilDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_SCAN_BTN,					&CIPScanUtilDlg::OnBnClickedScanBtn)
@@ -290,7 +289,7 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	m_bInit = TRUE;
 	m_cPopupMenu.LoadMenu(IDR_POPUP_MENU);
 
-	AddProtocolToCombo();
+	//AddProtocolToCombo();
 	CallLayoutManager();
 	_LoadNetworkAdaptorInformation();
 
@@ -300,18 +299,18 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
-void CIPScanUtilDlg::AddProtocolToCombo()
-{
-	CString strTemp;
-	m_iSelectVersion	= VERSION_2;
-
-	//Model Combo에 Model 추가
-	m_cmbProtocol.ResetContent();
-	m_cmbProtocol.AddString(L"Version1");
-	m_cmbProtocol.AddString(L"Version2");
-
-	m_cmbProtocol.SetCurSel(m_iSelectVersion);
-}
+//void CIPScanUtilDlg::AddProtocolToCombo()
+//{
+//	CString strTemp;
+//	m_iSelectVersion	= VERSION_2;
+//
+//	//Model Combo에 Model 추가
+//	//m_cmbProtocol.ResetContent();
+//	/*m_cmbProtocol.AddString(L"Version1");*/
+//	//m_cmbProtocol.AddString(L"Version2");
+//
+//	m_cmbProtocol.SetCurSel(m_iSelectVersion);
+//}
 
 void CIPScanUtilDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -652,6 +651,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 
 		// add information into UI
 		LV_ITEM item;
+
 		memset(&item, 0, sizeof(item));
 		item.mask = LVIF_TEXT | LVIF_PARAM;
 		item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem; // Update의 경우에는 찾은 인덱스(nCurrentItem으로)
@@ -846,7 +846,7 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 
 					if (m_pScannerMarkIn)
 					{
-						//m_pScannerMarkIn->SendScanRequest();
+						m_pScannerMarkIn->SendScanRequest();
 					}
 					
 					
@@ -860,7 +860,7 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 
 					if (m_pScannerMarkIn)
 					{
-						//m_pScannerMarkIn->SendScanRequestExt();
+						m_pScannerMarkIn->SendScanRequest();
 					}
 				}
 
@@ -1547,7 +1547,7 @@ void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
 	CUpgradeDlg dlg;
 	dlg.SetScaninfo ( nUpgradeCnt, pScanInfo ); // SCAN_INFO[] 배열을 UpgradeDlg에 파라메터로 넘겨준다
 
-	if( dlg.DoModal() == IDOK)
+	/*if( dlg.DoModal() == IDOK)
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
@@ -1556,7 +1556,7 @@ void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
 	{
 		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
-	}
+	}*/
 
 	if(	pScanInfo )
 	{
@@ -2011,22 +2011,22 @@ LRESULT CIPScanUtilDlg::OnSortRequest(WPARAM wParam, LPARAM lParam)
 //	m_CheckThreadList.clear();
 //}
 
-void CIPScanUtilDlg::OnCbnSelchangeProtocalCombo()
-{
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if( m_iSelectVersion != m_cmbProtocol.GetCurSel() )
-	{
-		if( TRUE == m_bScanning )
-		{
-			OnBnClickedScanBtn();
-		}
-
-
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
-		OnBnClickedClearBtn();
-		OnBnClickedScanBtn();
-	}
-}
+//void CIPScanUtilDlg::OnCbnSelchangeProtocalCombo()
+//{
+//	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+//	if( m_iSelectVersion != m_cmbProtocol.GetCurSel() )
+//	{
+//		if( TRUE == m_bScanning )
+//		{
+//			OnBnClickedScanBtn();
+//		}
+//
+//
+//		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+//		OnBnClickedClearBtn();
+//		OnBnClickedScanBtn();
+//	}
+//}
 
 // read accept address from UI
 void   CIPScanUtilDlg::_ReadBindAddress()

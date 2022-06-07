@@ -180,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\checkboxes.bmp" />
+    <Image Include="res\IP-scaner_Icon.ico" />
     <Image Include="res\IPScanUtil.ico" />
   </ItemGroup>
   <ItemGroup>

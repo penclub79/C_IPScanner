@@ -136,7 +136,7 @@ CNetScanVision::CNetScanVision()
 	m_hScanThread		= NULL;
 	m_dwScanThreadID	= 0;
 	m_hSockReceive		= 0;
-	m_pReceive_buffer		= NULL;
+	m_pReceive_buffer	= NULL;
 	//m_hSockSend = 0;
 	m_ulBindAddress     = 0;
 }
@@ -352,7 +352,7 @@ void CNetScanVision::thrReceiver()
 	int					nToRead			= pReceive->body_size - sizeof(IPUTIL_INFO2);
 	int					nItemCount		= 0;
 	int					i;
-	
+
 	typedef struct tagCAPTION_HEADER
 	{
 		char szCaption[32];
@@ -463,7 +463,7 @@ void CNetScanVision::thrReceiver()
 										// FIX ME: A2W가 문제될 거 같은데?
 										WideCopyStringFromAnsi( pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, lpszTemp ); 
 
-										TRACE( pExtInfos[i].lpszValue );
+ 										TRACE( pExtInfos[i].lpszValue );
 										TRACE( L"\n" );
 
 									}
@@ -496,7 +496,7 @@ void CNetScanVision::thrReceiver()
 				pInfo   = (IPUTIL_INFO *)(m_pReceive_buffer+sizeof(HEADER2));
 				pInfo2  = (IPUTIL_INFO2*)(m_pReceive_buffer+sizeof(HEADER2));
 
-/*				TRACE("1IP  : %s\n",			pInfo->szIPAddress);
+/*				TRACE("1IP  : %s\n",		pInfo->szIPAddress);
 				TRACE("Gateway: %s\n",		pInfo->szGatewayIP);
 				TRACE("MAC : %s\n",			pInfo->szMACAddress);
 				TRACE("StreamPort: %d\n",	pInfo->dwStreamPort);
