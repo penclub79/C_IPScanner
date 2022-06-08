@@ -1,9 +1,37 @@
-﻿빌드 시작: 2022-06-07 오후 6:56:16
+﻿빌드 시작: 2022-06-08 오후 4:00:32
      1>2 노드의 "D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트(Build 대상)입니다.
-     1>Link:
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\IP_Installer.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt IPScanUtilDlg.cpp
+         IPScanUtilDlg.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.exe" /INCREMENTAL /NOLOGO iphlpapi.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.lib" /MACHINE:X86 /SAFESEH Debug\IPScanUtil.res
+         Debug\ARP.obj
+         Debug\CheckListCtrl.obj
+         Debug\ConnectCheckThread.obj
+         Debug\FactoryDefaultDlg.obj
+         Debug\IPChangeDlg.obj
+         Debug\IPChangeDlg2.obj
+         Debug\IPChangeThread.obj
+         Debug\IPScanUtil.obj
+         Debug\IPScanUtilDlg.obj
+         Debug\ListItem.obj
+         Debug\MessageQueue.obj
+         Debug\NetScanMarkIn.obj
+         Debug\NetScanVision.obj
+         Debug\OSDChangeDlg.obj
+         Debug\OSDChangeThread.obj
+         Debug\OXMaskedEdit.obj
+         Debug\ProgressListCtrl.obj
+         Debug\ResolutionChangeDlg.obj
+         Debug\ResolutionChangeThread.obj
+         Debug\stdafx.obj
+         Debug\UpgradeDlg.obj
+         Debug\UpgradeThreadHttp.obj
+         Debug\UpgradeThreadTcp.obj
+         Debug\VHNetworkAdaptorInfo.obj
          IPScanUtil.vcxproj -> D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.exe
      1>"D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트를 빌드했습니다(Build 대상).
 
 빌드했습니다.
 
-경과 시간: 00:00:00.08
+경과 시간: 00:00:01.42

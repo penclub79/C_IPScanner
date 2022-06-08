@@ -160,15 +160,15 @@ BEGIN_MESSAGE_MAP(CIPScanUtilDlg, CDialog)
 	ON_NOTIFY(NM_CLICK, IDC_SVR_LIST,			&CIPScanUtilDlg::OnNMClickSvrList)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SVR_LIST,	&CIPScanUtilDlg::OnLvnItemchangedSvrList)
 	ON_NOTIFY(NM_DBLCLK, IDC_SVR_LIST,			&CIPScanUtilDlg::OnNMDblclkSvrList3)
-	ON_CBN_SELCHANGE(IDC_PROTOCAL_COMBO,		&CIPScanUtilDlg::OnCbnSelchangeProtocalCombo)
+	//ON_CBN_SELCHANGE(IDC_PROTOCAL_COMBO,		&CIPScanUtilDlg::OnCbnSelchangeProtocalCombo)
 	ON_BN_CLICKED(IDOK,							&CIPScanUtilDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL,						&CIPScanUtilDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_SCAN_BTN,					&CIPScanUtilDlg::OnBnClickedScanBtn)
 	ON_BN_CLICKED(IDC_CHANGEIP_BTN,				&CIPScanUtilDlg::OnBnClickedChangeipBtn2)
 	ON_BN_CLICKED(IDC_CLOSE,					&CIPScanUtilDlg::OnBnClickedClose)
 	ON_BN_CLICKED(IDC_CLEAR_BTN,				&CIPScanUtilDlg::OnBnClickedClearBtn)
-	ON_BN_CLICKED(IDC_TEST_BTN,					&CIPScanUtilDlg::OnBnClickedTestBtn)
-	ON_BN_CLICKED(IDC_TEST_BTN2,				&CIPScanUtilDlg::OnBnClickedTestBtn2)
+	//ON_BN_CLICKED(IDC_TEST_BTN,					&CIPScanUtilDlg::OnBnClickedTestBtn)
+	//ON_BN_CLICKED(IDC_TEST_BTN2,				&CIPScanUtilDlg::OnBnClickedTestBtn2)
 	ON_BN_CLICKED(IDC_UPGRADE_BTN,				&CIPScanUtilDlg::OnBnClickedUpgradeBtn)
 	ON_BN_CLICKED(IDC_FACTORY_BTN,				&CIPScanUtilDlg::OnBnClickedFactoryBtn)
 	ON_CBN_SELCHANGE(IDC_ADAPTOR_CMB,			&CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb)
@@ -294,7 +294,8 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	//AddProtocolToCombo();
 	CallLayoutManager();
 	_LoadNetworkAdaptorInformation();
-
+	
+	// CreateFont CFont 초기화한다.
 	m_DISP_FONT.CreateFont(30, 0, 0, 0, FW_THIN, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, _T("MS Shell Dlg"));
 	m_btnScan.SetFont(&m_DISP_FONT);
 
@@ -539,6 +540,9 @@ void CIPScanUtilDlg::OnClose()
 	// Stop scan before close dialog
 	if (m_pScannerVision)
 		m_pScannerVision->StopScan();
+
+	if (m_pScannerMarkIn)
+		m_pScannerMarkIn->StopScan();
 
 	SAFE_DELETE(m_pScannerVision);
 	ClearScanList();
@@ -846,19 +850,12 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if( 0 == m_nScanAniCount )
 			{
-				/*if (VERSION_1 == m_iSelectVersion)
+				if (VERSION_1 == m_iSelectVersion)
 				{
 					if (m_pScannerVision)
 					{
 						m_pScannerVision->SendScanRequest();
 					}
-
-					if (m_pScannerMarkIn)
-					{
-						m_pScannerMarkIn->SendScanRequest();
-					}
-					
-					
 				}						
 				else if (VERSION_2 == m_iSelectVersion)
 				{
@@ -866,10 +863,8 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 					{
 						m_pScannerVision->SendScanRequestExt();
 					}
+				}
 
-						m_pScannerMarkIn->SendScanRequest();	
-				}*/
-				m_pScannerVision->SendScanRequestExt();
 				m_pScannerMarkIn->SendScanRequest();
 
 			}
@@ -1061,6 +1056,9 @@ BOOL CIPScanUtilDlg::CallLayoutManager()
 	CRect rcNewRect;
 	CRect rcOriginateRect;
 	int   nCaptionSize = GetSystemMetrics(SM_CYCAPTION);
+
+
+
 	GetWindowRect(&rcClientRect);
 	ScreenToClient(&rcClientRect);
 	rcClientRect.top += nCaptionSize;
@@ -1149,7 +1147,8 @@ BOOL CIPScanUtilDlg::CallLayoutManager()
 	rcNewRect.left = rcClientRect.left  + 14;
 	rcNewRect.top  = rcOriginateRect.bottom + 5;
 	rcNewRect.right= rcClientRect.right - 14;
-	rcNewRect.bottom= rcClientRect.bottom - 44;
+	//rcNewRect.bottom= rcClientRect.bottom - 44;
+	rcNewRect.bottom = rcClientRect.bottom - 33;
 	//rcNewRect.top  += 16;
 	
 	pServerList->MoveWindow(&rcNewRect);
@@ -1177,85 +1176,6 @@ BOOL CIPScanUtilDlg::CallLayoutManager()
 	return TRUE;
 }
 
-//static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParam)
-//{
-//	SCAN_INFO* pParam1 = (SCAN_INFO*)lParam1;
-//	SCAN_INFO* pParam2 = (SCAN_INFO*)lParam2;
-//	BOOL       bSortAscending = (BOOL)lParam;
-//	int        nComp = 0;
-//	if(pParam1 == NULL || pParam2 == NULL)
-//	{
-//		ASSERT(0); // abnormal case
-//		return 0;
-//	}
-//
-//	// first type compare
-//	if(pParam1->nExtraFieldCount == 0 && pParam2->nExtraFieldCount == 0)
-//	{
-//		// old type vs old type ==> compare address
-//		nComp = wcscmp(pParam1->szAddr, pParam2->szAddr);
-//		if(!bSortAscending) nComp = -nComp; // decending의 경우에는 순서를 바꿔서 리턴
-//
-//		return nComp;
-//	}
-//	else if(pParam1->nExtraFieldCount == 0 && pParam2->nExtraFieldCount != 0)
-//	{
-//		// none --> new 순서로
-//		nComp = 1;
-//		if(!bSortAscending) nComp = -nComp; // decending의 경우에는 순서를 바꿔서 리턴
-//
-//		return nComp;	
-//	}
-//	else if(pParam1->nExtraFieldCount !=0 && pParam2->nExtraFieldCount == 0)
-//	{
-//		// none  --> new 순서로
-//		nComp = -1;
-//		if(!bSortAscending) nComp = -nComp; // decending의 경우에는 순서를 바꿔서 리턴
-//
-//		return nComp;
-//	}
-//	else if(pParam1->nExtraFieldCount !=0 && pParam2->nExtraFieldCount != 0)
-//	{
-//		// new vs new의 경우
-//		// model 순서로 하고
-//		nComp = pParam1->_ReadValue(L"Model Type").Compare(pParam2->_ReadValue(L"Model Type"));
-//		if(nComp == 0) // Model이 같으면 address 순서로 정렬
-//		{
-//			nComp = wcscmp(pParam1->szAddr, pParam2->szAddr);
-//			if(!bSortAscending) nComp = -nComp; // decending의 경우에는 순서를 바꿔서 리턴
-//			return nComp;
-//		}
-//		else
-//		{
-//			if(!bSortAscending) nComp = -nComp; // decending의 경우에는 순서를 바꿔서 리턴
-//			return nComp;
-//		}
-//	}
-//	else
-//	{
-//		ASSERT(0); // abnormal case
-//	}
-//
-//	return 0;
-//}
-
-void CIPScanUtilDlg::OnBnClickedTestBtn()
-{
-	//m_cSvrList.SortItems(CompareFunc, TRUE); // Ascending order
-	//int nPorts[1] = {80};
-
-	//m_pThread = new CConnectCheckThread;
-	//if(m_pThread)
-	//	m_pThread->Start(GetSafeHwnd(), WM_CONNECT_CHECK, 0, L"220.95.233.172", (int*)nPorts, 1);
-}
-
-void CIPScanUtilDlg::OnBnClickedTestBtn2()
-{
-	//int nPorts[1] = {2700};
-	//m_pThread = new CConnectCheckThread;
-	//if(m_pThread)
-	//	m_pThread->Start(GetSafeHwnd(), WM_CONNECT_CHECK, 0, L"118.46.219.170", (int*)nPorts, 1);	
-}
 int CIPScanUtilDlg::_GetInsertPosition(SCAN_INFO* pInfo)
 {
 	int			i			= 0;
@@ -1314,11 +1234,13 @@ int CIPScanUtilDlg::_GetInsertPosition(SCAN_INFO* pInfo)
 
 void CIPScanUtilDlg::_Lock()
 {
+	// Critical Section에 진입.
 	EnterCriticalSection(&m_mt);
 }
 
 void CIPScanUtilDlg::_Unlock()
 {
+	// Critical Section에서 빠져나옴
 	LeaveCriticalSection(&m_mt);
 }
 
@@ -1327,6 +1249,7 @@ void CIPScanUtilDlg::OnDestroy()
 	_ClearAdaptorInfos();
 	m_DISP_FONT.DeleteObject();
 	CDialog::OnDestroy();
+	// CRITICAL_SECTION 객체를 소멸시킨다.
 	DeleteCriticalSection(&m_mt);
 }
 
@@ -1560,12 +1483,12 @@ void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
 
 	if( dlg.DoModal() == IDOK)
 	{
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
 	}
 	else
 	{
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
 	}
 
@@ -1647,12 +1570,12 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 
 	if(pDlg->DoModal() == IDOK)
 	{
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
 	}
 	else
 	{
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
 	}
 
@@ -1753,21 +1676,15 @@ void CIPScanUtilDlg::OnNMDblclkSvrList2(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CIPScanUtilDlg::OnNMDblclkSvrList3(NMHDR *pNMHDR, LRESULT *pResult)
 {
+	// 리스트 컨트롤에서 데이터가 있는 영역의 마우스 우 클릭 팝업 메뉴 띄우기
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 
 	// 2012-08-07 hkeins : 더블 클릭 시 Setup 화면을 실행하도록 적용
-	//if(m_cSvrList.GetCheck(m_nCurSvrListSel)==0)
-	//{
-	//	m_cSvrList.SetCheck(m_nCurSvrListSel, TRUE);
-	//}
-	//else
-	//{
-	//	m_cSvrList.SetCheck(m_nCurSvrListSel, FALSE);
-	//}
 	if(m_nCurSvrListSel >= 0)
 	{
 		CString szHttpAddress;
 		_Lock();
+		// 선택한 아이템의 인덱스를 얻는다.
 		SCAN_INFO* pInfo = (SCAN_INFO*)m_cSvrList.GetItemData(m_nCurSvrListSel);
 		if(pInfo)
 		{
@@ -1835,12 +1752,12 @@ void CIPScanUtilDlg::OnBnClickedFactoryBtn()
 
 	if(dlg.DoModal() == IDOK)
 	{
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
 	}
 	else
 	{
-		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
 		OnBnClickedClearBtn();
 	}
 
@@ -2022,22 +1939,6 @@ LRESULT CIPScanUtilDlg::OnSortRequest(WPARAM wParam, LPARAM lParam)
 //	m_CheckThreadList.clear();
 //}
 
-//void CIPScanUtilDlg::OnCbnSelchangeProtocalCombo()
-//{
-//	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-//	if( m_iSelectVersion != m_cmbProtocol.GetCurSel() )
-//	{
-//		if( TRUE == m_bScanning )
-//		{
-//			OnBnClickedScanBtn();
-//		}
-//
-//
-//		m_iSelectVersion	= m_cmbProtocol.GetCurSel();
-//		OnBnClickedClearBtn();
-//		OnBnClickedScanBtn();
-//	}
-//}
 
 // read accept address from UI
 void   CIPScanUtilDlg::_ReadBindAddress()
@@ -2112,19 +2013,19 @@ void CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb()
 }
 
 
-void CIPScanUtilDlg::OnCbnSelchangeProtocalCombo()
-{
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-		if( m_iSelectVersion != m_cmbProtocol.GetCurSel() )
-		{
-			if( TRUE == m_bScanning )
-			{
-				OnBnClickedScanBtn();
-			}
-	
-	
-			m_iSelectVersion	= m_cmbProtocol.GetCurSel();
-			OnBnClickedClearBtn();
-			OnBnClickedScanBtn();
-		}
-}
+//void CIPScanUtilDlg::OnCbnSelchangeProtocalCombo()
+//{
+//	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+//		//if( m_iSelectVersion != m_cmbProtocol.GetCurSel() )
+//		//{
+//		//	if( TRUE == m_bScanning )
+//		//	{
+//		//		OnBnClickedScanBtn();
+//		//	}
+//	
+//	
+//		//	m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+//		//	OnBnClickedClearBtn();
+//		//	OnBnClickedScanBtn();
+//		//}
+//}

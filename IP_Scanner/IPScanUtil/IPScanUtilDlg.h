@@ -60,7 +60,7 @@ protected:
 	CButton m_btnChangeIP;
 	CButton m_btnClearList;
 	CButton m_btnUpgrade;
-	CComboBox m_cmbProtocol;
+	//CComboBox m_cmbProtocol;
 	CComboBox m_cmbNetAdaptor;
 
 	/////////////////// Scanning Class 
@@ -73,13 +73,22 @@ protected:
 	int		m_nScanAniCount;
 	int		m_nCurSvrListSel;
 	BOOL    m_bInit;
+
+	/*
+	윈도우 쓰레드 동기화
+	CRITICAL_SECTION 객체를 초기화한다. 반환값이 없다.
+	유저모드에만 동작(커널 오브젝트가 아님)
+	임계영역의 진입을 위해 CRITICAL_SECTION 오브젝트 열쇠(key)를 얻는 방식
+	*/
 	CRITICAL_SECTION m_mt;
+
 	CMenu   m_cPopupMenu;
 	BOOL	m_bSortAscending;
 	int     m_nSortOrient;
 	int     m_iSelectVersion;
 	ULONG   m_ulAcceptAddress;
-	//WCHAR	m_szTempValue[256 * 8];
+	
+	// Window GDI(그래픽 디바이스 인터페이스) 글꼴을 캡슐화하고 글꼴 조작을 위한 멤버 함수를 제공
 	CFont   m_DISP_FONT;
 
 	void  _ReadBindAddress(); // read accept address from UI
@@ -131,8 +140,8 @@ public:
 	afx_msg void OnNMDblclkSvrList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnBnClickedTestBtn();
-	afx_msg void OnBnClickedTestBtn2();
+	/*afx_msg void OnBnClickedTestBtn();
+	afx_msg void OnBnClickedTestBtn2();*/
 	afx_msg void OnDestroy();
 	afx_msg void OnNMRClickSvrList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnSetupResolution();
@@ -149,5 +158,5 @@ public:
 	afx_msg LRESULT OnSortRequest(WPARAM wParam, LPARAM lParam);
 	
 	afx_msg void OnCbnSelchangeAdaptorCmb();
-	afx_msg void OnCbnSelchangeProtocalCombo();
+	//afx_msg void OnCbnSelchangeProtocalCombo();
 };

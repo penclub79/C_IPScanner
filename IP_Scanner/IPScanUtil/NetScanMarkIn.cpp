@@ -87,6 +87,12 @@ void CNetScanMarkIn::WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, 
 void CNetScanMarkIn::thrMarkInReceiver()
 {
 	// Local ----------------------------------------------------------
+	typedef struct tagCAPTION_HEADER
+	{
+		char	szCaption[32];
+		int		iDataLen;
+	}CAPTION_HEADER, *LPCAPTION_HEADER;
+	
 	sockaddr_in			ReceiverAddr;
 	BOOL				bEnable				= TRUE;
 	int					iSenderAddrLen		= 0;
@@ -104,8 +110,11 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	LPCAPTION_HEADER	pstCpHeader			= NULL;
 	SCAN_EXT_INFO*		pExtInfo			= NULL;
 	CString				strConver;
+	LPCAPTION_HEADER	pCaption			= NULL;
+	int iToRead = 0;
+	int iItemCnt = 0;
 	// ----------------------------------------------------------------
-
+	
 	// IPv4, UDP 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -138,16 +147,18 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	SOCKADDR_IN SenderAddr;
 	iSenderAddrLen = sizeof(SOCKADDR_IN);
 
+	m_pReceiverBuff = new char[sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO)];
+	memset(m_pReceiverBuff, 0, sizeof(char)* sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO));
+	
 	if (NULL == m_pReceiverBuff)
 	{
 		if (m_hNotifyWnd)
 		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
 		}
+		goto EXIT_LOOP;
 	}
-	m_pReceiverBuff = new char[sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO)];
-	memset(m_pReceiverBuff, 0, sizeof(char)* sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO));
-
+	
 	pReceive = (HEADER_BODY*)m_pReceiverBuff;
 
 	// Recev Data Thread live
@@ -207,14 +218,13 @@ void CNetScanMarkIn::thrMarkInReceiver()
 						ConversionMac(pReceive->stDevInfo.stNetwork_info.szMac_address, &aszMacAdrs[0]);
 
 					if (pScanInfo)
-					{
-						
+					{					
 						WideCopyStringFromAnsi(pScanInfo->szAddr, 30, aszIpAddress);
 						WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, aszGateWay);
 						WideCopyStringFromAnsi(pScanInfo->szMAC, 30, aszMacAdrs);
 
 						pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
-						pScanInfo->nStreamPort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
+						pScanInfo->nStreamPort = pReceive->stDevInfo.stNetwork_info.uiBase_port;						
 
 						if (m_hNotifyWnd)
 						{

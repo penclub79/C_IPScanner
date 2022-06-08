@@ -202,83 +202,6 @@ void CNetScanVision::thrReceiver()
 {
 	// initialize routine here
 	// wait receive break from user or timer(timer will occur 1 minute after)
-	//SOCKET m_hSockSend = NULL;
-
-	//char send_buffer[255];
-	//sockaddr_in TargetAddr;
-
-//	//{{ TEST : server info add test
-//#ifdef _DEBUG
-//	SCAN_INFO* pScanInfo = NULL;
-//
-//	pScanInfo = new SCAN_INFO;
-//	wcscpy_s(pScanInfo->szAddr, L"192.168.0.6");
-//	wcscpy_s(pScanInfo->szGateWay, L"192.168.0.1");
-//	wcscpy_s(pScanInfo->szMAC, L"FF:FF:FF:FA");
-//	pScanInfo->nStreamPort	= 2700;
-//	pScanInfo->nHTTPPort	= 80;
-//	pScanInfo->version      = VERSION_1;
-//	pScanInfo->nExtraFieldCount = 0;
-//	pScanInfo->pExtScanInfos = NULL;
-//	if(m_hNotifyWnd)
-//		PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
-//
-//	Sleep(100);
-//	pScanInfo = new SCAN_INFO;
-//	wcscpy_s(pScanInfo->szAddr, L"118.46.219.170");
-//	wcscpy_s(pScanInfo->szGateWay, L"118.46.219.254");
-//	wcscpy_s(pScanInfo->szMAC, L"00:ee:de:23:02:01");
-//	pScanInfo->nStreamPort	= 2700;
-//	pScanInfo->nHTTPPort	= 80;
-//	pScanInfo->version      = VERSION_2;
-//	pScanInfo->cIsDHCP      = 0;
-//	pScanInfo->nExtraFieldCount = 3;
-//	wcscpy_s(pScanInfo->szSubnetMask, L"255.255.255.0");
-//
-//	pScanInfo->pExtScanInfos = new SCAN_EXT_INFO[3];
-//	wcscpy_s(pScanInfo->pExtScanInfos[0].szCaption, 32, L"System Name");
-//	pScanInfo->pExtScanInfos[0].lpszValue = new WCHAR[100];
-//	wcscpy_s(pScanInfo->pExtScanInfos[0].lpszValue, 100, L"Vision Mi");
-//	pScanInfo->pExtScanInfos[0].nValueLen = wcslen(pScanInfo->pExtScanInfos[0].lpszValue) + 1;
-//
-//	wcscpy_s(pScanInfo->pExtScanInfos[1].szCaption, 32, L"Model Type");
-//	pScanInfo->pExtScanInfos[1].lpszValue = new WCHAR[100];
-//	wcscpy_s(pScanInfo->pExtScanInfos[1].lpszValue, 100, L"Vision Mi");
-//	pScanInfo->pExtScanInfos[1].nValueLen = wcslen(pScanInfo->pExtScanInfos[1].lpszValue) + 1;
-//
-//	wcscpy_s(pScanInfo->pExtScanInfos[2].szCaption, 32, L"Firmware Version");
-//	pScanInfo->pExtScanInfos[2].lpszValue = new WCHAR[100];
-//	wcscpy_s(pScanInfo->pExtScanInfos[2].lpszValue, 100, L"1.0.1.10");
-//	pScanInfo->pExtScanInfos[2].nValueLen = wcslen(pScanInfo->pExtScanInfos[2].lpszValue) + 1;
-//
-//	if(m_hNotifyWnd)
-//		PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
-//
-//	Sleep(100);
-//
-//	//pScanInfo = new SCAN_INFO;
-//	//wcscpy_s(pScanInfo->szAddr, L"192.168.0.8");
-//	//wcscpy_s(pScanInfo->szGateWay, L"192.168.0.1");
-//	//wcscpy_s(pScanInfo->szMAC, L"FF:FF:FF:FC");
-//	//pScanInfo->nStreamPort	= 2700;
-//	//pScanInfo->nHTTPPort	= 80;
-//	//pScanInfo->version      = VERSION_2;
-//	//pScanInfo->cIsDHCP      = 1;
-//	//wcscpy_s(pScanInfo->szSubnetMask, L"255.255.255.0");
-//
-//	//if(m_hNotifyWnd)
-//	//	PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
-//	return;
-//#endif
-	//}}
-	////{{ error msg test code
-	//if(m_hNotifyWnd)
-	//	::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
-	//goto EXIT_LOOP;
-	////}}
-	// 소켓 생성
-	//m_hSockSend = socket(AF_INET, SOCK_DGRAM, 0);
-
 	sockaddr_in ReceiverAddr;
 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
@@ -307,30 +230,7 @@ void CNetScanVision::thrReceiver()
 		goto EXIT_LOOP;
 	}
 
-	// broadcast로 뿌려준다
-	//sockaddr_in 
-	//TargetAddr.sin_family = AF_INET;
-	//TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
-	//TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
-
-	//memset(send_buffer, 0, sizeof(send_buffer));
-
-	//HEADER2* pSendHeader = (HEADER2*)send_buffer;
-	//pSendHeader->magic = MAGIC2_CODE;
-	//pSendHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	//pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
-	//pSendHeader->body_size = 0;
-	//if(sendto(hSockSend, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
-	//{
-	//	TRACE("sendto to error = %d\n", WSAGetLastError());
-	//	closesocket(m_hSockReceive);
-	//	closesocket(hSockSend);
-	//	m_hSockReceive = NULL;
-	//	return;
-	//}
-	//dialog측에서 10초마다 한번씩 재반복
-	//SendScanRequest();
-
+	
 	// 서버의 응답을 기다린다
 	SOCKADDR_IN SenderAddr;
 	int nSenderAddrLen = sizeof(SOCKADDR_IN);
