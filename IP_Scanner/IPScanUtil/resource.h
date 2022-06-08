@@ -60,6 +60,8 @@
 #define IDS_MCU_VERSION                 138
 #define IDD_CAM_OSDCHANGE               138
 #define IDS_MCU_MODEL                   139
+#define IDS_VIDEO_COUNT					140
+#define IDS_SW_VERSION					141
 #define IDC_SVR_LIST                    1000
 #define IDC_SCAN_BTN                    1001
 #define IDC_CHANGEIP_BTN                1002

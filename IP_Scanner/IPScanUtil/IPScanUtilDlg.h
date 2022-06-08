@@ -32,20 +32,22 @@ public:
 		SUBITEM_IPADDRESS			= 0 ,
 		SUBITEM_MACADDRESS			= 1 ,
 		SUBITEM_IS_DHCP				= 2 ,
-		SUBITEM_PORTSTREAM			= 3 ,
-		SUBITEM_PORTHTTP			= 4 ,
-		SUBITEM_PORTUPGRADE			= 5 ,
-		SUBITEM_SYSTEMNAME			= 6 ,
-		SUBITEM_MODELTYPE			= 7 ,
-		SUBITEM_FIRMWAREVERSION		= 8 ,
-		SUBITEM_MCU_MODELTYPE		= 9 ,
-		SUBITEM_MCU_VERSION			= 10,
-		SUBITEM_SUPPORTRESOLUTION	= 11,
-		SUBITEM_VIDEOFORMAT			= 12,
-		SUBITEM_ALARMINCOUNT		= 13,
-		SUBITEM_ALARMOUTCOUNT		= 14,
-		SUBITEM_AUDIOINCOUNT		= 15,
-		SUBITEM_AUDIOOUTCOUNT		= 16, 
+		//SUBITEM_PORTSTREAM			= 3 ,
+		SUBITEM_PORTHTTP			= 3 ,
+		SUBITEM_PORTUPGRADE			= 4 ,
+		SUBITEM_SYSTEMNAME			= 5 ,
+		SUBITEM_MODELTYPE			= 6 ,
+		SUBITEM_FIRMWAREVERSION		= 7 ,
+		SUBITEM_SW_VERSION			= 8 ,
+		SUBITEM_VIDEOCOUNT			= 9 ,
+		//SUBITEM_MCU_MODELTYPE		= 10 ,
+		//SUBITEM_MCU_VERSION			= 11,
+		//SUBITEM_SUPPORTRESOLUTION	= 12,
+		//SUBITEM_VIDEOFORMAT			= 13,
+		//SUBITEM_ALARMINCOUNT		= 14,
+		//SUBITEM_ALARMOUTCOUNT		= 15,
+		//SUBITEM_AUDIOINCOUNT		= 16,
+		//SUBITEM_AUDIOOUTCOUNT		= 17, 
 	};
 
 	int  CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, tagSCAN_STRUCT* pInfo2);
@@ -147,7 +149,7 @@ public:
 	afx_msg void OnSetupResolution();
 	afx_msg void OnSetupOSD();
 	afx_msg void OnNMClickSvrList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnBnClickedUpgradeBtn();
+	//afx_msg void OnBnClickedUpgradeBtn();
 	afx_msg void OnBnClickedChangeipBtn2();
 	afx_msg void OnNMDblclkSvrList2(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMDblclkSvrList3(NMHDR *pNMHDR, LRESULT *pResult);

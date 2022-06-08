@@ -76,39 +76,42 @@ int  tagSCAN_STRUCT::_CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, t
 	case 1: // MAC
 		nResult = wcscmp(pInfo1->szMAC, pInfo2->szMAC);
 		break;
-	case 2: // Stream Port
-		nResult = pInfo1->nStreamPort - pInfo2->nStreamPort;
-		break;
+	//case 2: // Stream Port
+	//	nResult = pInfo1->nStreamPort - pInfo2->nStreamPort;
+	//	break;
 	case 3: // Http Port
 		nResult = pInfo1->nHTTPPort - pInfo2->nHTTPPort;
 		break;
-	case 4: // Server Name
-		nResult = pInfo1->_ReadValue(L"System Name").Compare(pInfo2->_ReadValue(L"System Name"));
-		break;
+	//case 4: // Server Name
+	//	nResult = pInfo1->_ReadValue(L"System Name").Compare(pInfo2->_ReadValue(L"System Name"));
+	//	break;
 	case 5: // Model
 		nResult = pInfo1->_ReadValue(L"Model Type").Compare(pInfo2->_ReadValue(L"Model Type"));
 		break;
 	case 6: // Firmware Version
 		nResult = pInfo1->_ReadValue(L"Firmware Version").Compare(pInfo2->_ReadValue(L"Firmware Version"));
 		break;
-	case 7: // Resolution
-		nResult = pInfo1->_ReadValue(L"Support Resolution").Compare(pInfo2->_ReadValue(L"Support Resolution"));
+	case 7: // Video Count
+		nResult = pInfo1->_ReadValue(L"Video Count").Compare(pInfo2->_ReadValue(L"Video Count"));
 		break;
-	case 8: // Video format
-		nResult = pInfo1->_ReadValue(L"Video Format").Compare(pInfo2->_ReadValue(L"Video Format"));
-		break;
-	case 9: // Alarm in count
-		nResult = pInfo1->_ReadValue(L"Alarm In Count").Compare(pInfo2->_ReadValue(L"Alarm In Count"));
-		break;
-	case 10:// Alarm out count
-		nResult = pInfo1->_ReadValue(L"Alarm Out Count").Compare(pInfo2->_ReadValue(L"Alarm Out Count"));
-		break;
-	case 11: // Audio in count
-		nResult = pInfo1->_ReadValue(L"Audio In Count").Compare(pInfo2->_ReadValue(L"Audio In Count"));
-		break;
-	case 12: // Audio out count
-		nResult = pInfo1->_ReadValue(L"Audio Out Count").Compare(pInfo2->_ReadValue(L"Audio Out Count"));
-		break;
+	//case 7: // Resolution
+	//	nResult = pInfo1->_ReadValue(L"Support Resolution").Compare(pInfo2->_ReadValue(L"Support Resolution"));
+	//	break;
+	//case 8: // Video format
+	//	nResult = pInfo1->_ReadValue(L"Video Format").Compare(pInfo2->_ReadValue(L"Video Format"));
+	//	break;
+	//case 9: // Alarm in count
+	//	nResult = pInfo1->_ReadValue(L"Alarm In Count").Compare(pInfo2->_ReadValue(L"Alarm In Count"));
+	//	break;
+	//case 10:// Alarm out count
+	//	nResult = pInfo1->_ReadValue(L"Alarm Out Count").Compare(pInfo2->_ReadValue(L"Alarm Out Count"));
+	//	break;
+	//case 11: // Audio in count
+	//	nResult = pInfo1->_ReadValue(L"Audio In Count").Compare(pInfo2->_ReadValue(L"Audio In Count"));
+	//	break;
+	//case 12: // Audio out count
+	//	nResult = pInfo1->_ReadValue(L"Audio Out Count").Compare(pInfo2->_ReadValue(L"Audio Out Count"));
+	//	break;
 	default:
 		ASSERT(0); // column added?
 		nResult = 0;

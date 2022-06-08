@@ -135,7 +135,7 @@ void CIPScanUtilDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SCAN_BTN		, m_btnScan);
 	DDX_Control(pDX, IDC_CLEAR_BTN		, m_btnClearList);
 	DDX_Control(pDX, IDC_CHANGEIP_BTN	, m_btnChangeIP);
-	DDX_Control(pDX, IDC_UPGRADE_BTN	, m_btnUpgrade);
+	//DDX_Control(pDX, IDC_UPGRADE_BTN	, m_btnUpgrade);
 	//DDX_Control(pDX, IDC_PROTOCAL_COMBO	, m_cmbProtocol);
 	DDX_Control(pDX, IDC_ADAPTOR_CMB	, m_cmbNetAdaptor);
 }
@@ -169,7 +169,7 @@ BEGIN_MESSAGE_MAP(CIPScanUtilDlg, CDialog)
 	ON_BN_CLICKED(IDC_CLEAR_BTN,				&CIPScanUtilDlg::OnBnClickedClearBtn)
 	//ON_BN_CLICKED(IDC_TEST_BTN,					&CIPScanUtilDlg::OnBnClickedTestBtn)
 	//ON_BN_CLICKED(IDC_TEST_BTN2,				&CIPScanUtilDlg::OnBnClickedTestBtn2)
-	ON_BN_CLICKED(IDC_UPGRADE_BTN,				&CIPScanUtilDlg::OnBnClickedUpgradeBtn)
+	//ON_BN_CLICKED(IDC_UPGRADE_BTN,				&CIPScanUtilDlg::OnBnClickedUpgradeBtn)
 	ON_BN_CLICKED(IDC_FACTORY_BTN,				&CIPScanUtilDlg::OnBnClickedFactoryBtn)
 	ON_CBN_SELCHANGE(IDC_ADAPTOR_CMB,			&CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb)
 	//ON_COMMAND(IDC_PROTOCAL_COMBO, &CIPScanUtilDlg::OnProtocalCombo)
@@ -234,51 +234,59 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	
 	str.LoadString(IDS_ADDRESS);
 	strItem = L"IP " + str;
-	m_cSvrList.InsertColumn(SUBITEM_IPADDRESS		, strItem, LVCFMT_CENTER, 120, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_IPADDRESS		, strItem, LVCFMT_CENTER, 138, 0 );
 	strItem = L"MAC " + str;
-	m_cSvrList.InsertColumn(SUBITEM_MACADDRESS		, strItem, LVCFMT_CENTER, 120, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_MACADDRESS		, strItem, LVCFMT_CENTER, 138, 0 );
 
 	strItem.LoadString(IDS_IP_TYPE);
-	m_cSvrList.InsertColumn(SUBITEM_IS_DHCP			, strItem, LVCFMT_CENTER, 50, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_IS_DHCP			, strItem, LVCFMT_CENTER, 138, 0 );
 
 	str.LoadString(IDS_PORT); 
 	strItem.LoadString(IDS_STREAM);
 	strItem += L" ";
 	strItem += str;
-	m_cSvrList.InsertColumn(SUBITEM_PORTSTREAM		, strItem, LVCFMT_CENTER, 40, 0 );
+	//m_cSvrList.InsertColumn(SUBITEM_PORTSTREAM		, strItem, LVCFMT_CENTER, 40, 0 );
 	strItem = L"HTTP "; 
 	strItem += str;
-	m_cSvrList.InsertColumn(SUBITEM_PORTHTTP		, strItem, LVCFMT_CENTER, 40, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_PORTHTTP		, strItem, LVCFMT_CENTER, 138, 0 );
 	strItem = L"Upgrade ";
 	strItem += str;
-	m_cSvrList.InsertColumn(SUBITEM_PORTUPGRADE		, strItem, LVCFMT_CENTER, 40, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_PORTUPGRADE		, strItem, LVCFMT_CENTER, 138, 0 );
 
-	strItem.LoadString(IDS_SERVER_NAME);
-	m_cSvrList.InsertColumn(SUBITEM_SYSTEMNAME		, strItem, LVCFMT_CENTER, 150, 0 );
+	//strItem.LoadString(IDS_SERVER_NAME);
+	//m_cSvrList.InsertColumn(SUBITEM_SYSTEMNAME		, strItem, LVCFMT_CENTER, 150, 0 );
 
 	strItem.LoadString(IDS_MODEL);
-	m_cSvrList.InsertColumn(SUBITEM_MODELTYPE		, strItem, LVCFMT_CENTER, 130, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_MODELTYPE		, strItem, LVCFMT_CENTER, 138, 0 );
 
 	strItem.LoadString(IDS_FIRMWARE_VERSION);
-	m_cSvrList.InsertColumn(SUBITEM_FIRMWAREVERSION	, strItem, LVCFMT_CENTER, 160, 0 );
+	m_cSvrList.InsertColumn(SUBITEM_FIRMWAREVERSION	, strItem, LVCFMT_CENTER, 138, 0 );
 
-	strItem.LoadString(IDS_MCU_MODEL);
-	m_cSvrList.InsertColumn(SUBITEM_MCU_MODELTYPE	, strItem, LVCFMT_CENTER, 50, 0 );
-	strItem.LoadString(IDS_MCU_VERSION);
-	m_cSvrList.InsertColumn(SUBITEM_MCU_VERSION		, strItem, LVCFMT_CENTER, 50, 0 );
+	strItem = L"S/W Version";
+	strItem.LoadString(IDS_SW_VERSION);
+	m_cSvrList.InsertColumn(SUBITEM_SW_VERSION, strItem, LVCFMT_CENTER, 138, 0);
 
-	strItem.LoadString(IDS_RESOLUTIONS);
-	m_cSvrList.InsertColumn(SUBITEM_SUPPORTRESOLUTION, strItem, LVCFMT_CENTER, 180, 0 );
-	strItem.LoadString(IDS_VIDEO_FORMAT);
-	m_cSvrList.InsertColumn(SUBITEM_VIDEOFORMAT		, strItem, LVCFMT_CENTER, 80, 0 );
-	strItem.LoadString(IDS_ALARM_IN_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_ALARMINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-	strItem.LoadString(IDS_ALARM_OUT_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_ALARMOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-	strItem.LoadString( IDS_AUDIO_IN_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_AUDIOINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-	strItem.LoadString(IDS_AUDIO_OUT_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_AUDIOOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
+	strItem = L"Video Count";
+	strItem.LoadString(IDS_VIDEO_COUNT);
+	m_cSvrList.InsertColumn(SUBITEM_VIDEOCOUNT, strItem, LVCFMT_CENTER, 138, 0);
+
+	//strItem.LoadString(IDS_MCU_MODEL);
+	//m_cSvrList.InsertColumn(SUBITEM_MCU_MODELTYPE	, strItem, LVCFMT_CENTER, 120, 0 );
+	//strItem.LoadString(IDS_MCU_VERSION);
+	//m_cSvrList.InsertColumn(SUBITEM_MCU_VERSION		, strItem, LVCFMT_CENTER, 120, 0 );
+
+	//strItem.LoadString(IDS_RESOLUTIONS);
+	//m_cSvrList.InsertColumn(SUBITEM_SUPPORTRESOLUTION, strItem, LVCFMT_CENTER, 180, 0 );
+	//strItem.LoadString(IDS_VIDEO_FORMAT);
+	//m_cSvrList.InsertColumn(SUBITEM_VIDEOFORMAT		, strItem, LVCFMT_CENTER, 80, 0 );
+	//strItem.LoadString(IDS_ALARM_IN_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_ALARMINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
+	//strItem.LoadString(IDS_ALARM_OUT_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_ALARMOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
+	//strItem.LoadString( IDS_AUDIO_IN_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_AUDIOINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
+	//strItem.LoadString(IDS_AUDIO_OUT_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_AUDIOOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
 
 
 	m_cSvrList.Init();
@@ -298,6 +306,12 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	// CreateFont CFont 초기화한다.
 	m_DISP_FONT.CreateFont(30, 0, 0, 0, FW_THIN, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, _T("MS Shell Dlg"));
 	m_btnScan.SetFont(&m_DISP_FONT);
+
+	/*
+		임시로 버튼을 숨김.(2022-06-08)
+	*/
+	(GetDlgItem(IDC_UPGRADE_BTN))->ShowWindow(FALSE);
+	(GetDlgItem(IDC_FACTORY_BTN))->ShowWindow(FALSE);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -687,19 +701,18 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		else
 			strTemp.LoadString(IDS_DHCP);
 
-
 		item.mask		= LVIF_TEXT;
 		item.iItem		= (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
 		item.iSubItem	= SUBITEM_IS_DHCP;
 		item.pszText	= (LPTSTR)(LPCTSTR)strTemp;
 		m_cSvrList.SetItem(&item);
 
-		strTemp.Format(_T("%d"), pScanInfo->nStreamPort);
-		item.mask = LVIF_TEXT;
-		item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-		item.iSubItem = SUBITEM_PORTSTREAM;
-		item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-		m_cSvrList.SetItem(&item);
+		//strTemp.Format(_T("%d"), pScanInfo->nStreamPort);
+		//item.mask = LVIF_TEXT;
+		//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+		//item.iSubItem = SUBITEM_PORTSTREAM;
+		//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+		//m_cSvrList.SetItem(&item);
 
 		strTemp.Format(_T("%d"), pScanInfo->nHTTPPort);
 		item.mask = LVIF_TEXT;
@@ -739,66 +752,88 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"MCU Model");	
+			strTemp = pScanInfo->_ReadValue(L"S/W Version");
 			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_MCU_MODELTYPE;
+			item.iItem = (nCurrentItem < 0) ? nInsertIndex : nCurrentItem;
+			item.iSubItem = SUBITEM_VIDEOCOUNT;
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"MCU Version");
+			strTemp = pScanInfo->_ReadValue(L"Video Count");
 			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_MCU_VERSION;
+			item.iItem = (nCurrentItem < 0) ? nInsertIndex : nCurrentItem;
+			item.iSubItem = SUBITEM_VIDEOCOUNT;
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"Support Resolution");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_SUPPORTRESOLUTION;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
-			
-			strTemp = pScanInfo->_ReadValue(L"Video Format");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_VIDEOFORMAT;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
+			//strTemp = pScanInfo->_ReadValue(L"MCU Model");	
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_MCU_MODELTYPE;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"Alarm In Count");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_ALARMINCOUNT;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
+			//strTemp = pScanInfo->_ReadValue(L"MCU Version");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_MCU_VERSION;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"Alarm Out Count");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_ALARMOUTCOUNT;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
+			//strTemp = pScanInfo->_ReadValue(L"Support Resolution");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_SUPPORTRESOLUTION;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
+			//
+			//strTemp = pScanInfo->_ReadValue(L"Video Format");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_VIDEOFORMAT;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"Audio In Count");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_AUDIOINCOUNT;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
+			//strTemp = pScanInfo->_ReadValue(L"Alarm In Count");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_ALARMINCOUNT;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"Audio Out Count");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_AUDIOOUTCOUNT;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
+			//strTemp = pScanInfo->_ReadValue(L"Alarm Out Count");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_ALARMOUTCOUNT;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
+
+			//strTemp = pScanInfo->_ReadValue(L"Audio In Count");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_AUDIOINCOUNT;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
+
+			//strTemp = pScanInfo->_ReadValue(L"Audio Out Count");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_AUDIOOUTCOUNT;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
 		}
 		else
 		{
 			strTemp.LoadString(IDS_N_AND_A);
-			for(i = SUBITEM_PORTUPGRADE; i <= SUBITEM_AUDIOOUTCOUNT; i ++)
+			//for(i = SUBITEM_PORTUPGRADE; i <= SUBITEM_AUDIOOUTCOUNT; i ++)
+			//{
+			//	item.mask = LVIF_TEXT;
+			//	item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//	item.iSubItem = i;
+			//	item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//	m_cSvrList.SetItem(&item);
+			//}
+			for (i = SUBITEM_PORTUPGRADE; i <= SUBITEM_VIDEOCOUNT; i++)
 			{
 				item.mask = LVIF_TEXT;
 				item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
@@ -1057,8 +1092,6 @@ BOOL CIPScanUtilDlg::CallLayoutManager()
 	CRect rcOriginateRect;
 	int   nCaptionSize = GetSystemMetrics(SM_CYCAPTION);
 
-
-
 	GetWindowRect(&rcClientRect);
 	ScreenToClient(&rcClientRect);
 	rcClientRect.top += nCaptionSize;
@@ -1148,7 +1181,7 @@ BOOL CIPScanUtilDlg::CallLayoutManager()
 	rcNewRect.top  = rcOriginateRect.bottom + 5;
 	rcNewRect.right= rcClientRect.right - 14;
 	//rcNewRect.bottom= rcClientRect.bottom - 44;
-	rcNewRect.bottom = rcClientRect.bottom - 33;
+	rcNewRect.bottom = rcClientRect.bottom - 56;
 	//rcNewRect.top  += 16;
 	
 	pServerList->MoveWindow(&rcNewRect);
@@ -1431,78 +1464,79 @@ void CIPScanUtilDlg::OnNMClickSvrList(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
-{
-	int			i			= 0;
-	int			nUpgradeCnt = 0;
-	int			nCurPos		= 0;
-	SCAN_INFO*	pScanInfo	= NULL;
-	BOOL		bScanning	= m_bScanning;
-
-	for(i = 0; i < m_cSvrList.GetItemCount(); i++)
-	{
-		if(m_cSvrList.GetCheck(i))
-		{
-			nUpgradeCnt++;
-		}
-	}
-
-	if(nUpgradeCnt <= 0)
-	{
-		AfxMessageBox(_T("Please select one or more ipcameras..."), MB_ICONWARNING);
-		return;
-	}
-
-	pScanInfo = new SCAN_INFO[nUpgradeCnt]; // SCAN_INFO[] 배열을 UpgradeDlg에 파라메터로 넘겨준다
-	if(pScanInfo == NULL)
-	{
-		AfxMessageBox(_T("Out of memory"), MB_ICONWARNING);
-		return;
-	}
-	nCurPos = 0;
-
-	_Lock();
-	for(i = 0; i < m_cSvrList.GetItemCount(); i++)
-	{
-		if(m_cSvrList.GetCheck(i))
-		{
-			pScanInfo[nCurPos++] = *((SCAN_INFO*)(m_cSvrList.GetItemData(i)));// 배열의 각각 요소를 복사
-		}
-	}
-	_Unlock();
-
-	if( TRUE == bScanning )
-	{
-		// 스캔중이 었다면 업그레이드 하기 이전에 종료 시킨다. 
-		OnBnClickedScanBtn();
-	}
-
-
-	CUpgradeDlg dlg;
-	dlg.SetScaninfo ( nUpgradeCnt, pScanInfo ); // SCAN_INFO[] 배열을 UpgradeDlg에 파라메터로 넘겨준다
-
-	if( dlg.DoModal() == IDOK)
-	{
-		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
-		OnBnClickedClearBtn();
-	}
-	else
-	{
-		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
-		OnBnClickedClearBtn();
-	}
-
-	if(	pScanInfo )
-	{
-		delete[] pScanInfo;
-		pScanInfo = NULL;
-	}
-
-	if( TRUE == bScanning )
-	{
-		OnBnClickedScanBtn();
-	}
-}
+// 잠시 업그레이드 버튼 Hide를 위한 주석처리(2022-06-08)
+//void CIPScanUtilDlg::OnBnClickedUpgradeBtn()
+//{
+//	int			i			= 0;
+//	int			nUpgradeCnt = 0;
+//	int			nCurPos		= 0;
+//	SCAN_INFO*	pScanInfo	= NULL;
+//	BOOL		bScanning	= m_bScanning;
+//
+//	for(i = 0; i < m_cSvrList.GetItemCount(); i++)
+//	{
+//		if(m_cSvrList.GetCheck(i))
+//		{
+//			nUpgradeCnt++;
+//		}
+//	}
+//
+//	if(nUpgradeCnt <= 0)
+//	{
+//		AfxMessageBox(_T("Please select one or more ipcameras..."), MB_ICONWARNING);
+//		return;
+//	}
+//
+//	pScanInfo = new SCAN_INFO[nUpgradeCnt]; // SCAN_INFO[] 배열을 UpgradeDlg에 파라메터로 넘겨준다
+//	if(pScanInfo == NULL)
+//	{
+//		AfxMessageBox(_T("Out of memory"), MB_ICONWARNING);
+//		return;
+//	}
+//	nCurPos = 0;
+//
+//	_Lock();
+//	for(i = 0; i < m_cSvrList.GetItemCount(); i++)
+//	{
+//		if(m_cSvrList.GetCheck(i))
+//		{
+//			pScanInfo[nCurPos++] = *((SCAN_INFO*)(m_cSvrList.GetItemData(i)));// 배열의 각각 요소를 복사
+//		}
+//	}
+//	_Unlock();
+//
+//	if( TRUE == bScanning )
+//	{
+//		// 스캔중이 었다면 업그레이드 하기 이전에 종료 시킨다. 
+//		OnBnClickedScanBtn();
+//	}
+//
+//
+//	CUpgradeDlg dlg;
+//	dlg.SetScaninfo ( nUpgradeCnt, pScanInfo ); // SCAN_INFO[] 배열을 UpgradeDlg에 파라메터로 넘겨준다
+//
+//	if( dlg.DoModal() == IDOK)
+//	{
+//		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+//		OnBnClickedClearBtn();
+//	}
+//	else
+//	{
+//		//m_iSelectVersion	= m_cmbProtocol.GetCurSel();
+//		OnBnClickedClearBtn();
+//	}
+//
+//	if(	pScanInfo )
+//	{
+//		delete[] pScanInfo;
+//		pScanInfo = NULL;
+//	}
+//
+//	if( TRUE == bScanning )
+//	{
+//		OnBnClickedScanBtn();
+//	}
+//}
 
 void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 {
@@ -1825,9 +1859,9 @@ int  CIPScanUtilDlg::CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, ta
 	case CIPScanUtilDlg::SUBITEM_IS_DHCP:    // DHCP 2
 		nResult = (pInfo1->cIsDHCP - pInfo2->cIsDHCP);
 		break;
-	case CIPScanUtilDlg::SUBITEM_PORTSTREAM: // Stream Port 3
-		nResult = pInfo1->nStreamPort - pInfo2->nStreamPort;
-		break;
+	//case CIPScanUtilDlg::SUBITEM_PORTSTREAM: // Stream Port 3
+	//	nResult = pInfo1->nStreamPort - pInfo2->nStreamPort;
+	//	break;
 	case CIPScanUtilDlg::SUBITEM_PORTHTTP:   // Http Port 4
 		nResult = pInfo1->nHTTPPort - pInfo2->nHTTPPort;
 		break;
@@ -1843,24 +1877,30 @@ int  CIPScanUtilDlg::CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, ta
 	case CIPScanUtilDlg::SUBITEM_FIRMWAREVERSION: // Firmware Version 8
 		nResult = pInfo1->_ReadValue(L"Firmware Version").Compare(pInfo2->_ReadValue(L"Firmware Version"));
 		break;
-	case CIPScanUtilDlg::SUBITEM_SUPPORTRESOLUTION: // Resolution 9
-		nResult = pInfo1->_ReadValue(L"Support Resolution").Compare(pInfo2->_ReadValue(L"Support Resolution"));
+	case CIPScanUtilDlg::SUBITEM_SW_VERSION: // SW Version 8
+		nResult = pInfo1->_ReadValue(L"S/W Version").Compare(pInfo2->_ReadValue(L"S/W Version"));
 		break;
-	case CIPScanUtilDlg::SUBITEM_VIDEOFORMAT:   // Video format 10
-		nResult = pInfo1->_ReadValue(L"Video Format").Compare(pInfo2->_ReadValue(L"Video Format"));
+	case CIPScanUtilDlg::SUBITEM_VIDEOCOUNT: // Video Count 9
+		nResult = pInfo1->_ReadValue(L"Video Count").Compare(pInfo2->_ReadValue(L"Video Count"));
 		break;
-	case CIPScanUtilDlg::SUBITEM_ALARMINCOUNT: // Alarm in count 11
-		nResult = pInfo1->_ReadValue(L"Alarm In Count").Compare(pInfo2->_ReadValue(L"Alarm In Count"));
-		break;
-	case CIPScanUtilDlg::SUBITEM_ALARMOUTCOUNT:// Alarm out count 12
-		nResult = pInfo1->_ReadValue(L"Alarm Out Count").Compare(pInfo2->_ReadValue(L"Alarm Out Count"));
-		break;
-	case CIPScanUtilDlg::SUBITEM_AUDIOINCOUNT: // Audio in count 13
-		nResult = pInfo1->_ReadValue(L"Audio In Count").Compare(pInfo2->_ReadValue(L"Audio In Count"));
-		break;
-	case CIPScanUtilDlg::SUBITEM_AUDIOOUTCOUNT: // Audio out count 14
-		nResult = pInfo1->_ReadValue(L"Audio Out Count").Compare(pInfo2->_ReadValue(L"Audio Out Count"));
-		break;
+	//case CIPScanUtilDlg::SUBITEM_SUPPORTRESOLUTION: // Resolution 9
+	//	nResult = pInfo1->_ReadValue(L"Support Resolution").Compare(pInfo2->_ReadValue(L"Support Resolution"));
+	//	break;
+	//case CIPScanUtilDlg::SUBITEM_VIDEOFORMAT:   // Video format 10
+	//	nResult = pInfo1->_ReadValue(L"Video Format").Compare(pInfo2->_ReadValue(L"Video Format"));
+	//	break;
+	//case CIPScanUtilDlg::SUBITEM_ALARMINCOUNT: // Alarm in count 11
+	//	nResult = pInfo1->_ReadValue(L"Alarm In Count").Compare(pInfo2->_ReadValue(L"Alarm In Count"));
+	//	break;
+	//case CIPScanUtilDlg::SUBITEM_ALARMOUTCOUNT:// Alarm out count 12
+	//	nResult = pInfo1->_ReadValue(L"Alarm Out Count").Compare(pInfo2->_ReadValue(L"Alarm Out Count"));
+	//	break;
+	//case CIPScanUtilDlg::SUBITEM_AUDIOINCOUNT: // Audio in count 13
+	//	nResult = pInfo1->_ReadValue(L"Audio In Count").Compare(pInfo2->_ReadValue(L"Audio In Count"));
+	//	break;
+	//case CIPScanUtilDlg::SUBITEM_AUDIOOUTCOUNT: // Audio out count 14
+	//	nResult = pInfo1->_ReadValue(L"Audio Out Count").Compare(pInfo2->_ReadValue(L"Audio Out Count"));
+	//	break;
 	default:
 		ASSERT(0); // column added?
 		nResult = 0;
