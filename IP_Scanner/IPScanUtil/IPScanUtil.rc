@@ -329,6 +329,8 @@ BEGIN
     IDS_DIFFERENT_BAND      "Gateway Address and the IP address is a different band."
     IDS_MCU_VERSION         "MCU Version"
     IDS_MCU_MODEL           "MCU Model"
+    IDS_SW_VERSION          "S/W Version"
+    IDS_VIDEO_COUNT         "Video Count"
 END
 
 #endif    // 한국어(대한민국) resources

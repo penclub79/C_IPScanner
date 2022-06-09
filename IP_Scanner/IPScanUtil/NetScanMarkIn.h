@@ -109,10 +109,12 @@ public:
 	void	SetNotifyWindow(HWND hWnd, LONG msg);
 	void	SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/);
 	BOOL	SendScanRequest();
+
 protected:
 	
 
 private:
+	
 	HANDLE	m_hScanThread;		// Thread Handle
 	DWORD	m_dwScanThreadID;	// Tread ID
 	SOCKET	m_hSockReceive;

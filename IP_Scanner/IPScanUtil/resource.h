@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by IPScanUtil.rc
+// Microsoft Visual C++에서 생성한 포함 파일입니다.
+// IPScanUtil.rc에서 사용되고 있습니다.
 //
 #define IDCANCEL                        2
 #define ID_FACTORY_DEFAULT_BTN          3
@@ -60,8 +60,8 @@
 #define IDS_MCU_VERSION                 138
 #define IDD_CAM_OSDCHANGE               138
 #define IDS_MCU_MODEL                   139
-#define IDS_VIDEO_COUNT					140
-#define IDS_SW_VERSION					141
+#define IDS_SW_VERSION                  140
+#define IDS_VIDEO_COUNT                 141
 #define IDC_SVR_LIST                    1000
 #define IDC_SCAN_BTN                    1001
 #define IDC_CHANGEIP_BTN                1002

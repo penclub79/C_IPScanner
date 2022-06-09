@@ -25,6 +25,7 @@ CNetScanMarkIn::~CNetScanMarkIn(void)
 	}
 }
 
+
 // Thread
 DWORD thrMarkInScanThread(LPVOID pParam)
 {
@@ -111,8 +112,9 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	SCAN_EXT_INFO*		pExtInfo			= NULL;
 	CString				strConver;
 	LPCAPTION_HEADER	pCaption			= NULL;
-	int iToRead = 0;
-	int iItemCnt = 0;
+	int					iToRead = 0;
+	int					iItemCnt = 0;
+
 	// ----------------------------------------------------------------
 	
 	// IPv4, UDP 
@@ -147,8 +149,12 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	SOCKADDR_IN SenderAddr;
 	iSenderAddrLen = sizeof(SOCKADDR_IN);
 
-	m_pReceiverBuff = new char[sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO)];
-	memset(m_pReceiverBuff, 0, sizeof(char)* sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO));
+
+	m_pReceiverBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE];
+	pReceive = (HEADER_BODY*)m_pReceiverBuff;
+	//m_pReceiverBuff = new char[sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO)];
+	//memset(m_pReceiverBuff, 0, sizeof(char) * sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO));
+	memset(m_pReceiverBuff, 0, sizeof(char) * SCAN_INFO_m_pReceive_buffer_SIZE);
 	
 	if (NULL == m_pReceiverBuff)
 	{
@@ -159,7 +165,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		goto EXIT_LOOP;
 	}
 	
-	pReceive = (HEADER_BODY*)m_pReceiverBuff;
+	//pReceive = (HEADER_BODY*)m_pReceiverBuff;
 
 	// Recev Data Thread live
 	while (m_dwScanThreadID)
@@ -174,7 +180,6 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			}
 			//goto EXIT_LOOP;
 		}
-		uiPacketSize = sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO);
 
 		if (m_pReceiverBuff)
 		{
@@ -224,12 +229,33 @@ void CNetScanMarkIn::thrMarkInReceiver()
 						WideCopyStringFromAnsi(pScanInfo->szMAC, 30, aszMacAdrs);
 
 						pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
-						pScanInfo->nStreamPort = pReceive->stDevInfo.stNetwork_info.uiBase_port;						
+						pScanInfo->nStreamPort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
+						
+						int iFieldCnt = 9;
+						int i = 0;
+						char* name = "Modelnanme";
+						pExtInfo = new SCAN_EXT_INFO[iFieldCnt];
+						memset(pExtInfo, 0, sizeof(SCAN_EXT_INFO)* iFieldCnt);
+
+						
+						if (pExtInfo)
+						{
+							while (0 < iFieldCnt)
+							{
+								//pExtInfo[iFieldCnt].lpszValue = new WCHAR[pExtInfo[iFieldCnt].nValueLen];
+
+								//WideCopyStringFromAnsi(pExtInfo[iFieldCnt].szCaption, 32, name);
+								//WideCopyStringFromAnsi(pExtInfo[iFieldCnt].lpszValue, pExtInfo[iFieldCnt].nValueLen, name);
+								//WideCopyStringFromAnsi(pExtInfo[iFieldCnt].lpszValue, 32, "ModelName");
+								iFieldCnt--;
+							}
+						}
+						
+						pScanInfo->pExtScanInfos = pExtInfo;
 
 						if (m_hNotifyWnd)
-						{
 							::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
-						}
+						
 
 					}
 				}

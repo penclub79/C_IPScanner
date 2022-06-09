@@ -92,6 +92,9 @@ int  tagSCAN_STRUCT::_CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, t
 		nResult = pInfo1->_ReadValue(L"Firmware Version").Compare(pInfo2->_ReadValue(L"Firmware Version"));
 		break;
 	case 7: // Video Count
+		nResult = pInfo1->_ReadValue(L"S/W Version").Compare(pInfo2->_ReadValue(L"S/W Version"));
+		break;
+	case 8: // Video Count
 		nResult = pInfo1->_ReadValue(L"Video Count").Compare(pInfo2->_ReadValue(L"Video Count"));
 		break;
 	//case 7: // Resolution
@@ -315,6 +318,7 @@ void CNetScanVision::thrReceiver()
 						i = 0;
 						nItemCount = 0;
 						lpCapt     = NULL;
+						
 						pExtField = (BYTE*)(m_pReceive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // set pointer
 						nToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
 
@@ -346,7 +350,7 @@ void CNetScanVision::thrReceiver()
 									TRACE( L" = " );
 
 
-									pExtInfos[i].nValueLen = lpCapt->nDataLen+2; // 2012-08-07 hkeins : 데이터 길이를 복사하지 않는 버그 수정
+									pExtInfos[i].nValueLen = lpCapt->nDataLen + 2; // 2012-08-07 hkeins : 데이터 길이를 복사하지 않는 버그 수정
 
 									CHAR*	lpszTemp		= new CHAR[pExtInfos[i].nValueLen];
 

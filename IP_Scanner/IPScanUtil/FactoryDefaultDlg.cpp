@@ -112,14 +112,14 @@ BOOL CFactoryDefaultDlg::OnInitDialog()
 	m_cSvrList.InsertColumn(SUBITEM_RESOLUTION,       strItem, LVCFMT_CENTER, 180, 0 );
 	strItem.LoadString(IDS_VIDEO_FORMAT);
 	m_cSvrList.InsertColumn(SUBITEM_VIDEO_FORMAT,     strItem, LVCFMT_CENTER, 100, 0 );
-	strItem.LoadString(IDS_ALARM_IN_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_ALARMIN_CNT,      strItem, LVCFMT_CENTER, 120, 0 );
-	strItem.LoadString(IDS_ALARM_OUT_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_ALARMOUT_CNT,     strItem, LVCFMT_CENTER, 120, 0 );
-	strItem.LoadString( IDS_AUDIO_IN_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_AUDIOIN_CNT,      strItem, LVCFMT_CENTER, 120, 0 );
-	strItem.LoadString(IDS_AUDIO_OUT_COUNT);
-	m_cSvrList.InsertColumn(SUBITEM_AUDIOOUT_CNT,     strItem, LVCFMT_CENTER, 120, 0 );
+	//strItem.LoadString(IDS_ALARM_IN_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_ALARMIN_CNT,      strItem, LVCFMT_CENTER, 120, 0 );
+	//strItem.LoadString(IDS_ALARM_OUT_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_ALARMOUT_CNT,     strItem, LVCFMT_CENTER, 120, 0 );
+	//strItem.LoadString( IDS_AUDIO_IN_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_AUDIOIN_CNT,      strItem, LVCFMT_CENTER, 120, 0 );
+	//strItem.LoadString(IDS_AUDIO_OUT_COUNT);
+	//m_cSvrList.InsertColumn(SUBITEM_AUDIOOUT_CNT,     strItem, LVCFMT_CENTER, 120, 0 );
 
 	AddData();
 #ifdef _DEFAULT_ID_PASSWORD_

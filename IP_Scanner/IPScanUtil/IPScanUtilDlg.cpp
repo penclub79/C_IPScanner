@@ -246,9 +246,11 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	strItem += L" ";
 	strItem += str;
 	//m_cSvrList.InsertColumn(SUBITEM_PORTSTREAM		, strItem, LVCFMT_CENTER, 40, 0 );
+
 	strItem = L"HTTP "; 
 	strItem += str;
 	m_cSvrList.InsertColumn(SUBITEM_PORTHTTP		, strItem, LVCFMT_CENTER, 138, 0 );
+
 	strItem = L"Upgrade ";
 	strItem += str;
 	m_cSvrList.InsertColumn(SUBITEM_PORTUPGRADE		, strItem, LVCFMT_CENTER, 138, 0 );
@@ -258,15 +260,14 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 
 	strItem.LoadString(IDS_MODEL);
 	m_cSvrList.InsertColumn(SUBITEM_MODELTYPE		, strItem, LVCFMT_CENTER, 138, 0 );
+	// InsertColumn(컬럼생성 순서, 컬럼 이름, 글씨 정렬, width값);
 
 	strItem.LoadString(IDS_FIRMWARE_VERSION);
 	m_cSvrList.InsertColumn(SUBITEM_FIRMWAREVERSION	, strItem, LVCFMT_CENTER, 138, 0 );
 
-	strItem = L"S/W Version";
 	strItem.LoadString(IDS_SW_VERSION);
 	m_cSvrList.InsertColumn(SUBITEM_SW_VERSION, strItem, LVCFMT_CENTER, 138, 0);
 
-	strItem = L"Video Count";
 	strItem.LoadString(IDS_VIDEO_COUNT);
 	m_cSvrList.InsertColumn(SUBITEM_VIDEOCOUNT, strItem, LVCFMT_CENTER, 138, 0);
 
@@ -287,7 +288,6 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	//m_cSvrList.InsertColumn(SUBITEM_AUDIOINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
 	//strItem.LoadString(IDS_AUDIO_OUT_COUNT);
 	//m_cSvrList.InsertColumn(SUBITEM_AUDIOOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-
 
 	m_cSvrList.Init();
 
@@ -424,7 +424,6 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 
 		m_nScanAniCount = 0;
 		SetTimer(TM_SCANNING_ANI	, 1000		, NULL);
-	
 	}
 	else
 	{
@@ -679,6 +678,11 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		pScanInfo->SetReceiveTime();
 
 		// add information into UI
+		/*
+			LV_ITEM : 리스트 컨트롤에 데이터를 입력하고자 할 때, 이 구조체를 사용.
+			CListCtrl클래스의 멤버 함수 insertItem과 SetItem함수에 LV_ITEM구조체를 인자로 넘겨
+			주어서 데이터를 입력할 수 있다.
+		*/
 		LV_ITEM item;
 
 		memset(&item, 0, sizeof(item));
@@ -731,12 +735,12 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
 
-			strTemp = pScanInfo->_ReadValue(L"System Name");
-			item.mask = LVIF_TEXT;
-			item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
-			item.iSubItem = SUBITEM_SYSTEMNAME;
-			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-			m_cSvrList.SetItem(&item);
+			//strTemp = pScanInfo->_ReadValue(L"System Name");
+			//item.mask = LVIF_TEXT;
+			//item.iItem = (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
+			//item.iSubItem = SUBITEM_SYSTEMNAME;
+			//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+			//m_cSvrList.SetItem(&item);
 
 			strTemp = pScanInfo->_ReadValue(L"Model Type");	
 			item.mask = LVIF_TEXT;
@@ -755,7 +759,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			strTemp = pScanInfo->_ReadValue(L"S/W Version");
 			item.mask = LVIF_TEXT;
 			item.iItem = (nCurrentItem < 0) ? nInsertIndex : nCurrentItem;
-			item.iSubItem = SUBITEM_VIDEOCOUNT;
+			item.iSubItem = SUBITEM_SW_VERSION;
 			item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 			m_cSvrList.SetItem(&item);
 
@@ -1868,9 +1872,9 @@ int  CIPScanUtilDlg::CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, ta
 	case CIPScanUtilDlg::SUBITEM_PORTUPGRADE: // upgrade port 5
 		nResult = pInfo1->_ReadValue(L"Upgrade Port") - pInfo2->_ReadValue(L"Upgrade Port");
 		break;
-	case CIPScanUtilDlg::SUBITEM_SYSTEMNAME: // Server Name 6
-		nResult = pInfo1->_ReadValue(L"System Name").Compare(pInfo2->_ReadValue(L"System Name"));
-		break;
+	//case CIPScanUtilDlg::SUBITEM_SYSTEMNAME: // Server Name 6
+	//	nResult = pInfo1->_ReadValue(L"System Name").Compare(pInfo2->_ReadValue(L"System Name"));
+	//	break;
 	case CIPScanUtilDlg::SUBITEM_MODELTYPE: // Model 7
 		nResult = pInfo1->_ReadValue(L"Model Type").Compare(pInfo2->_ReadValue(L"Model Type"));
 		break;

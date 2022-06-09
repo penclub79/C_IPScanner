@@ -94,7 +94,8 @@ typedef struct tagSCAN_STRUCT
 		wcscpy_s(this->szMAC,  30, src.szMAC);
 		wcscpy_s(this->szGateWay,  30, src.szGateWay);
 		wcscpy_s(this->szSubnetMask,  30, src.szSubnetMask);
-		this->nStreamPort	= src.nStreamPort;
+		//wcscpy_s(this->)
+		//this->nStreamPort	= src.nStreamPort;
 		this->nHTTPPort		= src.nHTTPPort;
 		this->version		= src.version;
 		this->cIsDHCP		= src.cIsDHCP;
@@ -169,7 +170,7 @@ public:
 	CNetScanVision();
 	~CNetScanVision(void);
 
-	BOOL StartScan( );
+	BOOL StartScan();
 	BOOL StopScan();
 	void SetNotifyWindow(HWND hWnd, LONG msg);
 	void SetCloseMsgRecvWindow(HWND hWnd, LONG msg = WM_CLOSE);
