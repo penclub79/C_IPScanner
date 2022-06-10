@@ -155,7 +155,7 @@ BOOL CIPChangeDlg2::OnInitDialog()
 	m_strMACAddress			= m_pSelScanInfo[0].szMAC;
 	m_strIPAddress			= m_pSelScanInfo[0].szAddr;
 	m_strGatewayAddress		= m_pSelScanInfo[0].szGateWay;
-	m_nStreamPort			= m_pSelScanInfo[0].nStreamPort;
+	//m_nStreamPort			= m_pSelScanInfo[0].nStreamPort;
 	m_nHTTPPort				= m_pSelScanInfo[0].nHTTPPort;
 	//m_nVersion				= m_pSelScanInfo[0].version;
 	m_strSubnetMask			= m_pSelScanInfo[0].szSubnetMask;
@@ -388,14 +388,14 @@ void CIPChangeDlg2::AddData()
 		item.pszText = (LPTSTR)(LPCTSTR)strTemp;
 		m_cSvrList.SetItem(&item);
 
-		strTemp.Format(_T("%d"), m_pSelScanInfo[i].nStreamPort);
-		item.mask = LVIF_TEXT;
-		item.iItem = i;
-		item.iSubItem = SUBITEM_PORTSTREAM;
-		item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-		m_cSvrList.SetItem(&item);
-		m_cSvrList.CreateEdit(i, SUBITEM_PORTSTREAM, FALSE );
-		m_cSvrList.SetEditText( i, SUBITEM_PORTSTREAM , strTemp );
+		//strTemp.Format(_T("%d"), m_pSelScanInfo[i].nStreamPort);
+		//item.mask = LVIF_TEXT;
+		//item.iItem = i;
+		//item.iSubItem = SUBITEM_PORTSTREAM;
+		//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+		//m_cSvrList.SetItem(&item);
+		//m_cSvrList.CreateEdit(i, SUBITEM_PORTSTREAM, FALSE );
+		//m_cSvrList.SetEditText( i, SUBITEM_PORTSTREAM , strTemp );
 
 		strTemp.Format(_T("%d"), m_pSelScanInfo[i].nHTTPPort);
 		item.mask = LVIF_TEXT;
@@ -592,8 +592,8 @@ LRESULT CIPChangeDlg2::OnIPChangeMessage(WPARAM wParam, LPARAM lParam)
 								0 == wcscmp( pChangeItem->szToGWAddress	, pOldScanInfo->szGateWay		) &&
 								0 == wcscmp( pChangeItem->szToSubnetMask, pOldScanInfo->szSubnetMask	) &&
 								pChangeItem->nToIsDHCP		== pOldScanInfo->cIsDHCP	&&
-								pChangeItem->iToHttpPort	== pOldScanInfo->nHTTPPort	&&
-								pChangeItem->iToStreamPort	== pOldScanInfo->nStreamPort )
+								pChangeItem->iToHttpPort	== pOldScanInfo->nHTTPPort	)
+								//pChangeItem->iToStreamPort	== pOldScanInfo->nStreamPort )
 							{
 								pChangeItem->iStatus	= MESSAGE_CHANGE_COMPLETE;
 								PostMessage( WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_CHANGE_COMPLETE, iItem) , 0);
@@ -1234,8 +1234,8 @@ void CIPChangeDlg2::OnBnClickedApply()
 		apIPChangeItem[iItem].nFromIsDHCP		= m_pSelScanInfo[iItem].cIsDHCP;
 		apIPChangeItem[iItem].nToIsDHCP			= m_nIsDHCP;
 
-		apIPChangeItem[iItem].iFromStreamPort	= m_pSelScanInfo[iItem].nStreamPort;
-		apIPChangeItem[iItem].iToStreamPort		= m_nStreamPort;
+		//apIPChangeItem[iItem].iFromStreamPort	= m_pSelScanInfo[iItem].nStreamPort;
+		//apIPChangeItem[iItem].iToStreamPort		= m_nStreamPort;
 
 		apIPChangeItem[iItem].iFromHttpPort		= m_pSelScanInfo[iItem].nHTTPPort;
 		apIPChangeItem[iItem].iToHttpPort		= m_nHTTPPort;

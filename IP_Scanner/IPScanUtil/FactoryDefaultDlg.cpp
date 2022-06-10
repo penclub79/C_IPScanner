@@ -179,12 +179,12 @@ void CFactoryDefaultDlg::AddData()
 		m_cSvrList.CreateEdit(i, SUBITEM_PASS, TRUE );
 		//}}
 
-		strTemp.Format(_T("%d"), m_pScanInfo[i].nStreamPort);
-		item.mask = LVIF_TEXT;
-		item.iItem = i;
-		item.iSubItem = SUBITEM_STREAM_PORT;
-		item.pszText = (LPTSTR)(LPCTSTR)strTemp;
-		m_cSvrList.SetItem(&item);
+		//strTemp.Format(_T("%d"), m_pScanInfo[i].nStreamPort);
+		//item.mask = LVIF_TEXT;
+		//item.iItem = i;
+		//item.iSubItem = SUBITEM_STREAM_PORT;
+		//item.pszText = (LPTSTR)(LPCTSTR)strTemp;
+		//m_cSvrList.SetItem(&item);
 
 		strTemp.Format(_T("%d"), m_pScanInfo[i].nHTTPPort);
 		item.mask = LVIF_TEXT;

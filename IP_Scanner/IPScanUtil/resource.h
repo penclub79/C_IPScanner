@@ -62,6 +62,7 @@
 #define IDS_MCU_MODEL                   139
 #define IDS_SW_VERSION                  140
 #define IDS_VIDEO_COUNT                 141
+#define IDS_BASE_PORT                   142
 #define IDC_SVR_LIST                    1000
 #define IDC_SCAN_BTN                    1001
 #define IDC_CHANGEIP_BTN                1002

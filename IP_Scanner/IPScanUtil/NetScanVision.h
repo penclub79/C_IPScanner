@@ -64,15 +64,21 @@ typedef struct tagSCAN_EXT_INFO_STRUCT
 
 typedef struct tagSCAN_STRUCT
 {
+	int		iScanType = 0; // 1 : Vision, 2 : MarkIn
 	WCHAR	szAddr[30];
 	WCHAR	szMAC[30];
 	WCHAR	szGateWay[30];
-	int		nStreamPort;
+	WCHAR	szSwVersion[30]; // +추가
+	WCHAR	szModelName[30];
+
+	//int		nStreamPort;
+	int		iBasePort;
 	int		nHTTPPort;
 	int		version;
 	char	cIsDHCP; // 0 - static, 1 - DHCP
 	WCHAR	szSubnetMask[30];
 	int		nExtraFieldCount;
+	int		iVideoCnt; // +추가
 	time_t	tReceiveTime;
 	SCAN_EXT_INFO* pExtScanInfos;
 
@@ -94,21 +100,25 @@ typedef struct tagSCAN_STRUCT
 		wcscpy_s(this->szMAC,  30, src.szMAC);
 		wcscpy_s(this->szGateWay,  30, src.szGateWay);
 		wcscpy_s(this->szSubnetMask,  30, src.szSubnetMask);
-		//wcscpy_s(this->)
+		wcscpy_s(this->szSwVersion, 30, src.szSwVersion);
+		wcscpy_s(this->szModelName, 30, src.szModelName);
+		
 		//this->nStreamPort	= src.nStreamPort;
 		this->nHTTPPort		= src.nHTTPPort;
 		this->version		= src.version;
 		this->cIsDHCP		= src.cIsDHCP;
 		this->tReceiveTime	= src.tReceiveTime;
+		this->iVideoCnt		= src.iVideoCnt;
+		
 
 		SAFE_DELETEA(this->pExtScanInfos);
 		this->nExtraFieldCount = src.nExtraFieldCount;
-		if(src.nExtraFieldCount > 0 && src.pExtScanInfos)
+		if (src.nExtraFieldCount > 0 && src.pExtScanInfos)
 		{
 			this->pExtScanInfos = new SCAN_EXT_INFO[src.nExtraFieldCount];
-			if(this->pExtScanInfos)
+			if (this->pExtScanInfos)
 			{
-				for(int i = 0; i < src.nExtraFieldCount; i++)
+				for (int i = 0; i < src.nExtraFieldCount; i++)
 				{
 					this->pExtScanInfos[i] = src.pExtScanInfos[i]; // copy values
 				}
@@ -118,6 +128,12 @@ typedef struct tagSCAN_STRUCT
 				this->nExtraFieldCount = 0;
 			}
 		}
+
+		else if (2 == iScanType)
+		{
+			this->iBasePort = src.iBasePort;
+		}
+		
 		return *this;
 	}
 
@@ -127,12 +143,16 @@ typedef struct tagSCAN_STRUCT
 		if( 0 != wcscmp(this->szMAC			, src.szMAC			) )			return FALSE;
 		if( 0 != wcscmp(this->szGateWay		, src.szGateWay		) )			return FALSE;
 		if( 0 != wcscmp(this->szSubnetMask	, src.szSubnetMask	) )			return FALSE;
+		if (0 != wcscmp(this->szSwVersion	, src.szSwVersion	) )			return FALSE;
+		if (0 != wcscmp(this->szModelName	, src.szModelName	) )			return FALSE;
 
-		if( this->nStreamPort			!= src.nStreamPort		)			return FALSE;
+		//if( this->nStreamPort			!= src.nStreamPort		)			return FALSE;
 		if( this->nHTTPPort				!= src.nHTTPPort		)			return FALSE;
 		if( this->version				!= src.version			)			return FALSE;
 		if( this->cIsDHCP				!= src.cIsDHCP			)			return FALSE;
 		if( this->nExtraFieldCount		!= src.nExtraFieldCount	)			return FALSE;
+		if (this->iBasePort				!= src.iBasePort		)			return FALSE;
+		if (this->iVideoCnt				!= src.iVideoCnt		)			return FALSE;
 
 		for(int i = 0; i < src.nExtraFieldCount; i++)
 		{
@@ -146,6 +166,7 @@ typedef struct tagSCAN_STRUCT
 
 		return TRUE;
 	}
+
 
 	void	SetReceiveTime();
 	int     _PrintValues();

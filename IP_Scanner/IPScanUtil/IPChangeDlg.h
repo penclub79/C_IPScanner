@@ -27,8 +27,9 @@ public:
 	CString			m_strGatewayAddress;
 	CIPAddressCtrl	m_ctrlIPAddress;
 	CIPAddressCtrl	m_ctrlGatewayAddress;
-	CIPAddressCtrl m_ctrlSubnetMask;
+	CIPAddressCtrl	m_ctrlSubnetMask;
 	int				m_nStreamPort;
+	int				m_nUpgdPort;
 	int				m_nHTTPPort;
 	int				m_nScanCount;
 

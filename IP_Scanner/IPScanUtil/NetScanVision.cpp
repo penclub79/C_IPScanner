@@ -292,13 +292,14 @@ void CNetScanVision::thrReceiver()
 				pScanInfo	= new SCAN_INFO;
 				if ( pScanInfo ) 
 				{
+					pScanInfo->iScanType = 1;
 					//USES_CONVERSION;
 
 					WideCopyStringFromAnsi(pScanInfo->szAddr, 30, pInfo->szIPAddress);
 					WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
 					WideCopyStringFromAnsi(pScanInfo->szMAC, 30, pInfo->szMACAddress);
 
-					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
+					//pScanInfo->nStreamPort	= pInfo->dwStreamPort;
 					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
 					//pScanInfo->version      = VERSION_2; // IPUTIL version 1
 					 
@@ -395,6 +396,9 @@ void CNetScanVision::thrReceiver()
 					if(m_hNotifyWnd)
 						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
 				}
+
+
+
 			}
 //			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
 //			{

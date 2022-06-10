@@ -331,6 +331,7 @@ BEGIN
     IDS_MCU_MODEL           "MCU Model"
     IDS_SW_VERSION          "S/W Version"
     IDS_VIDEO_COUNT         "Video Count"
+    IDS_BASE_PORT           "Base Port"
 END
 
 #endif    // 한국어(대한민국) resources

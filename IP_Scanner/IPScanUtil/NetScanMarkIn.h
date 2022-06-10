@@ -42,9 +42,9 @@ typedef struct _VER_INFO {
 typedef struct _NET_INFO {
 	unsigned char	uszNetwork_type; // 1:Static, 2:DHCP
 	char			szMac_address[32];
-	unsigned char	uszIp[4];
-	unsigned char	uszSubnet[4];
-	unsigned char	uszGateway[4];
+	unsigned char	aszIp[4];
+	unsigned char	aszSubnet[4];
+	unsigned char	aszGateway[4];
 	unsigned int	uiHttp_port;
 	unsigned int	uiBase_port;
 
@@ -114,7 +114,6 @@ protected:
 	
 
 private:
-	
 	HANDLE	m_hScanThread;		// Thread Handle
 	DWORD	m_dwScanThreadID;	// Tread ID
 	SOCKET	m_hSockReceive;
@@ -130,6 +129,8 @@ private:
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
 	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
 	void ConversionMac(char* _pszMac, char* _pszVal);
+	void ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
+	void ConversionModelName(char* _pszModel, char* _pszVal);
 	void DeviceType(unsigned char* _puszDeviceType, int* _iVal);
 	void ChartoUnChar(char _pszStr, unsigned char* _puszStr);
 
