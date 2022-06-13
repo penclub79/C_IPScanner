@@ -20,7 +20,7 @@ CNetScanMarkIn::~CNetScanMarkIn(void)
 {
 	if (NULL != m_pReceiverBuff)
 	{
-		delete m_pReceiverBuff;
+		delete[] m_pReceiverBuff;
 		m_pReceiverBuff = NULL;
 	}
 }
@@ -57,6 +57,7 @@ BOOL CNetScanMarkIn::StartScan()
 // Scanning Stop
 BOOL CNetScanMarkIn::StopScan()
 {
+	DWORD dwExitCode;
 	m_bUserCancel = TRUE;
 	// end scanning
 
@@ -69,7 +70,11 @@ BOOL CNetScanMarkIn::StopScan()
 	if (m_hScanThread)
 	{
 		m_dwScanThreadID = 0;
-		WaitForSingleObject(m_hScanThread, INFINITE);
+		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
+		{
+			TerminateThread(m_hScanThread, 0xffffffff);
+		}
+
 		CloseHandle(m_hScanThread);
 		m_hScanThread = NULL;
 	}
@@ -87,35 +92,21 @@ void CNetScanMarkIn::WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, 
 void CNetScanMarkIn::thrMarkInReceiver()
 {
 	// Local ----------------------------------------------------------
-	typedef struct tagCAPTION_HEADER
-	{
-		char	szCaption[32];
-		int		iDataLen;
-	}CAPTION_HEADER, *LPCAPTION_HEADER;
-
 	sockaddr_in			ReceiverAddr;
 	CString				strConver;
+	CString				strVal;
 	BOOL				bEnable				= TRUE;
 	int					iSenderAddrLen		= 0;
-	unsigned int		uiPacketSize		= 0;
 	HEADER_BODY*		pReceive			= NULL;
 	SCAN_INFO*			pScanInfo			= NULL;
-	BYTE*				pExtField			= NULL;
 	char				aszModelName[30]	= { 0 };
 	int					iDeviceType			= 0;
 	TCHAR*				pwszDeviceType		= NULL;
 	char				aszIpAddress[32]	= { 0 };
-	char				aszSubnet[16]		= { 0 };
-	char				aszGateWay[16]		= { 0 };
+	char				aszSubnet[32]		= { 0 };
+	char				aszGateWay[32]		= { 0 };
 	char				aszMacAdrs[32]		= { 0 };
 	char				aszVersion[30]		= { 0 };
-	LPCAPTION_HEADER	pstCpHeader			= NULL;
-	SCAN_EXT_INFO*		pExtInfo			= NULL;
-	LPCAPTION_HEADER	pCaption			= NULL;
-	int					iToRead				= 0;
-	int					iItemCnt			= 0;
-	CString				strVal;
-
 	// ----------------------------------------------------------------
 	strVal.Format(_T("N/A"));
 
@@ -127,10 +118,9 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	{
 		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
 		if (m_hNotifyWnd)
-		{
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT);
-			goto EXIT_LOOP;
-		}
+			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT);
+		
+		goto EXIT_LOOP;
 	}
 
 	// 서버 주소정보 초기화
@@ -142,7 +132,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	if (bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)) == SOCKET_ERROR)
 	{
 		if (m_hNotifyWnd)
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND);
+			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND);
 
 		goto EXIT_LOOP;
 	}
@@ -151,38 +141,36 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	SOCKADDR_IN SenderAddr;
 	iSenderAddrLen = sizeof(SOCKADDR_IN);
 
-	m_pReceiverBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE];
-	pReceive = (HEADER_BODY*)m_pReceiverBuff;
-	memset(m_pReceiverBuff, 0, sizeof(char)* SCAN_INFO_m_pReceive_buffer_SIZE);
-
-	if (NULL == m_pReceiverBuff)
+	m_pReceiverBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE];					// 메모리 할당
+	if (NULL == m_pReceiverBuff)													// 메모리 할당 되었는지 체크
 	{
 		if (m_hNotifyWnd)
-		{
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
-		}
+			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
+		
 		goto EXIT_LOOP;
 	}
+
+	pReceive = (HEADER_BODY*)m_pReceiverBuff;										// 할당 메모리 크기로 구조체 사용
+	memset(m_pReceiverBuff, 0, sizeof(char)* SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
 
 	// Recev Data Thread live
 	while (m_dwScanThreadID)
 	{
-		if (SOCKET_ERROR == recvfrom(m_hSockReceive, m_pReceiverBuff, sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO), 0, (SOCKADDR*)&SenderAddr, &iSenderAddrLen))
+		if (SOCKET_ERROR == recvfrom(m_hSockReceive, m_pReceiverBuff, sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO), 0, (SOCKADDR*)&SenderAddr, &iSenderAddrLen))
 		{
 			DWORD dwLastError = WSAGetLastError();
 			TRACE("recvfrom error = %d\n", dwLastError);
 			if (m_hNotifyWnd && dwLastError != 10004)
-			{
-				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV);
-			}
-			//goto EXIT_LOOP;
+				::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV);
+			
+			goto EXIT_LOOP;
 		}
 
 		if (m_pReceiverBuff)
 		{
 			// Data Little Endian -> Big Endian all Change
 			ToBigEndian(pReceive);
-
+			
 			// Data Respose Success
 			if (MARKIN_PACKET_RSP_DEVICEINFO == pReceive->stPacket.uiCommand)
 			{
@@ -191,24 +179,21 @@ void CNetScanMarkIn::thrMarkInReceiver()
 					pScanInfo = new SCAN_INFO;
 					if (pScanInfo)
 					{
-						
+						memset(pScanInfo, 0, sizeof(SCAN_INFO));
+
 						pScanInfo->iScanType = 2;
 						//// Model Name
-						if ( 0 < strlen(pReceive->stDevInfo.szModel_name) )
-							ConversionModelName(pReceive->stDevInfo.szModel_name, &aszModelName[0]);
+						if ( 0 < strlen(pReceive->stDevInfo.aszModel_name) )
+							ConversionModelName(pReceive->stDevInfo.aszModel_name, &aszModelName[0]);
 
 						//// IP - info
-						if ( 0 < pReceive->stDevInfo.stNetwork_info.aszIp )
+						if ( 0 < &pReceive->stDevInfo.stNetwork_info.aszIp[0]) // 메모리 주소로 ip를 나타냄
 							ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszIp, &aszIpAddress[0]);
 						else
 							wsprintf(pScanInfo->szAddr, strVal);
-
-						//// Subnet
-						//if (pReceive->stDevInfo.stNetwork_info.uszSubnet)
-						//	ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.uszSubnet, &aszSubnet[0]);
-
+						
 						//// Gateway
-						if ( 0 < pReceive->stDevInfo.stNetwork_info.aszGateway )
+						if (0 < &pReceive->stDevInfo.stNetwork_info.aszGateway[0]) // 메모리 주소로 ip를 나타냄
 							ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszGateway, &aszGateWay[0]);
 						else
 							wsprintf(pScanInfo->szGateWay, strVal);
@@ -220,7 +205,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 							wsprintf(pScanInfo->szMAC, strVal);
 
 						//// SW Version
-						if ( pReceive->stDevInfo.stSw_version.szMajor)
+						if (0 < &pReceive->stDevInfo.stSw_version.szMajor)
 							ConversionVersion(&pReceive->stDevInfo.stSw_version, &aszVersion[0]);
 						else
 							wsprintf(pScanInfo->szSwVersion, strVal);
@@ -233,51 +218,40 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 						pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
 						pScanInfo->iBasePort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
-						pScanInfo->iVideoCnt = pReceive->stDevInfo.uszMax_channel;
+						pScanInfo->iVideoCnt = pReceive->stDevInfo.szMax_channel;
 
 						if (m_hNotifyWnd)
-							::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+							::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
 					}
 				}
 			}
 		}
 	}
 
-
 	// Thread Close
 EXIT_LOOP:
 	m_hSockReceive = NULL;
 	closesocket(m_hSockReceive);
 
+	if (m_pReceiverBuff)
+	{
+		delete[] m_pReceiverBuff;
+		m_pReceiverBuff = NULL;
+	}
+
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
-		PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		//SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
-}
 
-void CNetScanMarkIn::DeviceType(unsigned char* _puszDeviceType, int* _iVal)
-{
-	*_iVal = (int)*_puszDeviceType;
 }
 
 // int 배열 -> TCHAR 배열 복사
 void CNetScanMarkIn::ConversionNetInfo(unsigned char* _upszIp, char* _pszVal)
 {
-	int aiIp[4] = { 0 };
-	int iIpLen = 0;
-
-	// 주소값을 넣는다.
-	for (iIpLen = 0; iIpLen < 4; iIpLen++)
-	{
-		aiIp[iIpLen] = _upszIp[iIpLen];
-	}
-
-	// xxx.xxx.xxx.xxx로 변환한다.
-	sprintf_s(_pszVal, 32,  "%d.%d.%d.%d", aiIp[0], aiIp[1], aiIp[2], aiIp[3]);
-
 	// 버퍼 오버플로 방지를 위해서 stprintf에 _s가 붙은 매크로 함수를 쓰는 것을 권장.
-	//_stprintf_s(_pwszVal, sizeof(TCHAR), _T("%d.%d.%d.%d"), aiIp[0], aiIp[1], aiIp[2], aiIp[3]);
+	sprintf_s(_pszVal, 32, "%d.%d.%d.%d", _upszIp[0], _upszIp[1], _upszIp[2], _upszIp[3]);
 }
 
 void CNetScanMarkIn::ConversionModelName(char* _pszModel, char* _pszVal)
@@ -301,15 +275,16 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 	
 	for (int i = 0; i < iMacLen/2; i++)
 	{
+		// 2글자씩 복사
 		memcpy(&_pszVal[i * 3], &_pszMac[i * 2], 2);
 		_pszVal[iValIdx] = ':';
+
+		// x:x:x:x:x 4개의 콜론
 		if (4 > i)
 		{
 			iValIdx += 3;
-		}
-		
+		}	
 	}
-
 }
 
 // 패킷 클라에게 보내기

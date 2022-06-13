@@ -16,7 +16,7 @@ int   tagSCAN_STRUCT::_PrintValues()
 
 	for(i = 0 ; i < nExtraFieldCount; i++)
 	{
-		str.Format(L"Caption : %s  Value : %s\n", pExtScanInfos[i].szCaption, pExtScanInfos[i].lpszValue);
+		str.Format(L"Caption : %s  Value : %s\n", pExtScanInfos[i].aszCaption, pExtScanInfos[i].lpszValue);
 		OutputDebugString(str);
 	}
 
@@ -24,16 +24,16 @@ int   tagSCAN_STRUCT::_PrintValues()
 }
 
 // 캡션 NAME 달기
-CString tagSCAN_STRUCT::_ReadValue(WCHAR* szCaption)
+CString tagSCAN_STRUCT::_ReadValue(WCHAR* aszCaption)
 {
 	CString str;
 	int i;
-	if(szCaption == NULL)
+	if(aszCaption == NULL)
 		return str;
 
 	for(i = 0 ; i < nExtraFieldCount; i++)
 	{
-		if(wcscmp(pExtScanInfos[i].szCaption, szCaption) == 0)
+		if(wcscmp(pExtScanInfos[i].aszCaption, aszCaption) == 0)
 		{
 			str = pExtScanInfos[i].lpszValue;
 			break;
@@ -50,7 +50,7 @@ CString tagSCAN_STRUCT::_ReadValues() // 모든 값을 읽여서 Caption : Value 값으로
 	str.AppendFormat(L"%s\n", szAddr);
 	for(i = 0 ; i < nExtraFieldCount; i++)
 	{
-		str.AppendFormat(L"%s : %s\n", pExtScanInfos[i].szCaption, pExtScanInfos[i].lpszValue);
+		str.AppendFormat(L"%s : %s\n", pExtScanInfos[i].aszCaption, pExtScanInfos[i].lpszValue);
 	}
 	return str;
 }
@@ -125,7 +125,7 @@ int  tagSCAN_STRUCT::_CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, t
 DWORD thrScanThread(LPVOID pParam)
 {
 	CNetScanVision* pThis = (CNetScanVision*)pParam;
-	if(pThis == NULL)
+	if(NULL == pThis)
 		return 0;
 
 	pThis->thrReceiver();
@@ -159,6 +159,7 @@ BOOL CNetScanVision::StartScan()
 
 	m_bUserCancel		= FALSE;
 	m_hScanThread		= ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thrScanThread, this, 0, &m_dwScanThreadID);
+	
 	if(m_hScanThread == NULL)
 	{
 		TRACE("Thread create failed\n");
@@ -181,8 +182,12 @@ BOOL CNetScanVision::StopScan()
 
 	if(m_hScanThread)
 	{
-		m_dwScanThreadID	= 0;
-		WaitForSingleObject(m_hScanThread, INFINITE);
+		m_dwScanThreadID = 0;
+		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
+		{
+			TerminateThread(m_hScanThread, 0xffffffff);
+		}
+		
 		CloseHandle(m_hScanThread);
 		m_hScanThread = NULL;
 	}
@@ -218,7 +223,7 @@ void CNetScanVision::thrReceiver()
 	{
 		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
 		if(m_hNotifyWnd)
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
 		goto EXIT_LOOP;
 	}
 
@@ -231,7 +236,7 @@ void CNetScanVision::thrReceiver()
 	{
 		TRACE("Bind error = %d\n", WSAGetLastError());
 		if(m_hNotifyWnd)
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
+			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
 
 		goto EXIT_LOOP;
 	}
@@ -245,7 +250,7 @@ void CNetScanVision::thrReceiver()
 	if(m_pReceive_buffer == NULL)
 	{
 		if(m_hNotifyWnd)
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
+			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
 		goto EXIT_LOOP;
 	}
 
@@ -261,7 +266,7 @@ void CNetScanVision::thrReceiver()
 
 	typedef struct tagCAPTION_HEADER
 	{
-		char szCaption[32];
+		char aszCaption[32];
 		int  nDataLen;
 	}CAPTION_HEADER, *LPCAPTION_HEADER;
 
@@ -346,9 +351,9 @@ void CNetScanVision::thrReceiver()
 								{
 									lpCapt = (LPCAPTION_HEADER)pExtField;
 
-									WideCopyStringFromAnsi(pExtInfos[i].szCaption, 32, lpCapt->szCaption);
-									TRACE( pExtInfos[i].szCaption );
-									TRACE( L" = " );
+									WideCopyStringFromAnsi(pExtInfos[i].aszCaption, 32, lpCapt->aszCaption);
+									//TRACE( pExtInfos[i].aszCaption );
+									//TRACE( L" = " );
 
 
 									pExtInfos[i].nValueLen = lpCapt->nDataLen + 2; // 2012-08-07 hkeins : 데이터 길이를 복사하지 않는 버그 수정
@@ -363,7 +368,7 @@ void CNetScanVision::thrReceiver()
 
 									if(pExtInfos[i].lpszValue)
 									{
-										if( 0 == wcscmp( pExtInfos[i].szCaption, L"Upgrade Port" ) )
+										if( 0 == wcscmp( pExtInfos[i].aszCaption, L"Upgrade Port" ) )
 										{
 											int it=0;
 										}
@@ -371,8 +376,8 @@ void CNetScanVision::thrReceiver()
 										// FIX ME: A2W가 문제될 거 같은데?
 										WideCopyStringFromAnsi( pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, lpszTemp ); 
 
- 										TRACE( pExtInfos[i].lpszValue );
-										TRACE( L"\n" );
+ 									//	TRACE( pExtInfos[i].lpszValue );
+										//TRACE( L"\n" );
 
 									}
 
@@ -394,10 +399,8 @@ void CNetScanVision::thrReceiver()
 					}
 
 					if(m_hNotifyWnd)
-						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
+						::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
 				}
-
-
 
 			}
 //			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
@@ -456,8 +459,8 @@ EXIT_LOOP:
 
 	if(m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
-		TRACE("PostMessage\n");
-		PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		TRACE("SendMessage\n");
+		//SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
 }

@@ -23,12 +23,12 @@
 // 2012-08-07 hkeins : tagSCAN_EXT_INFO_STRUCT = operation 시 메모리 삭제 버그 수정
 typedef struct tagSCAN_EXT_INFO_STRUCT
 {
-	WCHAR szCaption[32];
+	WCHAR aszCaption[32];
 	WCHAR *lpszValue;
 	int   nValueLen;
 	tagSCAN_EXT_INFO_STRUCT()
 	{
-		memset(szCaption, 0, sizeof(szCaption));
+		memset(aszCaption, 0, sizeof(aszCaption));
 		lpszValue = NULL;
 		nValueLen = 0;
 	}
@@ -42,7 +42,7 @@ typedef struct tagSCAN_EXT_INFO_STRUCT
 	}
 	tagSCAN_EXT_INFO_STRUCT& operator = (tagSCAN_EXT_INFO_STRUCT& src)
 	{
-		wcscpy_s(this->szCaption, 32, src.szCaption);
+		wcscpy_s(this->aszCaption, 32, src.aszCaption);
 		if(this->lpszValue)
 		{
 			delete[] lpszValue;
@@ -110,7 +110,6 @@ typedef struct tagSCAN_STRUCT
 		this->tReceiveTime	= src.tReceiveTime;
 		this->iVideoCnt		= src.iVideoCnt;
 		
-
 		SAFE_DELETEA(this->pExtScanInfos);
 		this->nExtraFieldCount = src.nExtraFieldCount;
 		if (src.nExtraFieldCount > 0 && src.pExtScanInfos)
@@ -159,7 +158,7 @@ typedef struct tagSCAN_STRUCT
 			if( this->pExtScanInfos[i].nValueLen		!= src.pExtScanInfos[i].nValueLen	)			return FALSE;
 			if( this->pExtScanInfos[i].nValueLen )
 			{
-				if( 0 != wcscmp(this->pExtScanInfos[i].szCaption	, src.pExtScanInfos[i].szCaption) )		return FALSE;
+				if( 0 != wcscmp(this->pExtScanInfos[i].aszCaption	, src.pExtScanInfos[i].aszCaption) )		return FALSE;
 				if( 0 != wcscmp(this->pExtScanInfos[i].lpszValue	, src.pExtScanInfos[i].lpszValue	) )		return FALSE;
 			}
 		}
@@ -170,7 +169,7 @@ typedef struct tagSCAN_STRUCT
 
 	void	SetReceiveTime();
 	int     _PrintValues();
-	CString _ReadValue(WCHAR* szCaption);
+	CString _ReadValue(WCHAR* aszCaption);
 	CString _ReadValues(); // 모든 값을 읽여서 Caption : Value 값으로 리턴해준다
 
 	// FIX ME : List control Display 항목이 바뀌면 다음 함수도 변경하세요

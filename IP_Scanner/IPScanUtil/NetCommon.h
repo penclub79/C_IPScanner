@@ -5,6 +5,11 @@ enum VERSION_PROTOCAL {
 	VERSION_2
 };
 
+typedef enum
+{
+	STOP_SCAN = 0,
+};
+
 const UINT32 SCAN_INFO_m_pReceive_buffer_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
 const UINT32 SCAN_ERR_NONE = 0x00000000;
 const UINT32 SCAN_ERR_SOCKET_OPT = 0x00000001;

@@ -1244,7 +1244,7 @@ void CIPChangeDlg2::OnBnClickedApply()
 
 		for(int i = 0 ; i < m_pSelScanInfo[iItem].nExtraFieldCount; i++)
 		{
-			if( 0 == wcscmp( L"Model Type", m_pSelScanInfo[iItem].pExtScanInfos[i].szCaption ) )
+			if( 0 == wcscmp( L"Model Type", m_pSelScanInfo[iItem].pExtScanInfos[i].aszCaption ) )
 			{
 				swprintf_s( apIPChangeItem[iItem].szModel	, L"%s", m_pSelScanInfo[iItem].pExtScanInfos[i].lpszValue );
 				break;

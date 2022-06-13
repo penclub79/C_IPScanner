@@ -1,4 +1,4 @@
-﻿빌드 시작: 2022-06-10 오후 7:05:00
+﻿빌드 시작: 2022-06-13 오후 6:31:03
      1>2 노드의 "D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트(Build 대상)입니다.
      1>Link:
          IPScanUtil.vcxproj -> D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.exe
@@ -6,4 +6,4 @@
 
 빌드했습니다.
 
-경과 시간: 00:00:00.10
+경과 시간: 00:00:00.06

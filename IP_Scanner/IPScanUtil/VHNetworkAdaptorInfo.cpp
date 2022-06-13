@@ -61,7 +61,7 @@ BOOL VHNetworkAdaptorInfo::LoadInformation()
 		{
 			TRACE(L"Adapter Name: %s\n", A2W(pAdapter->AdapterName));
 			TRACE(L"Adapter Desc: %s\n", A2W(pAdapter->Description));
-			TRACE(L"\tAdapter Addr: \t"); // MAC address
+			TRACE(L"\tAdapter Addr: \t\n"); // MAC address
 			for (UINT i = 0; i < pAdapter->AddressLength; i++) 
 			{
 				if (i == (pAdapter->AddressLength - 1))
@@ -91,7 +91,7 @@ BOOL VHNetworkAdaptorInfo::LoadInformation()
 					pAdaptorInfo->iAdapterID	= pAdapter->Index;
 					wcscpy_s(pAdaptorInfo->szName, 256 * 4, A2W(pAdapter->AdapterName));
 					wcscpy_s(pAdaptorInfo->szDesc, 128 * 4, A2W(pAdapter->Description));
-					swprintf(pAdaptorInfo->szMACAddress, L"%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+					wsprintf(pAdaptorInfo->szMACAddress, L"%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
 						pAdapter->Address[0], pAdapter->Address[1], pAdapter->Address[2],
 						pAdapter->Address[3], pAdapter->Address[4], pAdapter->Address[5]);
 					wcscpy_s(pAdaptorInfo->szIPAddress, 33, A2W(pAdapter->IpAddressList.IpAddress.String));

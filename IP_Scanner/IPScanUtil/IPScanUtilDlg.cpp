@@ -274,24 +274,6 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 	strItem.LoadString(IDS_VIDEO_COUNT);
 	m_cSvrList.InsertColumn(SUBITEM_VIDEOCOUNT, strItem, LVCFMT_CENTER, 138, 0);
 
-	//strItem.LoadString(IDS_MCU_MODEL);
-	//m_cSvrList.InsertColumn(SUBITEM_MCU_MODELTYPE	, strItem, LVCFMT_CENTER, 120, 0 );
-	//strItem.LoadString(IDS_MCU_VERSION);
-	//m_cSvrList.InsertColumn(SUBITEM_MCU_VERSION		, strItem, LVCFMT_CENTER, 120, 0 );
-
-	//strItem.LoadString(IDS_RESOLUTIONS);
-	//m_cSvrList.InsertColumn(SUBITEM_SUPPORTRESOLUTION, strItem, LVCFMT_CENTER, 180, 0 );
-	//strItem.LoadString(IDS_VIDEO_FORMAT);
-	//m_cSvrList.InsertColumn(SUBITEM_VIDEOFORMAT		, strItem, LVCFMT_CENTER, 80, 0 );
-	//strItem.LoadString(IDS_ALARM_IN_COUNT);
-	//m_cSvrList.InsertColumn(SUBITEM_ALARMINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-	//strItem.LoadString(IDS_ALARM_OUT_COUNT);
-	//m_cSvrList.InsertColumn(SUBITEM_ALARMOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-	//strItem.LoadString( IDS_AUDIO_IN_COUNT);
-	//m_cSvrList.InsertColumn(SUBITEM_AUDIOINCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-	//strItem.LoadString(IDS_AUDIO_OUT_COUNT);
-	//m_cSvrList.InsertColumn(SUBITEM_AUDIOOUTCOUNT	, strItem, LVCFMT_CENTER, 80, 0 );
-
 	m_cSvrList.Init();
 
 	m_pScannerVision = new CNetScanVision();
@@ -443,10 +425,17 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 
 		// stop
 		if (m_pScannerVision)
+		{
 			m_pScannerVision->StopScan();
+		}
 
 		if (m_pScannerMarkIn)
+		{
 			m_pScannerMarkIn->StopScan();
+		}
+
+		
+			
 	}
 }
 
@@ -521,6 +510,7 @@ void CIPScanUtilDlg::OnBnClickedClose()
 	
 
 	SAFE_DELETE(m_pScannerVision);
+	SAFE_DELETE(m_pScannerMarkIn);
 	ClearScanList();
 
 	OnCancel();
@@ -562,6 +552,7 @@ void CIPScanUtilDlg::OnClose()
 		m_pScannerMarkIn->StopScan();
 
 	SAFE_DELETE(m_pScannerVision);
+	SAFE_DELETE(m_pScannerMarkIn);
 	ClearScanList();
 
 	CDialog::OnClose();
@@ -595,6 +586,10 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		return 0L;
 	}
 
+	if (2025 == wParam)
+	{
+		CloseHandle(pScanInfo);
+	}
 	//if( m_iSelectVersion != pScanInfo->version )
 	//{
 	//	// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
@@ -909,9 +904,6 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 		}
 	}*/
 	
-
-
-
 	CDialog::OnTimer(nIDEvent);
 }
 
@@ -1594,19 +1586,28 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 		OnBnClickedClearBtn();
 	}
 
-	delete pDlg;
-	pDlg	= NULL;
+	if (NULL != pDlg)
+	{
+		delete pDlg;
+		pDlg = NULL;
+	}
 
 	if( TRUE == bScanning )
 	{
 		OnBnClickedScanBtn();
 	}
 
-	delete [] pScanInfo;
-	pScanInfo	= NULL;
-
-	delete [] pSelScanInfo;
-	pSelScanInfo	= NULL;
+	if (NULL != pScanInfo)
+	{
+		delete[] pScanInfo;
+		pScanInfo = NULL;
+	}
+	
+	if (NULL != pSelScanInfo)
+	{
+		delete[] pSelScanInfo;
+		pSelScanInfo = NULL;
+	}
 }
 
 void CIPScanUtilDlg::OnNMDblclkSvrList2(NMHDR *pNMHDR, LRESULT *pResult)
@@ -2049,4 +2050,23 @@ void CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb()
 //		//	OnBnClickedClearBtn();
 //		//	OnBnClickedScanBtn();
 //		//}
+//}
+
+
+//LRESULT CIPScanUtilDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+//{
+//	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+//
+//	switch (message)
+//	{
+//		case WAIT_TIMEOUT:
+//			
+//			break;
+//
+//		case WM_DESTROY:
+//			PostQuitMessage(0);
+//			break;
+//	}
+//
+//	return CDialog::WindowProc(message, wParam, lParam);
 //}

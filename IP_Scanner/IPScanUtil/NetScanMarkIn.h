@@ -26,8 +26,8 @@ typedef struct _PACKET_HEADER
 }PACKET_HEADER;
 
 // User Info
-typedef struct _USER_INFO{	char user_id[32];
-	char user_pw[32];
+typedef struct _USER_INFO{	char aszUser_id[32];
+	char aszUser_pw[32];
 
 }USER_INFO;
 
@@ -40,7 +40,7 @@ typedef struct _VER_INFO {
 
 // Network Info
 typedef struct _NET_INFO {
-	unsigned char	uszNetwork_type; // 1:Static, 2:DHCP
+	unsigned char	szNetwork_type; // 1:Static, 2:DHCP
 	char			szMac_address[32];
 	unsigned char	aszIp[4];
 	unsigned char	aszSubnet[4];
@@ -52,9 +52,9 @@ typedef struct _NET_INFO {
 // Device Info
 typedef struct _DEVICE_INFO
 {
-	unsigned char	uszDevice_type;	// 2: Camera, 6: NVR
-	unsigned char	uszMax_channel;
-	char			szModel_name[32];
+	unsigned char	szDevice_type;	// 2: Camera, 6: NVR
+	unsigned char	szMax_channel;
+	char			aszModel_name[32];
 	NET_INFO		stNetwork_info; //53
 	VER_INFO		stSw_version; //3
 	VER_INFO		stHw_version;
@@ -70,30 +70,6 @@ typedef struct _HEADER_BODY
 	_PACKET_HEADER	stPacket;
 	_DEVICE_INFO	stDevInfo;
 }HEADER_BODY;
-
-typedef struct tagCAPTION_HEADER
-{
-	char szCaption[32];
-	int  iDataLen;
-}CAPTION_HEADER, *LPCAPTION_HEADER;
-
-typedef struct tagSCAN_MK_STRUCT
-{
-	//WCHAR	szAddr[30];
-	//WCHAR	szMAC[30];
-	//WCHAR	szGateWay[30];
-	//int		nStreamPort;
-	//int		nHTTPPort;
-	//int		version;
-	//char	cIsDHCP; // 0 - static, 1 - DHCP
-	//WCHAR	szSubnetMask[30];
-	//int		nExtraFieldCount;
-	//time_t	tReceiveTime;
-	//SCAN_EXT_INFO* pExtScanInfos;
-
-
-
-}SCAN_MK_INFO, *LPSCAN_MK_INFO;
 
 class CNetScanMarkIn
 {
@@ -127,11 +103,11 @@ private:
 
 	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
+
+	/////////////// Conversion
 	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
 	void ConversionMac(char* _pszMac, char* _pszVal);
 	void ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
 	void ConversionModelName(char* _pszModel, char* _pszVal);
-	void DeviceType(unsigned char* _puszDeviceType, int* _iVal);
-	void ChartoUnChar(char _pszStr, unsigned char* _puszStr);
-
+	//////////////////////////
 };

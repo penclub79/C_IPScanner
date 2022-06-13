@@ -162,4 +162,5 @@ public:
 	
 	afx_msg void OnCbnSelchangeAdaptorCmb();
 	//afx_msg void OnCbnSelchangeProtocalCombo();
+	//virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };
