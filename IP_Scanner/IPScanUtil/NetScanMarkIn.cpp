@@ -57,7 +57,7 @@ BOOL CNetScanMarkIn::StartScan()
 // Scanning Stop
 BOOL CNetScanMarkIn::StopScan()
 {
-	DWORD dwExitCode;
+	
 	m_bUserCancel = TRUE;
 	// end scanning
 
@@ -70,8 +70,10 @@ BOOL CNetScanMarkIn::StopScan()
 	if (m_hScanThread)
 	{
 		m_dwScanThreadID = 0;
+		TRACE("MarkIn WaitForSingleObject\n");
 		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
 		{
+			TRACE("MarkIn WaitForSingleObject IIIIIIIIIINNNNNNNNNNNNNN\n");
 			TerminateThread(m_hScanThread, 0xffffffff);
 		}
 
@@ -94,7 +96,6 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	// Local ----------------------------------------------------------
 	sockaddr_in			ReceiverAddr;
 	CString				strConver;
-	CString				strVal;
 	BOOL				bEnable				= TRUE;
 	int					iSenderAddrLen		= 0;
 	HEADER_BODY*		pReceive			= NULL;
@@ -108,7 +109,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	char				aszMacAdrs[32]		= { 0 };
 	char				aszVersion[30]		= { 0 };
 	// ----------------------------------------------------------------
-	strVal.Format(_T("N/A"));
+	
 
 	// IPv4, UDP 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
@@ -118,7 +119,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	{
 		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
 		if (m_hNotifyWnd)
-			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT);
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT);
 		
 		goto EXIT_LOOP;
 	}
@@ -132,7 +133,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	if (bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)) == SOCKET_ERROR)
 	{
 		if (m_hNotifyWnd)
-			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND);
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND);
 
 		goto EXIT_LOOP;
 	}
@@ -145,11 +146,10 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	if (NULL == m_pReceiverBuff)													// 메모리 할당 되었는지 체크
 	{
 		if (m_hNotifyWnd)
-			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
 		
 		goto EXIT_LOOP;
 	}
-
 	pReceive = (HEADER_BODY*)m_pReceiverBuff;										// 할당 메모리 크기로 구조체 사용
 	memset(m_pReceiverBuff, 0, sizeof(char)* SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
 
@@ -161,7 +161,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			DWORD dwLastError = WSAGetLastError();
 			TRACE("recvfrom error = %d\n", dwLastError);
 			if (m_hNotifyWnd && dwLastError != 10004)
-				::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV);
+				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV);
 			
 			goto EXIT_LOOP;
 		}
@@ -187,28 +187,28 @@ void CNetScanMarkIn::thrMarkInReceiver()
 							ConversionModelName(pReceive->stDevInfo.aszModel_name, &aszModelName[0]);
 
 						//// IP - info
-						if ( 0 < &pReceive->stDevInfo.stNetwork_info.aszIp[0]) // 메모리 주소로 ip를 나타냄
+						if ( 0 < pReceive->stDevInfo.stNetwork_info.aszIp[0]) 
 							ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszIp, &aszIpAddress[0]);
 						else
-							wsprintf(pScanInfo->szAddr, strVal);
+							wsprintf(pScanInfo->szAddr, _T("N/A"));
 						
 						//// Gateway
-						if (0 < &pReceive->stDevInfo.stNetwork_info.aszGateway[0]) // 메모리 주소로 ip를 나타냄
+						if (0 < pReceive->stDevInfo.stNetwork_info.aszGateway[0])
 							ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszGateway, &aszGateWay[0]);
 						else
-							wsprintf(pScanInfo->szGateWay, strVal);
+							wsprintf(pScanInfo->szGateWay, _T("N/A"));
 
 						//// MAC
 						if ( 0 < strlen(pReceive->stDevInfo.stNetwork_info.szMac_address))
 							ConversionMac(pReceive->stDevInfo.stNetwork_info.szMac_address, &aszMacAdrs[0]);
 						else
-							wsprintf(pScanInfo->szMAC, strVal);
+							wsprintf(pScanInfo->szMAC, _T("N/A"));
 
 						//// SW Version
-						if (0 < &pReceive->stDevInfo.stSw_version.szMajor)
+						if (0 < pReceive->stDevInfo.stSw_version.szMajor) 
 							ConversionVersion(&pReceive->stDevInfo.stSw_version, &aszVersion[0]);
 						else
-							wsprintf(pScanInfo->szSwVersion, strVal);
+							wsprintf(pScanInfo->szSwVersion, _T("N/A"));
 
 						WideCopyStringFromAnsi(pScanInfo->szAddr,		30, aszIpAddress);
 						WideCopyStringFromAnsi(pScanInfo->szGateWay,	30, aszGateWay);
@@ -222,6 +222,8 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 						if (m_hNotifyWnd)
 							::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+
+						TRACE("MarkIn SendMessage\n");
 					}
 				}
 			}
@@ -241,10 +243,10 @@ EXIT_LOOP:
 
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
-		//SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		TRACE("MarkIn Thread Exit\n");
+		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
-
 }
 
 // int 배열 -> TCHAR 배열 복사
@@ -273,7 +275,7 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 
 	iMacLen = strlen(_pszMac);
 	
-	for (int i = 0; i < iMacLen/2; i++)
+	for (int i = 0; i < iMacLen / 2; i++)
 	{
 		// 2글자씩 복사
 		memcpy(&_pszVal[i * 3], &_pszMac[i * 2], 2);
@@ -291,11 +293,11 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 BOOL CNetScanMarkIn::SendScanRequest()
 {
 	sockaddr_in		stSockaddr;
-	SOCKET			stSockSend = NULL;;
-	char			szSendBuff[12] = { 0 };
-	int				aiByte[4] = { 0 };
-	BOOL			bEnable = FALSE;
-	PACKET_HEADER*	pSender = NULL;
+	SOCKET			stSockSend		= NULL;;
+	char			szSendBuff[12]	= { 0 };
+	int				aiByte[4]		= { 0 };
+	BOOL			bEnable			= FALSE;
+	PACKET_HEADER*	pSender			= NULL;
 
 	stSockaddr.sin_family = AF_INET;
 	stSockaddr.sin_port = htons(MK_UDP_REQ_PORT);

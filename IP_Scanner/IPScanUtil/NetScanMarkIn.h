@@ -109,5 +109,6 @@ private:
 	void ConversionMac(char* _pszMac, char* _pszVal);
 	void ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
 	void ConversionModelName(char* _pszModel, char* _pszVal);
+	//void On
 	//////////////////////////
 };

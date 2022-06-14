@@ -424,15 +424,16 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		SetStatusMsg(msg);
 
 		// stop
-		if (m_pScannerVision)
-		{
-			m_pScannerVision->StopScan();
-		}
+		OnClose();
+		//if (m_pScannerVision)
+		//{
+		//	m_pScannerVision->StopScan();
+		//}
 
-		if (m_pScannerMarkIn)
-		{
-			m_pScannerMarkIn->StopScan();
-		}
+		//if (m_pScannerMarkIn)
+		//{
+		//	m_pScannerMarkIn->StopScan();
+		//}
 
 		
 			
@@ -543,11 +544,11 @@ BOOL CIPScanUtilDlg::PreTranslateMessage(MSG* pMsg)
 void CIPScanUtilDlg::OnClose()
 {
 	KillTimer(TM_SCANNING_ANI);
-//	KillTimer(TM_SCANNING);
+
 	// Stop scan before close dialog
 	if (m_pScannerVision)
 		m_pScannerVision->StopScan();
-
+	
 	if (m_pScannerMarkIn)
 		m_pScannerMarkIn->StopScan();
 
@@ -578,26 +579,27 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 	int			i				= 0;
 	int			iCount			= 0;
 
+	int test = lParam;
+
 	if(wParam == NULL)
 	{
+		TRACE(_T("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n"));
 		OnBnClickedScanBtn();
 		_GetScanErrorMessage(lParam, strTemp);
 		AfxMessageBox(strTemp, MB_ICONWARNING);
 		return 0L;
 	}
 
-	if (2025 == wParam)
-	{
-		CloseHandle(pScanInfo);
-	}
+	
 	//if( m_iSelectVersion != pScanInfo->version )
 	//{
 	//	// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
 	//	delete pScanInfo; 
 	//	return 0L;
 	//}
-
+	TRACE(_T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"));
 	_Lock();
+	TRACE(_T("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n"));
 	if(pScanInfo)
 	{
 		//////////////////////////////////////////
@@ -652,7 +654,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 
 					delete pOldScanInfo;
 					nCurrentItem = i;
-
+					TRACE(_T("###############################################################################################################\n"));
 					break;
 				}
 			}
@@ -663,9 +665,10 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		////////////////////////////////////////
 
 #ifdef _DEBUG
+		TRACE(_T("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"));
 		pScanInfo->_PrintValues();
 #endif
-
+		TRACE(_T("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n"));
 		int nInsertIndex = 0;
 		if(nCurrentItem < 0 ) // insert case
 		{
@@ -703,6 +706,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			strTemp.LoadString(IDS_STATIC);
 		else
 			strTemp.LoadString(IDS_DHCP);
+		TRACE(_T("***************************************************\n"));
 
 		item.mask		= LVIF_TEXT;
 		item.iItem		= (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
@@ -769,6 +773,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		// extended infomation printout
 		if(pScanInfo->nExtraFieldCount)
 		{
+			TRACE(_T("()()()()))))))))))))))))))))))))))))))))))))))))))))\n"));
 			strTemp = pScanInfo->_ReadValue(L"Upgrade Port");
 			item.mask = LVIF_TEXT;
 			item.iItem = (nCurrentItem < 0) ? nInsertIndex : nCurrentItem;
@@ -830,11 +835,12 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		// 현재 선택된 Index 앞으로 아이템을 집어 넣은 경우, 현재 선택 값에 +1을 해준다
 		if(nCurrentItem < 0 && nInsertIndex <= m_nCurSvrListSel)
 		{
+			TRACE(_T("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"));
 			//OutputDebugString(L"Item++\n");
 			m_nCurSvrListSel++;
 		}		
 	}
-
+	TRACE(_T("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n"));
 	_Unlock();
 
 	return 0;
@@ -843,6 +849,15 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 LRESULT CIPScanUtilDlg::OnScanCloseDlgMsg(WPARAM wParam, LPARAM lParam)
 {
 //	TRACE(_T("Scanning ended some error\n"));
+	TRACE(_T("OnScanCloseDlgMsg###################################################################################################\n"));
+	switch (lParam)
+	{
+	case 2025:
+		TRACE(_T("OnScanCloseDlgMsg###################################################################################################\n"));
+		break;
+	default:
+		break;
+	}
 	return 0;
 }
 
@@ -893,16 +908,17 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nScanAniCount = m_nScanAniCount % 10;
 		}
 	}
-	/*else if(TM_SCANNING == nIDEvent)
+	else if(TM_SCANNING == nIDEvent)
 	{
+		TRACE("ONTIME~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 		if(m_bScanning)
 		{
 			if( VERSION_1 == m_iSelectVersion )
-				CNetScanVision::SendScanRequest();
+				m_pScannerVision->SendScanRequest();
 			else if( VERSION_2 == m_iSelectVersion )
-				CNetScanVision::SendScanRequestExt();
+				m_pScannerVision->SendScanRequestExt();
 		}
-	}*/
+	}
 	
 	CDialog::OnTimer(nIDEvent);
 }
@@ -1025,6 +1041,7 @@ void  CIPScanUtilDlg::ClearScanList()
 int CIPScanUtilDlg::_GetScanErrorMessage(UINT32 uErrorCode, CString& strMsg)
 {
 	CString strTemp;
+	TRACE(_T("###############################################################################################################\n"));
 	switch(uErrorCode)
 	{
 	case SCAN_ERR_MEMORY:
@@ -1189,12 +1206,12 @@ int CIPScanUtilDlg::_GetInsertPosition(SCAN_INFO* pInfo)
 	int			nResult		= 0;
 	SCAN_INFO* pCurrentInfo = NULL;
 	
-
 	if(pInfo == NULL)
 	{
 		ASSERT(0);
 		return -1;
 	}
+	TRACE(_T("###############################################################################################################\n"));
 
 	//{{ older case : extra가 없으면 제일 마지막에, 그리고 그외에는 Model Type을 기준으로 아이템을 삽입
 	if(pInfo->nExtraFieldCount == 0) // insert할 놈이 Model 정보가 없다면, Model 정보가 없는 아이템을 찾아서 주소가 크면 집어넣는다
@@ -1240,6 +1257,7 @@ int CIPScanUtilDlg::_GetInsertPosition(SCAN_INFO* pInfo)
 
 void CIPScanUtilDlg::_Lock()
 {
+	TRACE(_T("lock lock lock lock lock lock\n"));
 	// Critical Section에 진입.
 	EnterCriticalSection(&m_mt);
 }
@@ -1247,11 +1265,13 @@ void CIPScanUtilDlg::_Lock()
 void CIPScanUtilDlg::_Unlock()
 {
 	// Critical Section에서 빠져나옴
+	TRACE(_T("unclock unclock unclock unclock unclock unclock\n"));
 	LeaveCriticalSection(&m_mt);
 }
 
 void CIPScanUtilDlg::OnDestroy()
 {
+	TRACE(_T("OnDestroy~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
 	_ClearAdaptorInfos();
 	m_DISP_FONT.DeleteObject();
 	CDialog::OnDestroy();
@@ -1292,6 +1312,7 @@ void CIPScanUtilDlg::OnSetupOSD()
 		AfxMessageBox(_T("Please select one or more ipcameras..."), MB_ICONWARNING);
 		return;
 	}
+	TRACE(_T("###############################################################################################################\n"));
 
 	POSITION pos = m_cSvrList.GetFirstSelectedItemPosition();
 	if (pos == NULL)
@@ -1789,6 +1810,7 @@ LRESULT CIPScanUtilDlg::OnConnectCheck(WPARAM wParam, LPARAM lParam)
 	int nIndex = LOWORD(lParam);
 	int nPort  = HIWORD(lParam);
 
+	TRACE(_T("OnConnectCheck~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
 //	TRACE(L"CIPScanUtilDlg::OnConnectCheck called, errorCode = %d, Index = %d port = %d\n", 
 //		nErrorCode, nIndex, nPort);
 
@@ -1897,7 +1919,7 @@ static int CALLBACK CheckCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPar
 	LPST_CHECK_COMPARE_PARAM pParam = (LPST_CHECK_COMPARE_PARAM)lParam3;
 	int        nCompareResult = 0; // no swap
 	ASSERT(pParam != NULL);
-	
+	TRACE(_T("CheckCompareFunc~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
 	nCompareResult = ((CIPScanUtilDlg*)pParam->pThis)->CompareScanInfo(pParam->nOrient, pInfo1, pInfo2);
 	if(pParam->bAscending)
 	{
@@ -1918,7 +1940,8 @@ LRESULT CIPScanUtilDlg::OnSortRequest(WPARAM wParam, LPARAM lParam)
 	// Store sorting orient and ascending order
 	m_nSortOrient    = stParam.nOrient;
 	m_bSortAscending = stParam.bAscending;
-	
+	TRACE(_T("OnSortRequest~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
+
 	// 일부 항목에 대해서만 sorting 지원 -->
 	// 모든 항목에 대해 sorting 지원하도록 적용
 	//switch(wParam)
@@ -1971,6 +1994,7 @@ void   CIPScanUtilDlg::_ReadBindAddress()
 
 	if(m_cmbNetAdaptor.GetCount() > 0 && m_cmbNetAdaptor.GetCurSel() >= 0)
 	{
+		TRACE(_T("_ReadBindAddress~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
 		pAdpatorInfo = (NETWORK_ADAPTOR_INFO_ipv4*)m_cmbNetAdaptor.GetItemData(m_cmbNetAdaptor.GetCurSel());
 		if(pAdpatorInfo)
 		{
@@ -2013,6 +2037,7 @@ void  CIPScanUtilDlg::_LoadNetworkAdaptorInformation()
 			m_cmbNetAdaptor.SetItemData(nInsertedPos, (DWORD_PTR)pAdaptorInfo);
 		}
 	}
+	TRACE(_T("_LoadNetworkAdaptorInformation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
 
 	m_cmbNetAdaptor.SetCurSel(0);
 	//////////////////////////
@@ -2022,6 +2047,7 @@ void CIPScanUtilDlg::_ClearAdaptorInfos()
 {
 	int i = 0;
 	m_netInfo.ClearInformation();
+	TRACE(_T("_ClearAdaptorInfos~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"));
 
 	m_cmbNetAdaptor.ResetContent();
 	//m_cmbNetAdaptor.AddString(L"-- Auto select --");
@@ -2050,23 +2076,4 @@ void CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb()
 //		//	OnBnClickedClearBtn();
 //		//	OnBnClickedScanBtn();
 //		//}
-//}
-
-
-//LRESULT CIPScanUtilDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-//{
-//	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-//
-//	switch (message)
-//	{
-//		case WAIT_TIMEOUT:
-//			
-//			break;
-//
-//		case WM_DESTROY:
-//			PostQuitMessage(0);
-//			break;
-//	}
-//
-//	return CDialog::WindowProc(message, wParam, lParam);
 //}

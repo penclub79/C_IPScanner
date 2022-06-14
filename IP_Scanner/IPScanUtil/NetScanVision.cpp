@@ -159,7 +159,7 @@ BOOL CNetScanVision::StartScan()
 
 	m_bUserCancel		= FALSE;
 	m_hScanThread		= ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thrScanThread, this, 0, &m_dwScanThreadID);
-	
+	TRACE("StartScan~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	if(m_hScanThread == NULL)
 	{
 		TRACE("Thread create failed\n");
@@ -174,17 +174,19 @@ BOOL CNetScanVision::StopScan()
 	m_bUserCancel = TRUE;
 	// end scanning
 
-	if(m_hSockReceive)
-	{
-		closesocket(m_hSockReceive);
-		m_hSockReceive = NULL;
-	}
+	//if(m_hSockReceive)
+	//{
+	//	closesocket(m_hSockReceive);
+	//	m_hSockReceive = NULL;
+	//}
 
 	if(m_hScanThread)
 	{
 		m_dwScanThreadID = 0;
+		TRACE("Vision WaitForSingleObject\n");
 		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
 		{
+			TRACE("Vision WaitForSingleObject IIIIIIIIIINNNNNNNNNNNNNN\n");
 			TerminateThread(m_hScanThread, 0xffffffff);
 		}
 		
@@ -226,7 +228,7 @@ void CNetScanVision::thrReceiver()
 			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
 		goto EXIT_LOOP;
 	}
-
+	TRACE("ReceiverAddr~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	// Receive할 주소 bind
 	ReceiverAddr.sin_family			= AF_INET;
 	ReceiverAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
@@ -282,7 +284,8 @@ void CNetScanVision::thrReceiver()
 			DWORD dwLastError = WSAGetLastError();
 			TRACE("recvfrom error = %d\n", dwLastError);
 			if(m_hNotifyWnd && dwLastError != 10004)
-					::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
+				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
+
 			goto EXIT_LOOP;
 		}
 
@@ -459,8 +462,8 @@ EXIT_LOOP:
 
 	if(m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
-		TRACE("SendMessage\n");
-		//SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		TRACE("Vision Thread Exit\n");
+		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
 }
@@ -478,7 +481,7 @@ BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP,
 	{
 		return FALSE;
 	}
-
+	TRACE("RequestIPChange~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	SOCKADDR_IN TargetAddr;
 	TargetAddr.sin_family		= AF_INET;
 	TargetAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
@@ -531,6 +534,7 @@ BOOL CNetScanVision::RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP
 
 	// broadcast 가능하도록 socket 옵션 조정
 	BOOL bEnable = TRUE;
+	TRACE("RequestIPChange222~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
 	if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable) == SOCKET_ERROR))
 	{
@@ -614,6 +618,7 @@ BOOL CNetScanVision::SendScanRequest()
 	//	closesocket(hSockSend);
 	//	return FALSE;
 	//}
+	TRACE("SendScanRequest~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
 	TargetAddr.sin_family = AF_INET;
 	TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
@@ -657,6 +662,7 @@ BOOL CNetScanVision::SendScanRequestExt()
 	//	closesocket(hSockSend);
 	//	return FALSE;
 	//}
+	TRACE("SendScanRequestExt~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
 	TargetAddr.sin_family		= AF_INET;
 	TargetAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
