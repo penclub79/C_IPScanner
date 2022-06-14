@@ -1,0 +1,76 @@
+﻿빌드 시작: 2022-06-14 오후 5:53:19
+     1>2 노드의 "D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트(Build 대상)입니다.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D _WINDOWS /D NDEBUG /D _UNICODE /D UNICODE /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Release\IP_Installer.pch" /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D _WINDOWS /D NDEBUG /D _UNICODE /D UNICODE /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Release\IP_Installer.pch" /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ARP.cpp CheckListCtrl.cpp ConnectCheckThread.cpp FactoryDefaultDlg.cpp IPChangeDlg.cpp IPChangeDlg2.cpp IPChangeThread.cpp IPScanUtil.cpp IPScanUtilDlg.cpp ListItem.cpp MessageQueue.cpp NetScanMarkIn.cpp NetScanVision.cpp OSDChangeDlg.cpp OSDChangeThread.cpp OXMaskedEdit.cpp ProgressListCtrl.cpp ResolutionChangeDlg.cpp ResolutionChangeThread.cpp UpgradeDlg.cpp UpgradeThreadHttp.cpp UpgradeThreadTcp.cpp VHNetworkAdaptorInfo.cpp
+         ARP.cpp
+         CheckListCtrl.cpp
+         ConnectCheckThread.cpp
+         FactoryDefaultDlg.cpp
+         IPChangeDlg.cpp
+         IPChangeDlg2.cpp
+         IPChangeThread.cpp
+         IPScanUtil.cpp
+         IPScanUtilDlg.cpp
+         ListItem.cpp
+         MessageQueue.cpp
+         NetScanMarkIn.cpp
+         NetScanVision.cpp
+         OSDChangeDlg.cpp
+         OSDChangeThread.cpp
+         OXMaskedEdit.cpp
+         ProgressListCtrl.cpp
+         ResolutionChangeDlg.cpp
+         ResolutionChangeThread.cpp
+         UpgradeDlg.cpp
+         컴파일하고 있습니다...
+         UpgradeThreadHttp.cpp
+         UpgradeThreadTcp.cpp
+     1>UpgradeThreadTcp.cpp(2973): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\string.h(112) : 'strcpy' 선언을 참조하십시오.
+     1>UpgradeThreadTcp.cpp(3008): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\string.h(112) : 'strcpy' 선언을 참조하십시오.
+     1>UpgradeThreadTcp.cpp(3009): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\string.h(112) : 'strcpy' 선언을 참조하십시오.
+     1>UpgradeThreadTcp.cpp(3050): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\string.h(112) : 'strcpy' 선언을 참조하십시오.
+         VHNetworkAdaptorInfo.cpp
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D NDEBUG /D _UNICODE /D UNICODE /l"0x0412" /IRelease\ /nologo /fo"Release\IPScanUtil.res" IPScanUtil.rc 
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1186,5): warning MSB8012: TargetPath(D:\C_IPScanner\IP_Scanner\Release\IP_Installer.exe) does not match the Linker's OutputFile property value (D:\C_IPScanner\IP_Scanner\Release\IPScan Utility.exe). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1188,5): warning MSB8012: TargetName(IP_Installer) does not match the Linker's OutputFile property value (IPScan Utility). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\C_IPScanner\IP_Scanner\Release\IPScan Utility.exe" /INCREMENTAL:NO /NOLOGO iphlpapi.lib /MANIFEST /MANIFESTUAC:"level='requireAdministrator' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"D:\C_IPScanner\IP_Scanner\Release\IP_Installer.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\C_IPScanner\IP_Scanner\Release\IP_Installer.lib" /MACHINE:X86 /SAFESEH Release\IPScanUtil.res
+         Release\ARP.obj
+         Release\CheckListCtrl.obj
+         Release\ConnectCheckThread.obj
+         Release\FactoryDefaultDlg.obj
+         Release\IPChangeDlg.obj
+         Release\IPChangeDlg2.obj
+         Release\IPChangeThread.obj
+         Release\IPScanUtil.obj
+         Release\IPScanUtilDlg.obj
+         Release\ListItem.obj
+         Release\MessageQueue.obj
+         Release\NetScanMarkIn.obj
+         Release\NetScanVision.obj
+         Release\OSDChangeDlg.obj
+         Release\OSDChangeThread.obj
+         Release\OXMaskedEdit.obj
+         Release\ProgressListCtrl.obj
+         Release\ResolutionChangeDlg.obj
+         Release\ResolutionChangeThread.obj
+         Release\stdafx.obj
+         Release\UpgradeDlg.obj
+         Release\UpgradeThreadHttp.obj
+         Release\UpgradeThreadTcp.obj
+         Release\VHNetworkAdaptorInfo.obj
+         코드를 생성하고 있습니다.
+         코드를 생성했습니다.
+         IPScanUtil.vcxproj -> D:\C_IPScanner\IP_Scanner\Release\IP_Installer.exe
+     1>"D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트를 빌드했습니다(Build 대상).
+
+빌드했습니다.
+
+경과 시간: 00:00:10.79

@@ -579,8 +579,7 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 	int			i				= 0;
 	int			iCount			= 0;
 
-	int test = lParam;
-
+	TRACE(_T("%d\n"), lParam);
 	if(wParam == NULL)
 	{
 		TRACE(_T("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n"));
@@ -590,21 +589,21 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		return 0L;
 	}
 
-	
 	//if( m_iSelectVersion != pScanInfo->version )
 	//{
 	//	// 선택되어 있는 버젼과 받은 버젼이 틀리다면 삭제한다. 
 	//	delete pScanInfo; 
 	//	return 0L;
 	//}
+
+
 	TRACE(_T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"));
 	_Lock();
-	TRACE(_T("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n"));
+
 	if(pScanInfo)
 	{
 		//////////////////////////////////////////
 		//// 응답없는 아이템 리스트에서 삭제 /////
-
 		//time_t		tCurrentTime	= GetCurrentTime();
 		//for(i = m_cSvrList.GetItemCount()-1; i>=0 ; i--)
 		//{
@@ -613,15 +612,12 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		//	{
 		//		delete pOldScanInfo;
 		//		m_cSvrList.DeleteItem(i);
-
 		//		m_nListItemCount--;
 		//		if(m_nListItemCount < 0)
 		//			m_nListItemCount = 0;
-
 		//		SetCountMsg(m_nListItemCount);
 		//	}
 		//}
-
 		//// 응답없는 아이템 리스트에서 삭제 /////
 		//////////////////////////////////////////
 
@@ -631,18 +627,21 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 
 		// 20110208-hkeins : BUG fix. find by MAC address(old : find by ip address)
 		// 시나리오상 IP가 중복될 수도 있음
-
+		if (InSendMessage())
+		{
+			TRACE(_T("%d SendMessage 반환함\n"), pScanInfo->iScanType);
+		}
 		for(i = 0; i < m_cSvrList.GetItemCount(); i++)
 		{
 			pOldScanInfo	= (SCAN_INFO*)m_cSvrList.GetItemData(i);
-
 			if(wcscmp(pOldScanInfo->szMAC, pScanInfo->szMAC) == 0) // if founded then
 			{
 				pOldScanInfo->SetReceiveTime();
-
+				
 				if(	*pOldScanInfo == *pScanInfo	)
 				{
 					delete pScanInfo; 
+					pScanInfo = NULL;
 					_Unlock();
 					return 0;
 				}
@@ -654,7 +653,6 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 
 					delete pOldScanInfo;
 					nCurrentItem = i;
-					TRACE(_T("###############################################################################################################\n"));
 					break;
 				}
 			}
@@ -665,10 +663,8 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		////////////////////////////////////////
 
 #ifdef _DEBUG
-		TRACE(_T("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"));
 		pScanInfo->_PrintValues();
 #endif
-		TRACE(_T("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n"));
 		int nInsertIndex = 0;
 		if(nCurrentItem < 0 ) // insert case
 		{
@@ -706,7 +702,6 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 			strTemp.LoadString(IDS_STATIC);
 		else
 			strTemp.LoadString(IDS_DHCP);
-		TRACE(_T("***************************************************\n"));
 
 		item.mask		= LVIF_TEXT;
 		item.iItem		= (nCurrentItem < 0)?nInsertIndex:nCurrentItem;
@@ -773,7 +768,6 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		// extended infomation printout
 		if(pScanInfo->nExtraFieldCount)
 		{
-			TRACE(_T("()()()()))))))))))))))))))))))))))))))))))))))))))))\n"));
 			strTemp = pScanInfo->_ReadValue(L"Upgrade Port");
 			item.mask = LVIF_TEXT;
 			item.iItem = (nCurrentItem < 0) ? nInsertIndex : nCurrentItem;
@@ -835,13 +829,15 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 		// 현재 선택된 Index 앞으로 아이템을 집어 넣은 경우, 현재 선택 값에 +1을 해준다
 		if(nCurrentItem < 0 && nInsertIndex <= m_nCurSvrListSel)
 		{
-			TRACE(_T("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"));
 			//OutputDebugString(L"Item++\n");
 			m_nCurSvrListSel++;
 		}		
 	}
 	TRACE(_T("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n"));
 	_Unlock();
+
+
+	TRACE(_T("Exit Exit Exit Exit Exit Exit Exit Exit Exit Exit\n"));
 
 	return 0;
 }
@@ -850,14 +846,6 @@ LRESULT CIPScanUtilDlg::OnScanCloseDlgMsg(WPARAM wParam, LPARAM lParam)
 {
 //	TRACE(_T("Scanning ended some error\n"));
 	TRACE(_T("OnScanCloseDlgMsg###################################################################################################\n"));
-	switch (lParam)
-	{
-	case 2025:
-		TRACE(_T("OnScanCloseDlgMsg###################################################################################################\n"));
-		break;
-	default:
-		break;
-	}
 	return 0;
 }
 
@@ -1267,6 +1255,7 @@ void CIPScanUtilDlg::_Unlock()
 	// Critical Section에서 빠져나옴
 	TRACE(_T("unclock unclock unclock unclock unclock unclock\n"));
 	LeaveCriticalSection(&m_mt);
+	TRACE(_T("LeaveCriticalSection LeaveCriticalSection LeaveCriticalSection LeaveCriticalSection\n"));
 }
 
 void CIPScanUtilDlg::OnDestroy()

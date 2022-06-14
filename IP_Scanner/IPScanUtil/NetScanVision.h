@@ -215,7 +215,7 @@ protected:
 	int    m_nScanTimeCount; // 30,29,28....0 then timeout
 	HWND   m_hReceiverWindow;
 	int    m_nListItemCount;
-
+	
 	HWND m_hNotifyWnd;
 	LONG m_lNotifyMsg;
 	HWND m_hCloseMsgRecvWnd;

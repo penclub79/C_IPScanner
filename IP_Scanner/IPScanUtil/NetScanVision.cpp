@@ -174,11 +174,11 @@ BOOL CNetScanVision::StopScan()
 	m_bUserCancel = TRUE;
 	// end scanning
 
-	//if(m_hSockReceive)
-	//{
-	//	closesocket(m_hSockReceive);
-	//	m_hSockReceive = NULL;
-	//}
+	if(m_hSockReceive)
+	{
+		closesocket(m_hSockReceive);
+		m_hSockReceive = NULL;
+	}
 
 	if(m_hScanThread)
 	{
@@ -225,7 +225,7 @@ void CNetScanVision::thrReceiver()
 	{
 		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
 		if(m_hNotifyWnd)
-			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
 		goto EXIT_LOOP;
 	}
 	TRACE("ReceiverAddr~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -238,7 +238,7 @@ void CNetScanVision::thrReceiver()
 	{
 		TRACE("Bind error = %d\n", WSAGetLastError());
 		if(m_hNotifyWnd)
-			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
 
 		goto EXIT_LOOP;
 	}
@@ -252,7 +252,7 @@ void CNetScanVision::thrReceiver()
 	if(m_pReceive_buffer == NULL)
 	{
 		if(m_hNotifyWnd)
-			::SendMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
 		goto EXIT_LOOP;
 	}
 
@@ -401,8 +401,11 @@ void CNetScanVision::thrReceiver()
 						}
 					}
 
-					if(m_hNotifyWnd)
+					if (m_hNotifyWnd)
+					{
 						::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
+					}
+					
 				}
 
 			}
@@ -459,13 +462,15 @@ EXIT_LOOP:
 		delete[] m_pReceive_buffer;
 		m_pReceive_buffer = NULL;
 	}
-
+	
 	if(m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
 		TRACE("Vision Thread Exit\n");
-		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		::SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		//SendNotifyMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
+
 }
 
 BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/*=2700*/, int nHTTPPort/*=80*/)
@@ -700,3 +705,5 @@ void CNetScanVision::SetBindAddress(ULONG ulBindAddress)
 {
 	m_ulBindAddress = ulBindAddress;
 }
+
+

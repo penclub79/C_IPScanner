@@ -73,7 +73,6 @@ BOOL CNetScanMarkIn::StopScan()
 		TRACE("MarkIn WaitForSingleObject\n");
 		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
 		{
-			TRACE("MarkIn WaitForSingleObject IIIIIIIIIINNNNNNNNNNNNNN\n");
 			TerminateThread(m_hScanThread, 0xffffffff);
 		}
 
