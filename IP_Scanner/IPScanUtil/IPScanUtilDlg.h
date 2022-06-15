@@ -119,7 +119,6 @@ protected:
 	void _Lock();
 	void _Unlock();
 
-
 // 생성된 메시지 맵 함수
 	virtual BOOL OnInitDialog();
 

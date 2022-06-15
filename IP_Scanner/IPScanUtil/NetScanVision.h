@@ -194,7 +194,6 @@ public:
 	BOOL StopScan();
 	void SetNotifyWindow(HWND hWnd, LONG msg);
 	void SetCloseMsgRecvWindow(HWND hWnd, LONG msg = WM_CLOSE);
-	
 	void thrReceiver();
 
 	// 2010-08-27 hkeins : change IP configuration

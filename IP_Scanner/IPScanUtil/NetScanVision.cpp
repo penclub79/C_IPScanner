@@ -222,9 +222,12 @@ void CNetScanVision::thrReceiver()
 	if(setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
 	{
 		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
-		if(m_hNotifyWnd)
+		if (m_hNotifyWnd)
+		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+		}
 		goto EXIT_LOOP;
+			
 	}
 	
 	// Receive할 주소 bind
@@ -235,10 +238,12 @@ void CNetScanVision::thrReceiver()
 	if(bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)) == SOCKET_ERROR)
 	{
 		TRACE("Bind error = %d\n", WSAGetLastError());
-		if(m_hNotifyWnd)
+		if (m_hNotifyWnd)
+		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
-
+		}
 		goto EXIT_LOOP;
+			
 	}
 
 	
@@ -249,8 +254,10 @@ void CNetScanVision::thrReceiver()
 	m_pReceive_buffer = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
 	if(m_pReceive_buffer == NULL)
 	{
-		if(m_hNotifyWnd)
+		if (m_hNotifyWnd)
+		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
+		}
 		goto EXIT_LOOP;
 	}
 	
@@ -281,9 +288,10 @@ void CNetScanVision::thrReceiver()
 		{
 			DWORD dwLastError = WSAGetLastError();
 			TRACE("recvfrom error = %d\n", dwLastError);
-			if(m_hNotifyWnd && dwLastError != 10004)
+			if (m_hNotifyWnd && dwLastError != 10004)
+			{
 				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
-
+			}	
 			goto EXIT_LOOP;
 		}
 
@@ -401,10 +409,11 @@ void CNetScanVision::thrReceiver()
 					if (m_hNotifyWnd)
 					{
 						// PostMessage to MainWindow
-						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+						::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
 					}
 				
 				}
+				//::SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 			}
 //			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
 //			{
@@ -447,26 +456,26 @@ void CNetScanVision::thrReceiver()
 			}
 		}
 	}
-	
+
 EXIT_LOOP: // goto문
 	closesocket(m_hSockReceive);
 	m_hSockReceive = NULL;
 	//m_hSockSend = NULL;
 
-	if(m_pReceive_buffer)
+	if (m_pReceive_buffer)
 	{
 		delete[] m_pReceive_buffer;
 		m_pReceive_buffer = NULL;
-	}	
+	}
 
-	if(m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
+	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
-		//PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		TRACE("Vision Thread Exit\n");
 		m_bUserCancel = FALSE;
 	}
-	
 }
+
 
 BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/*=2700*/, int nHTTPPort/*=80*/)
 {

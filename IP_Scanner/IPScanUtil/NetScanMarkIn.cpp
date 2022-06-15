@@ -110,7 +110,6 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	char				aszVersion[30]		= { 0 };
 	// ----------------------------------------------------------------
 	
-
 	// IPv4, UDP 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
 	
@@ -248,7 +247,7 @@ EXIT_LOOP:
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
 		TRACE("MarkIn Thread Exit\n");
-		//PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
 }
