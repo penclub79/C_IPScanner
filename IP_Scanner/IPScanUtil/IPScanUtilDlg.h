@@ -65,7 +65,7 @@ protected:
 	CButton m_btnUpgrade;
 	//CComboBox m_cmbProtocol;
 	CComboBox m_cmbNetAdaptor;
-
+	CIPScanUtilDlg* m_dlg;
 	/////////////////// Scanning Class 
 	CNetScanVision* m_pScannerVision;
 	CNetScanMarkIn* m_pScannerMarkIn;
@@ -159,8 +159,6 @@ public:
 	LRESULT OnConnectCheck(WPARAM wParam, LPARAM lParam);
 	//WM_SORT_REQUEST
 	afx_msg LRESULT OnSortRequest(WPARAM wParam, LPARAM lParam);
-	
 	afx_msg void OnCbnSelchangeAdaptorCmb();
 	//afx_msg void OnCbnSelchangeProtocalCombo();
-	//virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };

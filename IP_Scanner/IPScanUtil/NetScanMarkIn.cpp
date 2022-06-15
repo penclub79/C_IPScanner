@@ -61,12 +61,6 @@ BOOL CNetScanMarkIn::StopScan()
 	m_bUserCancel = TRUE;
 	// end scanning
 
-	if (m_hSockReceive)
-	{
-		closesocket(m_hSockReceive);
-		m_hSockReceive = NULL;
-	}
-
 	if (m_hScanThread)
 	{
 		m_dwScanThreadID = 0;
@@ -79,6 +73,13 @@ BOOL CNetScanMarkIn::StopScan()
 		CloseHandle(m_hScanThread);
 		m_hScanThread = NULL;
 	}
+
+	if (m_hSockReceive)
+	{
+		closesocket(m_hSockReceive);
+		m_hSockReceive = NULL;
+	}
+
 
 	return TRUE;
 }
@@ -112,7 +113,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 	// IPv4, UDP 
 	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
-
+	
 	// Socket BroadCast Setting
 	if (setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
 	{
@@ -136,11 +137,11 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 		goto EXIT_LOOP;
 	}
-
+	
 	// This Wait Server Response 
 	SOCKADDR_IN SenderAddr;
 	iSenderAddrLen = sizeof(SOCKADDR_IN);
-
+	
 	m_pReceiverBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE];					// 메모리 할당
 	if (NULL == m_pReceiverBuff)													// 메모리 할당 되었는지 체크
 	{
@@ -149,8 +150,10 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		
 		goto EXIT_LOOP;
 	}
+	
 	pReceive = (HEADER_BODY*)m_pReceiverBuff;										// 할당 메모리 크기로 구조체 사용
 	memset(m_pReceiverBuff, 0, sizeof(char)* SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
+
 
 	// Recev Data Thread live
 	while (m_dwScanThreadID)
@@ -219,10 +222,12 @@ void CNetScanMarkIn::thrMarkInReceiver()
 						pScanInfo->iBasePort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
 						pScanInfo->iVideoCnt = pReceive->stDevInfo.szMax_channel;
 
-						if (m_hNotifyWnd)
-							::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+						TRACE("<< MarkIn SendMessage\n");
 
-						TRACE("MarkIn SendMessage\n");
+						if (m_hNotifyWnd)
+							::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+
+						TRACE("MarkIn SendMessage >> \n");
 					}
 				}
 			}
@@ -231,8 +236,8 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 	// Thread Close
 EXIT_LOOP:
-	m_hSockReceive = NULL;
 	closesocket(m_hSockReceive);
+	m_hSockReceive = NULL;
 
 	if (m_pReceiverBuff)
 	{
@@ -243,7 +248,7 @@ EXIT_LOOP:
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
 		TRACE("MarkIn Thread Exit\n");
-		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		//PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
 }

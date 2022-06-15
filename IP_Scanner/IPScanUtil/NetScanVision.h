@@ -189,7 +189,7 @@ class CNetScanVision
 public:
 	CNetScanVision();
 	~CNetScanVision(void);
-
+	
 	BOOL StartScan();
 	BOOL StopScan();
 	void SetNotifyWindow(HWND hWnd, LONG msg);
@@ -215,7 +215,7 @@ protected:
 	int    m_nScanTimeCount; // 30,29,28....0 then timeout
 	HWND   m_hReceiverWindow;
 	int    m_nListItemCount;
-	
+	CDialog* m_dlg;
 	HWND m_hNotifyWnd;
 	LONG m_lNotifyMsg;
 	HWND m_hCloseMsgRecvWnd;
