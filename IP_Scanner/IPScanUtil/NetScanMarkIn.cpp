@@ -65,6 +65,7 @@ BOOL CNetScanMarkIn::StopScan()
 	{
 		m_dwScanThreadID = 0;
 		TRACE("MarkIn WaitForSingleObject\n");
+		CloseTest();
 		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
 		{
 			TerminateThread(m_hScanThread, 0xffffffff);
@@ -120,7 +121,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		if (m_hNotifyWnd)
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT);
 		
-		goto EXIT_LOOP;
+		//goto EXIT_LOOP;
 	}
 
 	// 서버 주소정보 초기화
@@ -134,7 +135,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		if (m_hNotifyWnd)
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND);
 
-		goto EXIT_LOOP;
+		//goto EXIT_LOOP;
 	}
 	
 	// This Wait Server Response 
@@ -147,7 +148,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		if (m_hNotifyWnd)
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY);
 		
-		goto EXIT_LOOP;
+		//goto EXIT_LOOP;
 	}
 	
 	pReceive = (HEADER_BODY*)m_pReceiverBuff;										// 할당 메모리 크기로 구조체 사용
@@ -164,7 +165,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			if (m_hNotifyWnd && dwLastError != 10004)
 				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV);
 			
-			goto EXIT_LOOP;
+			//goto EXIT_LOOP;
 		}
 
 		if (m_pReceiverBuff)
@@ -224,7 +225,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 						TRACE("<< MarkIn SendMessage\n");
 
 						if (m_hNotifyWnd)
-							::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+							::SendMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
 
 						TRACE("MarkIn SendMessage >> \n");
 					}
@@ -234,23 +235,34 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	}
 
 	// Thread Close
-EXIT_LOOP:
-	closesocket(m_hSockReceive);
-	m_hSockReceive = NULL;
+//EXIT_LOOP:
+//	closesocket(m_hSockReceive);
+//	m_hSockReceive = NULL;
+//
+//	if (m_pReceiverBuff)
+//	{
+//		delete[] m_pReceiverBuff;
+//		m_pReceiverBuff = NULL;
+//	}
+//
+//	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
+//	{
+//		TRACE("MarkIn Thread Exit\n");
+//		PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+//		m_bUserCancel = FALSE;
+//	}
+}
 
-	if (m_pReceiverBuff)
-	{
-		delete[] m_pReceiverBuff;
-		m_pReceiverBuff = NULL;
-	}
-
+void CNetScanMarkIn::CloseTest()
+{
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
 		TRACE("MarkIn Thread Exit\n");
-		PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 		m_bUserCancel = FALSE;
 	}
 }
+
 
 // int 배열 -> TCHAR 배열 복사
 void CNetScanMarkIn::ConversionNetInfo(unsigned char* _upszIp, char* _pszVal)

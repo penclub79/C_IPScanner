@@ -204,7 +204,7 @@ public:
 	void SetBindAddress(ULONG ulBindAddress = INADDR_ANY);
 protected:
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
-
+	void CloseTest();
 	char*  m_pReceive_buffer; // allocate 64 kbytes memory
 	// 2010-08-26 hkeins : scanner routine
 	SOCKET m_hSockReceive;

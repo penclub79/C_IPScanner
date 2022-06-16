@@ -103,7 +103,7 @@ private:
 
 	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
 	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
-
+	void CloseTest();
 	/////////////// Conversion
 	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
 	void ConversionMac(char* _pszMac, char* _pszVal);

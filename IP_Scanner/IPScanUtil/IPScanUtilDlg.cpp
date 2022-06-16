@@ -425,15 +425,17 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		SetStatusMsg(msg);
 
 		// stop
+		if (m_pScannerMarkIn)
+		{
+			m_pScannerMarkIn->StopScan();
+		}
+
 		if (m_pScannerVision)
 		{
 			m_pScannerVision->StopScan();
 		}
 
-		if (m_pScannerMarkIn)
-		{
-			m_pScannerMarkIn->StopScan();
-		}
+		
 	}
 }
 
@@ -500,12 +502,11 @@ void CIPScanUtilDlg::OnBnClickedClose()
 	KillTimer(TM_SCANNING_ANI);
 
 	// Stop scan before close dialog
-	if (m_pScannerVision)
-		m_pScannerVision->StopScan();
-
 	if (m_pScannerMarkIn)
 		m_pScannerMarkIn->StopScan();
-	
+
+	if (m_pScannerVision)
+		m_pScannerVision->StopScan();
 
 	SAFE_DELETE(m_pScannerVision);
 	SAFE_DELETE(m_pScannerMarkIn);
@@ -543,11 +544,11 @@ void CIPScanUtilDlg::OnClose()
 	KillTimer(TM_SCANNING_ANI);
 
 	// Stop scan before close dialog
-	if (m_pScannerVision)
-		m_pScannerVision->StopScan();
-	
 	if (m_pScannerMarkIn)
 		m_pScannerMarkIn->StopScan();
+
+	if (m_pScannerVision)
+		m_pScannerVision->StopScan();
 
 	SAFE_DELETE(m_pScannerVision);
 	SAFE_DELETE(m_pScannerMarkIn);
@@ -590,8 +591,6 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 	//	delete pScanInfo; 
 	//	return 0L;
 	//}
-
-
 	_Lock();
 
 	if(pScanInfo)
@@ -832,10 +831,8 @@ LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 LRESULT CIPScanUtilDlg::OnScanCloseDlgMsg(WPARAM wParam, LPARAM lParam)
 {
 //	TRACE(_T("Scanning ended some error\n"));
-	if (InSendMessage())
-	{
-		TRACE(_T("Close SendMessage 반환함\n"));
-	}
+	TRACE(_T("Close SendMessage 반환함\n"));
+	
 	return 0;
 }
 

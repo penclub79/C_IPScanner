@@ -183,6 +183,7 @@ BOOL CNetScanVision::StopScan()
 	{
 		m_dwScanThreadID = 0;
 		TRACE("Vision WaitForSingleObject\n");
+		CloseTest();
 		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
 		{
 			TerminateThread(m_hScanThread, 0xffffffff);
@@ -226,7 +227,7 @@ void CNetScanVision::thrReceiver()
 		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
 		}
-		goto EXIT_LOOP;
+		//goto EXIT_LOOP;
 			
 	}
 	
@@ -242,7 +243,7 @@ void CNetScanVision::thrReceiver()
 		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
 		}
-		goto EXIT_LOOP;
+		//goto EXIT_LOOP;
 			
 	}
 
@@ -258,7 +259,7 @@ void CNetScanVision::thrReceiver()
 		{
 			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
 		}
-		goto EXIT_LOOP;
+		//goto EXIT_LOOP;
 	}
 	
 	memset(m_pReceive_buffer, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
@@ -292,7 +293,7 @@ void CNetScanVision::thrReceiver()
 			{
 				::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
 			}	
-			goto EXIT_LOOP;
+			//goto EXIT_LOOP;
 		}
 
 		if(pReceive->magic == MAGIC2_CODE)
@@ -457,21 +458,31 @@ void CNetScanVision::thrReceiver()
 		}
 	}
 
-EXIT_LOOP: // goto¹®
-	closesocket(m_hSockReceive);
-	m_hSockReceive = NULL;
-	//m_hSockSend = NULL;
+//EXIT_LOOP: // goto¹®
+//	closesocket(m_hSockReceive);
+//	m_hSockReceive = NULL;
+//	//m_hSockSend = NULL;
+//
+//	if (m_pReceive_buffer)
+//	{
+//		delete[] m_pReceive_buffer;
+//		m_pReceive_buffer = NULL;
+//	}
+//
+//	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
+//	{
+//		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
+//		TRACE("Vision Thread Exit\n");
+//		m_bUserCancel = FALSE;
+//	}
+}
 
-	if (m_pReceive_buffer)
-	{
-		delete[] m_pReceive_buffer;
-		m_pReceive_buffer = NULL;
-	}
-
+void CNetScanVision::CloseTest()
+{
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
+		TRACE("MarkIn Thread Exit\n");
 		SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
-		TRACE("Vision Thread Exit\n");
 		m_bUserCancel = FALSE;
 	}
 }
