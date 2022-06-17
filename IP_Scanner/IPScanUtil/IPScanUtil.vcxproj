@@ -145,6 +145,7 @@
     <ClCompile Include="UpgradeThreadHttp.cpp" />
     <ClCompile Include="UpgradeThreadTcp.cpp" />
     <ClCompile Include="VHNetworkAdaptorInfo.cpp" />
+    <ClCompile Include="xmlite\XMLite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ARP.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="UpgradeThreadHttp.h" />
     <ClInclude Include="UpgradeThreadTcp.h" />
     <ClInclude Include="VHNetworkAdaptorInfo.h" />
+    <ClInclude Include="xmlite\XMLite.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\checkboxes.bmp" />

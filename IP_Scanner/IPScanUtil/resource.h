@@ -154,6 +154,8 @@
 #define IDC_HTTP_PORT_EDIT              1092
 #define IDC_BUT_RESET                   1093
 #define IDC_APPLY                       1093
+#define IDC_BUTTON1                     1094
+#define IDC_OPEN_XML                    1095
 #define IDC_SUBNETMASK                  1102
 #define IDC_NET_DHCP                    1103
 #define IDC_NET_STATIC2                 1104
@@ -180,7 +182,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1094
+#define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

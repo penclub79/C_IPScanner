@@ -160,4 +160,5 @@ public:
 	afx_msg LRESULT OnSortRequest(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnCbnSelchangeAdaptorCmb();
 	//afx_msg void OnCbnSelchangeProtocalCombo();
+	afx_msg void OnClickedOpenXml();
 };

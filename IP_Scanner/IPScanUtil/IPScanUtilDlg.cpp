@@ -12,6 +12,7 @@
 #include "ResolutionChangeDlg.h"
 #include "OSDChangeDlg.h"
 #include <locale.h>					// for using hangule in MFC TRACE macro
+#include "xmlite\XMLite.h"
 
 #pragma comment(lib, "version.lib")
 
@@ -111,7 +112,7 @@ END_MESSAGE_MAP()
 
 // CIPScanUtilDlg 대화 상자
 CIPScanUtilDlg::CIPScanUtilDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CIPScanUtilDlg::IDD, pParent)
+: CDialog(CIPScanUtilDlg::IDD, pParent)
 	, m_bScanning(FALSE)
 	, m_nListItemCount(0)
 	, m_nScanAniCount(0)
@@ -173,6 +174,7 @@ BEGIN_MESSAGE_MAP(CIPScanUtilDlg, CDialog)
 	ON_BN_CLICKED(IDC_FACTORY_BTN,				&CIPScanUtilDlg::OnBnClickedFactoryBtn)
 	ON_CBN_SELCHANGE(IDC_ADAPTOR_CMB,			&CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb)
 	//ON_COMMAND(IDC_PROTOCAL_COMBO, &CIPScanUtilDlg::OnProtocalCombo)
+	ON_BN_CLICKED(IDC_OPEN_XML, &CIPScanUtilDlg::OnClickedOpenXml)
 END_MESSAGE_MAP()
 
 
@@ -2040,24 +2042,71 @@ void CIPScanUtilDlg::OnCbnSelchangeAdaptorCmb()
 //		//}
 //}
 
+void CIPScanUtilDlg::OnClickedOpenXml()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	char*	pszBuff			= NULL;
+	FILE*	pFile			= NULL;
+	DWORD	dwFileSize		= 0;
+	LPXNode lpHeader		= NULL;
+	LPXNode lpBody			= NULL;
+	LPXNode lpBodyCommon	= NULL;
+	LPXNode lpItemData		= NULL;
+	XNode	stNode;
 
-//LRESULT CIPScanUtilDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-//{
-//	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-//
-//	switch (message)
-//	{
-//	case WM_SCAN_MSG:
-//		{
-//			OnScanMsg(wParam, lParam);
-//		}
-//		break;
-//	case WM_SCAN_CLOSE_DLG_MSG:
-//		{
-//			OnScanCloseDlgMsg(wParam, lParam);
-//		}
-//		break;
-//	}
-//
-//	return CDialog::WindowProc(message, wParam, lParam);
-//}
+	pFile = fopen("D:\\C_IPScanner\\IP_Scanner\\ProbeMatches.txt", "rb");
+	fseek(pFile, 0, SEEK_END);
+	dwFileSize = ftell(pFile);
+	
+	pszBuff = new char[sizeof(char) * dwFileSize];
+	memset(pszBuff, 0, dwFileSize);
+
+	fseek(pFile, 0, SEEK_SET);
+	fread(pszBuff, 1, dwFileSize, pFile);
+
+	stNode.Load(pszBuff);
+
+	lpHeader = stNode.GetChildArg("wsa:MessageID",NULL);
+	TRACE("%s\n", lpHeader->value);
+
+	lpHeader = stNode.GetChildArg("wsa:RelatesTo", NULL);
+	TRACE("%s\n", lpHeader->value);
+
+	lpHeader = stNode.GetChildArg("wsa:To", NULL);
+	TRACE("%s\n", lpHeader->value);
+
+	lpHeader = stNode.GetChildArg("wsa:Action", NULL);
+	TRACE("%s\n", lpHeader->value);
+
+
+	lpBody = stNode.GetChildArg("s:Body", NULL);
+	lpBodyCommon = lpBody->GetChild("d:ProbeMatches")->GetChild("d:ProbeMatch");
+	lpItemData = lpBodyCommon->GetChild("wsa:EndpointReference")->GetChild("wsa:Address");
+	TRACE("%s\n", lpItemData->value);
+
+	lpBody = lpBodyCommon->GetChild("d:Types");
+	TRACE("%s\n", lpBody->value);
+
+	lpBody = lpBodyCommon->GetChild("d:Scopes");
+	TRACE("%s\n", lpBody->value);
+
+	lpBody = lpBodyCommon->GetChild("d:XAddrs");
+	TRACE("%s\n", lpBody->value);
+
+	lpBody = lpBodyCommon->GetChild("d:MetadataVersion");
+	TRACE("%s\n", lpBody->value);
+
+
+	if (NULL != pszBuff)
+	{
+		delete[] pszBuff;
+		pszBuff = NULL;
+	}
+	
+	if (NULL != pFile)
+	{
+		fclose(pFile);
+		pFile = NULL;
+	}
+	
+}
