@@ -1,9 +1,9 @@
-﻿빌드 시작: 2022-06-17 오후 4:08:54
+﻿빌드 시작: 2022-06-20 오후 1:57:35
      1>2 노드의 "D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트(Build 대상)입니다.
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\IP_Installer.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt IPScanUtilDlg.cpp
          IPScanUtilDlg.cpp
-     1>d:\c_ipscanner\ip_scanner\ipscanutil\ipscanutildlg.cpp(2057): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>d:\c_ipscanner\ip_scanner\ipscanutil\ipscanutildlg.cpp(2068): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  c:\program files (x86)\microsoft visual studio 12.0\vc\include\stdio.h(211) : 'fopen' 선언을 참조하십시오.
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.exe" /INCREMENTAL /NOLOGO iphlpapi.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.lib" /MACHINE:X86 /SAFESEH Debug\IPScanUtil.res
@@ -32,10 +32,9 @@
          Debug\UpgradeThreadTcp.obj
          Debug\VHNetworkAdaptorInfo.obj
          Debug\XMLite.obj
-     1>ARP.obj : warning LNK4075: '/EDITANDCONTINUE'이(가) '/SAFESEH' 사양으로 인해 무시됩니다.
          IPScanUtil.vcxproj -> D:\C_IPScanner\IP_Scanner\Debug\IP_Installer.exe
      1>"D:\C_IPScanner\IP_Scanner\IPScanUtil\IPScanUtil.vcxproj" 프로젝트를 빌드했습니다(Build 대상).
 
 빌드했습니다.
 
-경과 시간: 00:00:02.99
+경과 시간: 00:00:01.55

@@ -2066,6 +2066,9 @@ void CIPScanUtilDlg::OnClickedOpenXml()
 
 	stNode.Load(pszBuff);
 
+	lpBody = stNode.GetChildArg("s:Body", NULL);
+	lpBodyCommon = lpBody->GetChild("d:ProbeMatches")->GetChild("d:ProbeMatch");
+
 	lpHeader = stNode.GetChildArg("wsa:MessageID",NULL);
 	TRACE("%s\n", lpHeader->value);
 
@@ -2078,9 +2081,6 @@ void CIPScanUtilDlg::OnClickedOpenXml()
 	lpHeader = stNode.GetChildArg("wsa:Action", NULL);
 	TRACE("%s\n", lpHeader->value);
 
-
-	lpBody = stNode.GetChildArg("s:Body", NULL);
-	lpBodyCommon = lpBody->GetChild("d:ProbeMatches")->GetChild("d:ProbeMatch");
 	lpItemData = lpBodyCommon->GetChild("wsa:EndpointReference")->GetChild("wsa:Address");
 	TRACE("%s\n", lpItemData->value);
 
@@ -2107,6 +2107,11 @@ void CIPScanUtilDlg::OnClickedOpenXml()
 	{
 		fclose(pFile);
 		pFile = NULL;
+	}
+
+	void GetData();
+	{
+
 	}
 	
 }

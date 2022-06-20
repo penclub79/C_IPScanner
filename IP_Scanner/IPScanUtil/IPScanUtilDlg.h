@@ -65,7 +65,7 @@ protected:
 	CButton m_btnUpgrade;
 	//CComboBox m_cmbProtocol;
 	CComboBox m_cmbNetAdaptor;
-	CIPScanUtilDlg* m_dlg;
+
 	/////////////////// Scanning Class 
 	CNetScanVision* m_pScannerVision;
 	CNetScanMarkIn* m_pScannerMarkIn;
