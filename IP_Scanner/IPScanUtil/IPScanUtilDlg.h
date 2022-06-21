@@ -69,6 +69,7 @@ protected:
 	/////////////////// Scanning Class 
 	CNetScanVision* m_pScannerVision;
 	CNetScanMarkIn* m_pScannerMarkIn;
+	NetScanBase* m_pScanner;
 	//////////////////////////////////
 
 	BOOL	m_bScanning;

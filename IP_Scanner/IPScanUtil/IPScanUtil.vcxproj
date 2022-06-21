@@ -129,6 +129,7 @@
     <ClCompile Include="IPScanUtilDlg.cpp" />
     <ClCompile Include="ListItem.cpp" />
     <ClCompile Include="MessageQueue.cpp" />
+    <ClCompile Include="NetScanBase.cpp" />
     <ClCompile Include="NetScanMarkIn.cpp" />
     <ClCompile Include="NetScanVision.cpp" />
     <ClCompile Include="OSDChangeDlg.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="MessageQueue.h" />
     <ClInclude Include="NetCommon.h" />
     <ClInclude Include="NetDef_IPUTIL.h" />
+    <ClInclude Include="NetScanBase.h" />
     <ClInclude Include="NetScanMarkIn.h" />
     <ClInclude Include="NetScanVision.h" />
     <ClInclude Include="OSDChangeDlg.h" />

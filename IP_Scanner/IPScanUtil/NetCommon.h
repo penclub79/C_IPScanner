@@ -1,8 +1,16 @@
 #pragma once
 
-enum VERSION_PROTOCAL {
+enum VERSION_PROTOCAL 
+{
 	VERSION_1 = 0x00,
 	VERSION_2
+};
+
+// ScanÀÇ Á¾·ù
+enum SCANTYPE {
+	VISION = 0x00,
+	MARKIN,
+	ONVIF
 };
 
 typedef enum
