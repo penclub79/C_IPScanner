@@ -18,6 +18,8 @@
 #include "CheckListCtrl.h"
 #include "VHNetworkAdaptorInfo.h"
 
+#define COUNT_SCAN_CLIENT	2
+
 // CIPScanUtilDlg 대화 상자
 class CIPScanUtilDlg : public CDialog
 {
@@ -67,8 +69,11 @@ protected:
 	CComboBox m_cmbNetAdaptor;
 
 	/////////////////// Scanning Class 
-	CNetScanVision* m_pScannerVision;
-	CNetScanMarkIn* m_pScannerMarkIn;
+	//NetScanBase* m_pScannerVision;
+	//CNetScanMarkIn* m_pScannerMarkIn;
+
+
+	NetScanBase* m_apScanner[COUNT_SCAN_CLIENT];
 	//////////////////////////////////
 
 	BOOL	m_bScanning;

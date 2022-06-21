@@ -2,7 +2,6 @@ d:\c_ipscanner\ip_scanner\ipscanutil\debug\ip_installer.pch
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\vc120.pdb
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\vc120.idb
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\stdafx.obj
-d:\c_ipscanner\ip_scanner\ipscanutil\debug\factorydefaultdlg.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\ipchangedlg.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\ipchangedlg2.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\ipchangethread.obj
@@ -22,9 +21,12 @@ d:\c_ipscanner\ip_scanner\ipscanutil\debug\upgradedlg.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\upgradethreadhttp.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\upgradethreadtcp.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\vhnetworkadaptorinfo.obj
+d:\c_ipscanner\ip_scanner\ipscanutil\debug\xmlite.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\arp.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\checklistctrl.obj
 d:\c_ipscanner\ip_scanner\ipscanutil\debug\connectcheckthread.obj
+d:\c_ipscanner\ip_scanner\ipscanutil\debug\factorydefaultdlg.obj
+d:\c_ipscanner\ip_scanner\ipscanutil\debug\netscanbase.obj
 d:\c_ipscanner\ip_scanner\debug\ip_installer.ilk
 d:\c_ipscanner\ip_scanner\debug\ip_installer.exe
 d:\c_ipscanner\ip_scanner\debug\ip_installer.pdb

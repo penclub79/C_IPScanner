@@ -286,7 +286,7 @@ BOOL CIPChangeDlg2::OnInitDialog()
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }
 
-void CIPChangeDlg2::SetScanner( CNetScanVision * pScanner )
+void CIPChangeDlg2::SetScanner( CNetScanVision* pScanner )
 {
 	m_pScanner	= pScanner;
 }
@@ -554,7 +554,7 @@ LRESULT CIPChangeDlg2::OnIPChangeMessage(WPARAM wParam, LPARAM lParam)
 			else if (VERSION_2 == m_nVersion)
 			{
 				m_pScanner->SendScanRequestExt();
-				m_pMKScanner->SendScanRequest();
+				//m_pMKScanner->SendScanRequest();
 			}
 				
 		}

@@ -13,6 +13,7 @@
 #include "OSDChangeDlg.h"
 #include <locale.h>					// for using hangule in MFC TRACE macro
 #include "xmlite\XMLite.h"
+#include "NetCommon.h"				// 공통적인 변수 사용
 
 #pragma comment(lib, "version.lib")
 
@@ -113,12 +114,12 @@ END_MESSAGE_MAP()
 // CIPScanUtilDlg 대화 상자
 CIPScanUtilDlg::CIPScanUtilDlg(CWnd* pParent /*=NULL*/)
 : CDialog(CIPScanUtilDlg::IDD, pParent)
-	, m_bScanning(FALSE)
-	, m_nListItemCount(0)
-	, m_nScanAniCount(0)
-	, m_iSelectVersion(VERSION_2)
-	, m_nCurSvrListSel(-1)
-	, m_bInit(FALSE)
+, m_bScanning(FALSE)
+, m_nListItemCount(0)
+, m_nScanAniCount(0)
+, m_iSelectVersion(VERSION_2)
+, m_nCurSvrListSel(-1)
+, m_bInit(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	InitializeCriticalSection(&m_mt);
@@ -127,6 +128,7 @@ CIPScanUtilDlg::CIPScanUtilDlg(CWnd* pParent /*=NULL*/)
 	m_nSortOrient    = SUBITEM_IPADDRESS; // IP
 	//memset(m_szTempValue, 0, sizeof(m_szTempValue));
 	m_ulAcceptAddress= 0;
+
 }
 
 void CIPScanUtilDlg::DoDataExchange(CDataExchange* pDX)
@@ -278,8 +280,8 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 
 	m_cSvrList.Init();
 
-	m_pScannerVision = new CNetScanVision();
-	m_pScannerMarkIn = new CNetScanMarkIn();
+	m_apScanner[0] = new CNetScanMarkIn();
+	m_apScanner[1] = new CNetScanVision();
 
 	m_btnChangeIP.EnableWindow(TRUE);
 
@@ -394,21 +396,18 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		msg.LoadString(IDS_STATUS_SCANNING);
 		SetStatusMsg(msg);
 
-		// Vision start
-		m_pScannerVision->SetBindAddress(m_ulAcceptAddress);
-		m_pScannerVision->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
-		m_pScannerVision->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
+		// start set
 
-		// MarkIn Start
-		m_pScannerMarkIn->SetBindAddress(m_ulAcceptAddress);
-		m_pScannerMarkIn->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
-		m_pScannerMarkIn->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
-
-		// Vision Start
-		m_pScannerVision->StartScan();
-
-		// MarkIn Start
-		m_pScannerMarkIn->StartScan();
+		for (int i = 0; i < COUNT_SCAN_CLIENT; i++)
+		{
+			if (m_apScanner[i])
+			{
+				m_apScanner[i]->SetBindAddress(m_ulAcceptAddress);
+				m_apScanner[i]->SetNotifyWindow(m_hWnd, WM_SCAN_MSG);
+				m_apScanner[i]->SetCloseMsgRecvWindow(m_hWnd, WM_SCAN_CLOSE_DLG_MSG);
+				m_apScanner[i]->StartScan();
+			}
+		}
 
 		m_nScanAniCount = 0;
 		SetTimer(TM_SCANNING_ANI	, 1000		, NULL);
@@ -427,17 +426,13 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		SetStatusMsg(msg);
 
 		// stop
-		if (m_pScannerMarkIn)
+		for (int i = 0; i < COUNT_SCAN_CLIENT; i++)
 		{
-			m_pScannerMarkIn->StopScan();
+			if (m_apScanner[i])
+			{
+				m_apScanner[i]->StopScan();
+			}
 		}
-
-		if (m_pScannerVision)
-		{
-			m_pScannerVision->StopScan();
-		}
-
-		
 	}
 }
 
@@ -504,14 +499,15 @@ void CIPScanUtilDlg::OnBnClickedClose()
 	KillTimer(TM_SCANNING_ANI);
 
 	// Stop scan before close dialog
-	if (m_pScannerMarkIn)
-		m_pScannerMarkIn->StopScan();
+	for (int i = 0; i < COUNT_SCAN_CLIENT; i++)
+	{
+		if (m_apScanner[i])
+		{
+			m_apScanner[i]->StopScan();
+			SAFE_DELETE(m_apScanner[i]);
+		}
+	}
 
-	if (m_pScannerVision)
-		m_pScannerVision->StopScan();
-
-	SAFE_DELETE(m_pScannerVision);
-	SAFE_DELETE(m_pScannerMarkIn);
 	ClearScanList();
 
 	OnCancel();
@@ -545,15 +541,15 @@ void CIPScanUtilDlg::OnClose()
 {
 	KillTimer(TM_SCANNING_ANI);
 
-	// Stop scan before close dialog
-	if (m_pScannerMarkIn)
-		m_pScannerMarkIn->StopScan();
+	for (int i = 0; i < COUNT_SCAN_CLIENT; i++)
+	{
+		if (m_apScanner[i])
+		{
+			m_apScanner[i]->StopScan();
+			SAFE_DELETE(m_apScanner[i]);
+		}
+	}
 
-	if (m_pScannerVision)
-		m_pScannerVision->StopScan();
-
-	SAFE_DELETE(m_pScannerVision);
-	SAFE_DELETE(m_pScannerMarkIn);
 	ClearScanList();
 
 	CDialog::OnClose();
@@ -853,23 +849,12 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if( 0 == m_nScanAniCount )
 			{
-				if (VERSION_1 == m_iSelectVersion)
+				for (int i = 0; i < COUNT_SCAN_CLIENT; i++)
 				{
-					if (m_pScannerVision)
-					{
-						m_pScannerVision->SendScanRequest();
-					}
-				}						
-				else if (VERSION_2 == m_iSelectVersion)
-				{
-					if (m_pScannerVision)
-					{
-						m_pScannerVision->SendScanRequestExt();
-					}
+					if (m_apScanner[i])
+						m_apScanner[i]->SendScanRequest();
 				}
-
-				m_pScannerMarkIn->SendScanRequest();
-
+			
 			}
 
 			int i;
@@ -885,16 +870,7 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nScanAniCount = m_nScanAniCount % 10;
 		}
 	}
-	else if(TM_SCANNING == nIDEvent)
-	{
-		if(m_bScanning)
-		{
-			if( VERSION_1 == m_iSelectVersion )
-				m_pScannerVision->SendScanRequest();
-			else if( VERSION_2 == m_iSelectVersion )
-				m_pScannerVision->SendScanRequestExt();
-		}
-	}
+
 	
 	CDialog::OnTimer(nIDEvent);
 }
@@ -1564,7 +1540,8 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 
 	CIPChangeDlg2* pDlg	= new CIPChangeDlg2;
 	pDlg->SetScanInfo( nScanInfoCount, pScanInfo, nSelScanInfoCount, pSelScanInfo);
-	pDlg->SetScanner(m_pScannerVision);
+	//pDlg->SetScanner(m_pScannerVision);
+
 
 	if(pDlg->DoModal() == IDOK)
 	{

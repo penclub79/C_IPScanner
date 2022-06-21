@@ -90,6 +90,9 @@
     <ClCompile Include="xmlite\XMLite.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="NetScanBase.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ARP.h">
@@ -183,6 +186,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="xmlite\XMLite.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="NetScanBase.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

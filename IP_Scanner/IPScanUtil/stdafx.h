@@ -69,7 +69,7 @@ const UINT WM_UPGRADE_MSG			= WM_USER + 205;
 const UINT WM_RETRY_UPGRADE_MSG		= WM_USER + 206;
 
 const UINT TM_SCANNING_ANI	= 1000; // scanning animate timer
-const UINT TM_SCANNING		= 1001; // scan request timer
+//const UINT TM_SCANNING		= 1001; // scan request timer
 
 
 // 2013-01-30 hkeins : sort function impl.

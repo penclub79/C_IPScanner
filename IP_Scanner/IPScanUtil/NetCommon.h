@@ -1,13 +1,21 @@
 #pragma once
 
-enum VERSION_PROTOCAL {
+#define MK_UDP_REQ_PORT		9010
+#define MK_UDP_RSP_PORT		9011
+#define VH_UDP_SCAN_PORT	64988
+
+
+enum VERSION_PROTOCAL 
+{
 	VERSION_1 = 0x00,
 	VERSION_2
 };
 
-typedef enum
-{
-	STOP_SCAN = 0,
+// ScanÀÇ Á¾·ù
+enum SCANTYPE {
+	VISION = 0x00,
+	MARKIN,
+	ONVIF
 };
 
 const UINT32 SCAN_INFO_m_pReceive_buffer_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data

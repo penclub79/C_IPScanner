@@ -15,6 +15,9 @@
 // pragma pack(push, 1) ~ pragma pack(pop) 범위까지 최소 단위는 1바이트로 표현된다.
 // 컴파일러에 의해서 다르지만 __attribute__((packed)) 이랑 같은 문법이다.
 
+
+#include "NetScanBase.h"
+
 #pragma pack(push, 1)
 
 // Protocol Header
@@ -71,44 +74,40 @@ typedef struct _HEADER_BODY
 	_DEVICE_INFO	stDevInfo;
 }HEADER_BODY;
 
-class CNetScanMarkIn
+class CNetScanMarkIn : public NetScanBase
 {
+private:
+	HANDLE	m_hScanThread;		// Thread Handle
+	DWORD	m_dwScanThreadID;	// Tread ID
+	SOCKET	m_hSockReceive;
+	ULONG	m_ulBindAddress;
+	BOOL	m_bUserCancel;
+	char*	m_pReceive_buffer;
+
+	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
+	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
+	void ConversionMac(char* _pszMac, char* _pszVal);
+	void ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
+	void ConversionModelName(char* _pszModel, char* _pszVal);
+	
+
+protected:
+	static DWORD thrMarkInScanThread(LPVOID pParam);
 
 public:
 	CNetScanMarkIn();
 	~CNetScanMarkIn(void);
 
-	BOOL	StartScan();
-	BOOL	StopScan();
+
+	//////////////////////////////////////////////////////////// Function
+	virtual BOOL StartScan();
+
 	void	thrMarkInReceiver();
 	void	SetBindAddress(ULONG _ulBindAddress);
 	void	SetNotifyWindow(HWND hWnd, LONG msg);
 	void	SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/);
-	BOOL	SendScanRequest();
-
-protected:
-	
-
-private:
-	HANDLE	m_hScanThread;		// Thread Handle
-	DWORD	m_dwScanThreadID;	// Tread ID
-	SOCKET	m_hSockReceive;
-	HWND	m_hNotifyWnd;
-	HWND	m_hCloseMsgRecvWnd;
-	LONG	m_lNotifyMsg;
-	LONG	m_lCloseMsg;
-	ULONG	m_ulBindAddress;
-	BOOL	m_bUserCancel;
-	char*	m_pReceiverBuff;
-
-	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
-	void WideCopyStringFromAnsi(WCHAR* wszStrig, int nMaxBufferLen, char* aszString);
-	void CloseTest();
-	/////////////// Conversion
-	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
-	void ConversionMac(char* _pszMac, char* _pszVal);
-	void ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
-	void ConversionModelName(char* _pszModel, char* _pszVal);
-	//void On
-	//////////////////////////
+	BOOL	SendPacketSet(char* pszSendBuff);
+	void	SocketBind();
+	void	SetScanPort();
+	//////////////////////////////////////////////////////////// ---------/
 };
