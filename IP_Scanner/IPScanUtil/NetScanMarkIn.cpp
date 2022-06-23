@@ -76,7 +76,6 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 	ReceiverAddr.sin_family = AF_INET;
 	ReceiverAddr.sin_port = htons(MK_UDP_RSP_PORT);
-	TRACE(_T("%d 바인드 시도 ~~~~~~~~~~~~~\n"), MK_UDP_RSP_PORT);
 	ReceiverAddr.sin_addr.s_addr = this->m_ulBindAddress; // htonl(m_ulBindAddress);
 
 	if (SOCKET_ERROR == bind(this->m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))

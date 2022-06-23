@@ -1,79 +1,38 @@
-/IP_Scanner/Debug/IP_Installer.exe
-/IP_Scanner/Debug/IP_Installer.exe.orig
-/IP_Scanner/Debug/IP_Installer.ilk
-/IP_Scanner/Debug/IP_Installer.ilk.orig
-/IP_Scanner/Debug/IP_Installer.pdb
-/IP_Scanner/Debug/IP_Installer.pdb.orig
-/IP_Scanner/ipch/ipscanutil-c1fddee7/ip_installer-4f90e732.ipch
-/IP_Scanner/ipch/ipscanutil-c1fddee7/ip_installer-4f90e732.ipch.orig
-/IP_Scanner/IPScanUtil.sdf
-/IP_Scanner/IPScanUtil.sdf.orig
-/IP_Scanner/IPScanUtil.v12.suo
-/IP_Scanner/IPScanUtil.v12.suo.orig
-/IP_Scanner/IPScanUtil/Debug/ARP.obj
-/IP_Scanner/IPScanUtil/Debug/ARP.obj.orig
-/IP_Scanner/IPScanUtil/Debug/CheckListCtrl.obj
-/IP_Scanner/IPScanUtil/Debug/CheckListCtrl.obj.orig
-/IP_Scanner/IPScanUtil/Debug/ConnectCheckThread.obj
-/IP_Scanner/IPScanUtil/Debug/ConnectCheckThread.obj.orig
-/IP_Scanner/IPScanUtil/Debug/FactoryDefaultDlg.obj
-/IP_Scanner/IPScanUtil/Debug/FactoryDefaultDlg.obj.orig
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.Build.CppClean.log
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.Build.CppClean.log.orig
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.pch
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.pch.orig
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.tlog/cl.command.1.tlog.orig
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.tlog/CL.read.1.tlog
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.tlog/CL.read.1.tlog.orig
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.tlog/CL.write.1.tlog
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.tlog/CL.write.1.tlog.orig
-/IP_Scanner/IPScanUtil/Debug/IP_Installer.tlog/unsuccessfulbuild
-/IP_Scanner/IPScanUtil/Debug/IPChangeDlg.obj
-/IP_Scanner/IPScanUtil/Debug/IPChangeDlg.obj.orig
-/IP_Scanner/IPScanUtil/Debug/IPChangeDlg2.obj
-/IP_Scanner/IPScanUtil/Debug/IPChangeDlg2.obj.orig
-/IP_Scanner/IPScanUtil/Debug/IPChangeThread.obj
-/IP_Scanner/IPScanUtil/Debug/IPChangeThread.obj.orig
-/IP_Scanner/IPScanUtil/Debug/IPScanUtil.log
-/IP_Scanner/IPScanUtil/Debug/IPScanUtil.log.orig
-/IP_Scanner/IPScanUtil/Debug/IPScanUtil.obj
-/IP_Scanner/IPScanUtil/Debug/IPScanUtil.obj.orig
-/IP_Scanner/IPScanUtil/Debug/IPScanUtilDlg.obj
-/IP_Scanner/IPScanUtil/Debug/IPScanUtilDlg.obj.orig
-/IP_Scanner/IPScanUtil/Debug/ListItem.obj
-/IP_Scanner/IPScanUtil/Debug/ListItem.obj.orig
-/IP_Scanner/IPScanUtil/Debug/MessageQueue.obj
-/IP_Scanner/IPScanUtil/Debug/MessageQueue.obj.orig
-/IP_Scanner/IPScanUtil/Debug/NetScanBase.obj
-/IP_Scanner/IPScanUtil/Debug/NetScanMarkIn.obj
-/IP_Scanner/IPScanUtil/Debug/NetScanMarkIn.obj.orig
-/IP_Scanner/IPScanUtil/Debug/NetScanVision.obj
-/IP_Scanner/IPScanUtil/Debug/NetScanVision.obj.orig
-/IP_Scanner/IPScanUtil/Debug/OSDChangeDlg.obj
-/IP_Scanner/IPScanUtil/Debug/OSDChangeDlg.obj.orig
-/IP_Scanner/IPScanUtil/Debug/OSDChangeThread.obj
-/IP_Scanner/IPScanUtil/Debug/OSDChangeThread.obj.orig
-/IP_Scanner/IPScanUtil/Debug/OXMaskedEdit.obj
-/IP_Scanner/IPScanUtil/Debug/OXMaskedEdit.obj.orig
-/IP_Scanner/IPScanUtil/Debug/ProgressListCtrl.obj
-/IP_Scanner/IPScanUtil/Debug/ProgressListCtrl.obj.orig
-/IP_Scanner/IPScanUtil/Debug/ResolutionChangeDlg.obj
-/IP_Scanner/IPScanUtil/Debug/ResolutionChangeDlg.obj.orig
-/IP_Scanner/IPScanUtil/Debug/ResolutionChangeThread.obj
-/IP_Scanner/IPScanUtil/Debug/ResolutionChangeThread.obj.orig
-/IP_Scanner/IPScanUtil/Debug/stdafx.obj
-/IP_Scanner/IPScanUtil/Debug/stdafx.obj.orig
-/IP_Scanner/IPScanUtil/Debug/UpgradeDlg.obj
-/IP_Scanner/IPScanUtil/Debug/UpgradeDlg.obj.orig
-/IP_Scanner/IPScanUtil/Debug/UpgradeThreadHttp.obj
-/IP_Scanner/IPScanUtil/Debug/UpgradeThreadHttp.obj.orig
-/IP_Scanner/IPScanUtil/Debug/UpgradeThreadTcp.obj
-/IP_Scanner/IPScanUtil/Debug/UpgradeThreadTcp.obj.orig
-/IP_Scanner/IPScanUtil/Debug/vc120.idb
-/IP_Scanner/IPScanUtil/Debug/vc120.idb.orig
-/IP_Scanner/IPScanUtil/Debug/vc120.pdb
-/IP_Scanner/IPScanUtil/Debug/vc120.pdb.orig
-/IP_Scanner/IPScanUtil/Debug/VHNetworkAdaptorInfo.obj
-/IP_Scanner/IPScanUtil/Debug/VHNetworkAdaptorInfo.obj.orig
-/IP_Scanner/IPScanUtil/Debug/XMLite.obj
-/IP_Scanner/IPScanUtil/Debug/XMLite.obj.orig
+# Created by https://www.toptal.com/developers/gitignore/api/c++
+# Edit at https://www.toptal.com/developers/gitignore?templates=c++
+
+### C++ ###
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# End of https://www.toptal.com/developers/gitignore/api/c++
