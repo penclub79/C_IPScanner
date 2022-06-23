@@ -19,16 +19,13 @@ NetScanBase::NetScanBase()
 	m_bUserCancel		= FALSE;
 	m_lNotifyMsg		= 0;
 	m_ulBindAddress		= 0;
-	m_iBindPort			= 0;
+	m_iRevPort			= 0;
 	m_lCloseMsg			= 0;
-	
 }
-
 
 NetScanBase::~NetScanBase()
 {
 }
-
 
 BOOL NetScanBase::StartScanF(LPTHREAD_START_ROUTINE _pThreadFunc)
 {
@@ -50,78 +47,58 @@ BOOL NetScanBase::StartScanF(LPTHREAD_START_ROUTINE _pThreadFunc)
 	return TRUE;
 }
 
-void NetScanBase::SocketBind()
-{
-	sockaddr_in		ReceiverAddr;
-	//SOCKADDR_IN		SenderAddr;
-	BOOL			bEnable			= TRUE;
-	int				iDeviceType		= 0;
-	int				nSenderAddrLen	= 0;
+//void NetScanBase::SocketBind()
+//{
+//	sockaddr_in		ReceiverAddr;
+//	BOOL			bEnable = TRUE;
+//	int				nSenderAddrLen = 0;
+//
+//	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//	// broadcast 
+//	if (SOCKET_ERROR == setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+//	{
+//		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
+//		if (m_hNotifyWnd)
+//		{
+//			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+//		}
+//	}
+//
+//	ReceiverAddr.sin_family = AF_INET;
+//	ReceiverAddr.sin_port = htons(m_iRevPort);
+//	TRACE(_T("%d 바인드 시도 ~~~~~~~~~~~~~\n"), m_iRevPort);
+//	ReceiverAddr.sin_addr.s_addr = m_ulBindAddress; // htonl(m_ulBindAddress);
+//
+//	if (SOCKET_ERROR == bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))
+//	{
+//		TRACE("Bind error = %d\n", WSAGetLastError());
+//		if (m_hNotifyWnd)
+//		{
+//			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
+//		}
+//	}
+//}
 
-	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
-
-	// broadcast 가능하도록 socket 옵션 조정
-	if (SOCKET_ERROR == setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
-	{
-		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
-		if (m_hNotifyWnd)
-		{
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
-		}
-	}
-
-	// Receive할 주소 bind
-	ReceiverAddr.sin_family			= AF_INET;
-	ReceiverAddr.sin_port			= htons(m_iBindPort);
-	ReceiverAddr.sin_addr.s_addr	= m_ulBindAddress; // htonl(m_ulBindAddress);
-
-	m_pReceive_buffer = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
-	memset(m_pReceive_buffer, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
-
-	if (SOCKET_ERROR == bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))
-	{
-		TRACE("Bind error = %d\n", WSAGetLastError());
-		if (m_hNotifyWnd)
-		{
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
-		}
-	}
-
-	// 서버의 응답을 기다린다
-	nSenderAddrLen = sizeof(SOCKADDR_IN);
-
-	if (NULL == m_pReceive_buffer)
-	{
-		if (m_hNotifyWnd)
-		{
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
-		}
-	}
-
-}
-
-BOOL NetScanBase::SendScanRequest()
-{
-	sockaddr_in		stSockaddr;
-	SOCKET			stSockSend		= NULL;
-	char			szSendBuff		= NULL;
-	int				iPackSize		= 0;
-	BOOL			bIsSuccess		= FALSE;
-
-	this->m_pScanner = new CNetScanMarkIn;
-
-	stSockaddr.sin_family		= AF_INET;
-	stSockaddr.sin_addr.s_addr	= INADDR_BROADCAST;
-
-	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
-	if (SOCKET_ERROR == sendto(m_hSockReceive, &szSendBuff, sizeof(szSendBuff), 0, (SOCKADDR*)&stSockaddr, sizeof(sockaddr_in)))
-	{
-		TRACE("sendto to error = %d\n", WSAGetLastError());
-		return FALSE;
-	}
-
-	return TRUE;
-}
+//BOOL NetScanBase::SendScanRequest()
+//{
+//	sockaddr_in		stSockaddr;
+//	SOCKET			stSockSend		= NULL;
+//	char			szSendBuff;
+//	int				iPackSize		= 0;
+//
+//	stSockaddr.sin_family = AF_INET;
+//	stSockaddr.sin_addr.s_addr = INADDR_BROADCAST;
+//	
+//	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
+//	if (SOCKET_ERROR == sendto(m_hSockReceive, &szSendBuff, sizeof(szSendBuff), 0, (SOCKADDR*)&stSockaddr, sizeof(sockaddr_in)))
+//	{
+//		TRACE("sendto to error = %d\n", WSAGetLastError());
+//		return FALSE;
+//	}
+//
+//	return TRUE;
+//}
 
 // Bind Address Set
 void NetScanBase::SetBindAddress(ULONG _ulBindAddress)
@@ -151,35 +128,34 @@ void NetScanBase::WideCopyStringFromAnsi(WCHAR* _pwszString, int _iMaxBufferLen,
 }
 
 // Dlg에서 사용하는 Stop함수
-BOOL NetScanBase::StopScan()
+BOOL NetScanBase::StopScans(SOCKET _hSocket)
 {
 	m_bUserCancel = TRUE;
 
-	if (m_hSockReceive)
+	if (_hSocket)
 	{
-		closesocket(m_hSockReceive);
-		m_hSockReceive = NULL;
+		closesocket(_hSocket);
+		_hSocket = NULL;
 	}
 
 	if (m_hScanThread)
 	{
 		m_dwScanThreadID = 0;
-		TRACE("Vision WaitForSingleObject\n");
+		TRACE("WaitForSingleObject\n");
 
 		if (WAIT_TIMEOUT == WaitForSingleObject(m_hScanThread, INFINITE))
 		{
 			TerminateThread(m_hScanThread, 0xffffffff);
 		}
-
+		TRACE("WaitForSingleObject  -- PASS --\n");
 		CloseHandle(m_hScanThread);
 		m_hScanThread = NULL;
 	}
 
-
 	return TRUE;
 }
 
-// child에 쓰이는 close함수
+// receive 함수에 쓰임
 void NetScanBase::ThreadExit()
 {
 	closesocket(m_hSockReceive);
@@ -194,7 +170,7 @@ void NetScanBase::ThreadExit()
 	if (m_bUserCancel && m_hCloseMsgRecvWnd && ::IsWindow(m_hCloseMsgRecvWnd))
 	{
 		::PostMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
-		TRACE("Vision Thread Exit\n");
+		TRACE("Thread Exit\n");
 		m_bUserCancel = FALSE;
 	}
 }

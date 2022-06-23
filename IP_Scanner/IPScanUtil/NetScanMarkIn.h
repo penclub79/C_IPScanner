@@ -25,11 +25,14 @@ typedef struct _PACKET_HEADER
 {
 	unsigned int uiCommand;
 	unsigned int uiReserved1;
-	unsigned int uiReserved2;
+	unsigned int uiReserved2;
+
 }PACKET_HEADER;
 
 // User Info
-typedef struct _USER_INFO{	char aszUser_id[32];
+typedef struct _USER_INFO
+{
+	char aszUser_id[32];
 	char aszUser_pw[32];
 
 }USER_INFO;
@@ -51,7 +54,8 @@ typedef struct _NET_INFO {
 	unsigned int	uiHttp_port;
 	unsigned int	uiBase_port;
 
-}NET_INFO;
+}NET_INFO;
+
 // Device Info
 typedef struct _DEVICE_INFO
 {
@@ -77,20 +81,14 @@ typedef struct _HEADER_BODY
 class CNetScanMarkIn : public NetScanBase
 {
 private:
-	HANDLE	m_hScanThread;		// Thread Handle
-	DWORD	m_dwScanThreadID;	// Tread ID
 	SOCKET	m_hSockReceive;
-	ULONG	m_ulBindAddress;
-	BOOL	m_bUserCancel;
-	char*	m_pReceive_buffer;
-
-	void ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
-	void ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
-	void ConversionMac(char* _pszMac, char* _pszVal);
-	void ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
-	void ConversionModelName(char* _pszModel, char* _pszVal);
+	char*	m_pszPacketBuff;
+	void	ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
+	void	ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
+	void	ConversionMac(char* _pszMac, char* _pszVal);
+	void	ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
+	void	ConversionModelName(char* _pszModel, char* _pszVal);
 	
-
 protected:
 	static DWORD thrMarkInScanThread(LPVOID pParam);
 
@@ -98,15 +96,16 @@ public:
 	CNetScanMarkIn();
 	~CNetScanMarkIn(void);
 
-
 	//////////////////////////////////////////////////////////// Function
 	virtual BOOL StartScan();
+	virtual BOOL SendScanRequest();
+	virtual BOOL StopScan();
 
 	void	thrMarkInReceiver();
 	void	SetBindAddress(ULONG _ulBindAddress);
 	void	SetNotifyWindow(HWND hWnd, LONG msg);
 	void	SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/);
-	BOOL	SendPacketSet(char* pszSendBuff);
+	
 	void	SocketBind();
 	void	SetScanPort();
 	//////////////////////////////////////////////////////////// ---------/

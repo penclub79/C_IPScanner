@@ -168,40 +168,41 @@ class NetScanBase
 {
 private:
 	//////////////////////////////////////////////////////////// Variable
-	HANDLE		m_hScanThread;		//스레드ID
-	BOOL		m_bUserCancel; 
-	DWORD		m_dwScanThreadID;
-	ULONG		m_ulBindAddress;
-	int			m_iBindPort;
+	HANDLE		m_hScanThread;		
 	//////////////////////////////////////////////////////////// ---------/
-	
+
 protected:
 	//////////////////////////////////////////////////////////// Variable
 	NetScanBase*	m_pScanner;
 	HWND			m_hNotifyWnd;
 	LONG			m_lNotifyMsg;
-	HWND			m_hCloseMsgRecvWnd; //Close win핸들
+	HWND			m_hCloseMsgRecvWnd; 
 	LONG			m_lCloseMsg;
-	SOCKET			m_hSockReceive;		//vision 소켓
+	SOCKET			m_hSockReceive;		
 	char*			m_pReceive_buffer;
+	int				m_iRevPort;
+	BOOL			m_bUserCancel;
+	ULONG			m_ulBindAddress;
+	DWORD			m_dwScanThreadID;
 	//////////////////////////////////////////////////////////// ---------/
 
 
 	//////////////////////////////////////////////////////////// Function
-	BOOL	StartScanF(LPTHREAD_START_ROUTINE _pThreadFunc);	
+	BOOL	StartScanF(LPTHREAD_START_ROUTINE _pThreadFunc);
 	void	WideCopyStringFromAnsi(WCHAR* _pwszString, int _iMaxBufferLen, char* _pszString);
+	BOOL	StopScans(SOCKET _hSocket);
 	//////////////////////////////////////////////////////////// ---------/
 
 public:
-	NetScanBase();			// 생성자
-	virtual ~NetScanBase(); // 소멸자
+	NetScanBase();			
+	virtual ~NetScanBase(); 
 
 	//////////////////////////////////////////////////////////// Function
-	virtual BOOL StartScan()	= 0;
-	virtual BOOL SendScanRequest();
+	virtual BOOL StartScan() = 0;
+	virtual BOOL SendScanRequest() = 0;
+	virtual BOOL StopScan() = 0;
 
-	BOOL	StopScan();
-	void	SocketBind();
+	//void	SocketBind();
 	void	SetBindAddress(ULONG _ulBindAddress);
 	void	SetNotifyWindow(HWND _hWnd, LONG _msg);
 	void	SetCloseMsgRecvWindow(HWND _hWnd, LONG _msg/* = WM_CLOSE*/);

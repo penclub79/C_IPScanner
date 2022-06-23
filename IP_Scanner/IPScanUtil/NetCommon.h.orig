@@ -1,0 +1,41 @@
+#pragma once
+
+<<<<<<< HEAD
+#define MK_UDP_REQ_PORT		9010
+#define MK_UDP_RSP_PORT		9011
+#define VH_UDP_SCAN_PORT	64988
+
+
+=======
+>>>>>>> 7304b2aa6ed7718361ee3fc6c9e641aa9e0b9eb5
+enum VERSION_PROTOCAL 
+{
+	VERSION_1 = 0x00,
+	VERSION_2
+};
+
+// ScanÀÇ Á¾·ù
+enum SCANTYPE {
+	VISION = 0x00,
+	MARKIN,
+	ONVIF
+<<<<<<< HEAD
+=======
+};
+
+typedef enum
+{
+	STOP_SCAN = 0,
+>>>>>>> 7304b2aa6ed7718361ee3fc6c9e641aa9e0b9eb5
+};
+
+const UINT32 SCAN_INFO_m_pReceive_buffer_SIZE = 64 * 1024; // 64 Kbytes temp buffer for receive temporary data
+const UINT32 SCAN_ERR_NONE = 0x00000000;
+const UINT32 SCAN_ERR_SOCKET_OPT = 0x00000001;
+const UINT32 SCAN_ERR_BIND = 0x00000002;
+const UINT32 SCAN_ERR_MEMORY = 0x00000003;
+const UINT32 SCAN_ERR_RECV = 0x00000004;
+
+
+const UINT32 MARKIN_PACKET_REQ_DEVICEINFO = 0x00001001;
+const UINT32 MARKIN_PACKET_RSP_DEVICEINFO = 0xA0001001;

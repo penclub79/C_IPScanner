@@ -7,21 +7,16 @@
 
 CNetScanMarkIn::CNetScanMarkIn()
 {
-	m_hScanThread		= NULL;
-	m_dwScanThreadID	= 0;
 	m_bUserCancel		= FALSE;
-	m_hNotifyWnd		= NULL;
-	m_lNotifyMsg		= 0;
-	m_hCloseMsgRecvWnd	= NULL;
-	m_pReceive_buffer	= NULL;
+	m_pszPacketBuff = NULL;
 }
 
 CNetScanMarkIn::~CNetScanMarkIn(void)
 {
-	if (NULL != m_pReceive_buffer)
+	if (NULL != m_pszPacketBuff)
 	{
-		delete[] m_pReceive_buffer; 
-		m_pReceive_buffer = NULL;
+		delete[] m_pszPacketBuff;
+		m_pszPacketBuff = NULL;
 	}
 }
 
@@ -62,26 +57,60 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	char				aszMacAdrs[32]		= { 0 };
 	char				aszVersion[30]		= { 0 };
 	DWORD				dwLastError			= 0;
-	SOCKADDR_IN			SenderAddr;
+	//SOCKADDR_IN			SenderAddr;
+	SOCKADDR_IN			ReceiverAddr;
 	// ----------------------------------------------------------------
-	
-	pReceive = (HEADER_BODY*)m_pReceive_buffer;										// 할당 메모리 크기로 구조체 사용
-	memset(m_pReceive_buffer, 0, sizeof(char)* SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
+
+	this->m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
+
+	// broadcast 
+	if (SOCKET_ERROR == setsockopt(this->m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+	{
+		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
+		if (this->m_hNotifyWnd)
+			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+		
+		NetScanBase::ThreadExit();
+		return;
+	}
+
+	ReceiverAddr.sin_family = AF_INET;
+	ReceiverAddr.sin_port = htons(MK_UDP_RSP_PORT);
+	TRACE(_T("%d 바인드 시도 ~~~~~~~~~~~~~\n"), MK_UDP_RSP_PORT);
+	ReceiverAddr.sin_addr.s_addr = this->m_ulBindAddress; // htonl(m_ulBindAddress);
+
+	if (SOCKET_ERROR == bind(this->m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))
+	{
+		TRACE("Bind error = %d\n", WSAGetLastError());
+		if (this->m_hNotifyWnd)
+			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
+		
+		NetScanBase::ThreadExit();
+		return;
+	}
+	//-------------------------------------------------------------------------------------------------------------------------------------
+
+	iSenderAddrLen = sizeof(SOCKADDR_IN);
+
+	m_pszPacketBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE];
+	pReceive = (HEADER_BODY*)m_pszPacketBuff; // 할당 메모리 크기로 구조체 사용
+	memset(m_pszPacketBuff, 0, sizeof(char) * SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
 
 	// Recev Data Thread live
-	while (m_dwScanThreadID)
+	while (this->m_dwScanThreadID)
 	{
-		if (SOCKET_ERROR == recvfrom(m_hSockReceive, m_pReceive_buffer, sizeof(PACKET_HEADER) + sizeof(DEVICE_INFO), 0, (SOCKADDR*)&SenderAddr, &iSenderAddrLen))
+		if (SOCKET_ERROR == recvfrom(this->m_hSockReceive, m_pszPacketBuff, sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO), 0, (SOCKADDR*)&ReceiverAddr, &iSenderAddrLen))
 		{
 			dwLastError = WSAGetLastError();
-			TRACE("recvfrom error = %d\n", dwLastError);
+			TRACE("MarkIn recvfrom error = %d\n", dwLastError);
 			if (this->m_hNotifyWnd && dwLastError != 10004)
 				::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_RECV);
 			
 			NetScanBase::ThreadExit();
+			break;
 		}
 
-		if (m_pReceive_buffer)
+		if (pReceive)
 		{
 			// Data Little Endian -> Big Endian all Change
 			ToBigEndian(pReceive);
@@ -137,8 +166,8 @@ void CNetScanMarkIn::thrMarkInReceiver()
 
 						TRACE("<< MarkIn SendMessage\n");
 
-						if (m_hNotifyWnd)
-							::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+						if (this->m_hNotifyWnd)
+							::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
 
 						TRACE("MarkIn SendMessage >> \n");  
 					}
@@ -146,6 +175,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			}
 		}
 	}
+	return;
 }
 
 // int 배열 -> TCHAR 배열 복사
@@ -168,9 +198,9 @@ void CNetScanMarkIn::ConversionVersion(VER_INFO* _pszVer, char* _pszVal)
 // MAC 주소 포맷으로 변환 함수
 void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 {
-	char	aszStr[30] = { 0 };
-	int		iMacLen = 0;
-	int		iValIdx = 2;
+	char	aszStr[30]	= { 0 };
+	int		iMacLen		= 0;
+	int		iValIdx		= 2;
 
 	iMacLen = strlen(_pszMac);
 	
@@ -189,35 +219,39 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 }
 
 // Send Packet Set
-BOOL CNetScanMarkIn::SendPacketSet(char* pszSendBuff)
+BOOL CNetScanMarkIn::SendScanRequest()
 {
-	SOCKET			stSockSend		= NULL;;
-	//char			szSendBuff[12]	= { 0 };
-	PACKET_HEADER*	pSender			= NULL;
+	char send_buffer[255];
+	sockaddr_in		stSockaddr;
+	SOCKET			stSockSend	= NULL;
+	PACKET_HEADER*	pSender		= NULL;
+	char			szSendBuff;
 
-	memset(pszSendBuff, 0, sizeof(PACKET_HEADER));
-	pSender = (PACKET_HEADER*)pszSendBuff;
+	stSockaddr.sin_family = AF_INET;
+	stSockaddr.sin_port = htons(MK_UDP_REQ_PORT);
+	stSockaddr.sin_addr.s_addr = INADDR_BROADCAST;
+
+	pSender = (PACKET_HEADER*)send_buffer;
+	memset(send_buffer, 0, sizeof(char) * sizeof(send_buffer));
+
 	pSender->uiCommand = MARKIN_PACKET_REQ_DEVICEINFO;
+
+	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
+	if (SOCKET_ERROR == sendto(m_hSockReceive, &szSendBuff, sizeof(szSendBuff), 0, (SOCKADDR*)&stSockaddr, sizeof(sockaddr_in)))
+	{
+		TRACE("MarkIn sendto to error = %d\n", WSAGetLastError());
+		return FALSE;
+	}
 
 	return TRUE;
 }
 
-void CNetScanMarkIn::SetNotifyWindow(HWND hWnd, LONG msg)
+BOOL CNetScanMarkIn::StopScan()
 {
-	m_hNotifyWnd = hWnd;
-	m_lNotifyMsg = msg;
+	this->StopScans(m_hSockReceive);
+	return TRUE;
 }
 
-void CNetScanMarkIn::SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/)
-{
-	m_hCloseMsgRecvWnd = hWnd;
-	m_lCloseMsg = msg;
-}
-
-void CNetScanMarkIn::SetBindAddress(ULONG _ulBindAddress)
-{
-	m_ulBindAddress = _ulBindAddress;
-}
 
 // 빅엔디언 치환 함수
 void CNetScanMarkIn::ToBigEndian(HEADER_BODY* _pstReceiveData)

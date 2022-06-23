@@ -4,6 +4,22 @@
 #include "NetDef_IPUtil.h"
 #include <atlconv.h>
 
+
+CNetScanVision::CNetScanVision()
+{
+	m_pScanDlg			= NULL;
+	m_nScanTimeCount	= 0;
+	m_hReceiverWindow	= NULL;
+	m_nListItemCount	= 0;
+	m_dlg				= NULL;
+	m_pszPacketBuff		= NULL;
+}
+
+CNetScanVision::~CNetScanVision(void)
+{
+
+}
+
 void tagSCAN_STRUCT::SetReceiveTime()
 {
 	tReceiveTime	= GetCurrentTime();
@@ -125,7 +141,7 @@ int  tagSCAN_STRUCT::_CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, t
 DWORD CNetScanVision::thrScanThread(LPVOID pParam)
 {
 	CNetScanVision* pThis = (CNetScanVision*)pParam;
-	if(NULL == pThis)
+	if (NULL == pThis)
 		return 0;
 
 	pThis->thrReceiver();
@@ -133,28 +149,10 @@ DWORD CNetScanVision::thrScanThread(LPVOID pParam)
 	return 0;
 }
 
-CNetScanVision::CNetScanVision()
-{
-	//m_hNotifyWnd		= NULL;
-	//m_lNotifyMsg		= 0;
-	//m_hCloseMsgRecvWnd	= NULL;
-	//m_lCloseMsg			= WM_CLOSE;
-	m_hScanThread		= NULL;
-	m_dwScanThreadID	= 0;
-	m_hSockReceive		= 0;
-	this->m_pReceive_buffer	= NULL;
-	//m_hSockSend = 0;
-	m_ulBindAddress     = 0;
-}
-
-CNetScanVision::~CNetScanVision(void)
-{
-
-}
-
 BOOL CNetScanVision::StartScan()
 {
 	// 부모 함수 호출
+	this->m_iRevPort = VH_UDP_SCAN_PORT;
 	this->StartScanF((LPTHREAD_START_ROUTINE)thrScanThread);
 	return TRUE;
 }
@@ -164,92 +162,85 @@ BOOL CNetScanVision::StartScan()
 // scanner logic
 void CNetScanVision::thrReceiver()
 {
-	// initialize routine here
-	// wait receive break from user or timer(timer will occur 1 minute after)
-	sockaddr_in ReceiverAddr;
-
-	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
-	
-	// broadcast 가능하도록 socket 옵션 조정
-	BOOL bEnable = TRUE;
-	if(setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
-	{
-		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
-		if (this->m_hNotifyWnd)
-		{
-			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
-		}
-		//goto EXIT_LOOP;
-		this->ThreadExit();
-
-	}
-	
-	// Receive할 주소 bind
-	ReceiverAddr.sin_family			= AF_INET;
-	ReceiverAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
-	ReceiverAddr.sin_addr.s_addr	= m_ulBindAddress; // htonl(m_ulBindAddress);
-	
-	if(bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)) == SOCKET_ERROR)
-	{
-		TRACE("Bind error = %d\n", WSAGetLastError());
-		if (this->m_hNotifyWnd)
-		{
-			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
-		}
-		//goto EXIT_LOOP;
-		this->ThreadExit();
-			
-	}
-
-	
-	// 서버의 응답을 기다린다
-	SOCKADDR_IN SenderAddr;
-	int nSenderAddrLen = sizeof(SOCKADDR_IN);
-	
-	this->m_pReceive_buffer = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
-	if(this->m_pReceive_buffer == NULL)
-	{
-		if (this->m_hNotifyWnd)
-		{
-			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
-		}
-		//goto EXIT_LOOP;
-		this->ThreadExit();
-	}
-	
-	memset(this->m_pReceive_buffer, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
-	HEADER2*			pReceive		= (HEADER2*)this->m_pReceive_buffer;
-	IPUTIL_INFO*		pInfo			= NULL;
-	IPUTIL_INFO2*		pInfo2			= NULL;
-	SCAN_INFO*			pScanInfo		= NULL;
-	BYTE*				pExtField		= NULL;
-	int					nToRead			= pReceive->body_size - sizeof(IPUTIL_INFO2);
-	int					nItemCount		= 0;
-	int					i;
-	
 	typedef struct tagCAPTION_HEADER
 	{
 		char aszCaption[32];
 		int  nDataLen;
 	}CAPTION_HEADER, *LPCAPTION_HEADER;
 
-	LPCAPTION_HEADER lpCapt;
-	SCAN_EXT_INFO* pExtInfos = NULL;
+	HEADER2*			pReceive		= NULL;
+	IPUTIL_INFO*		pInfo			= NULL;
+	IPUTIL_INFO2*		pInfo2			= NULL;
+	SCAN_INFO*			pScanInfo		= NULL;
+	BYTE*				pExtField		= NULL;
+	CHAR*				pszTemp			= NULL;
+	SCAN_EXT_INFO*		pExtInfos		= NULL;
+	int					iToRead			= 0;
+	int					nItemCount		= 0;
+	int					i				= 0;
+	int					iSenderAddrLen	= 0;
+	LPCAPTION_HEADER	lpCapt			= NULL;
+	BOOL				bEnable			= TRUE;
+	DWORD				dwLastError		= 0;
+	sockaddr_in			ReceiverAddr;
+	
 
+	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
+
+	// broadcast 
+	if (SOCKET_ERROR == setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+	{
+		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
+		if (m_hNotifyWnd)
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+
+		NetScanBase::ThreadExit();
+		return;
+	}
+
+	ReceiverAddr.sin_family = AF_INET;
+	ReceiverAddr.sin_port = htons(VH_UDP_SCAN_PORT);
+	ReceiverAddr.sin_addr.s_addr = m_ulBindAddress; // htonl(m_ulBindAddress);
+
+	if (SOCKET_ERROR == bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))
+	{
+		TRACE("Bind error = %d\n", WSAGetLastError());
+		if (m_hNotifyWnd)
+			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
+		
+		NetScanBase::ThreadExit();
+		return;
+	}
+
+	// 서버의 응답을 기다린다
+	iSenderAddrLen = sizeof(SOCKADDR_IN);
+	
+	m_pszPacketBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
+	if (m_pszPacketBuff == NULL)
+	{
+		if (this->m_hNotifyWnd)
+			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
+		
+		NetScanBase::ThreadExit();
+		return;
+	}
+	memset(m_pszPacketBuff, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
+
+	pReceive = (HEADER2*)m_pszPacketBuff;
+	iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
 	USES_CONVERSION;
 	
-	while( m_dwScanThreadID )
+	while( this->m_dwScanThreadID )
 	{
-		if(recvfrom(m_hSockReceive, this->m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&SenderAddr,&nSenderAddrLen) == SOCKET_ERROR)
+		if (SOCKET_ERROR == recvfrom(m_hSockReceive, m_pszPacketBuff, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&ReceiverAddr, &iSenderAddrLen))
 		{
-			DWORD dwLastError = WSAGetLastError();
-			TRACE("recvfrom error = %d\n", dwLastError);
+			dwLastError = WSAGetLastError();
+			TRACE("Vision recvfrom error = %d\n", dwLastError);
 			if (this->m_hNotifyWnd && dwLastError != 10004)
-			{
 				::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
-			}	
-			//goto EXIT_LOOP;
-			this->ThreadExit();
+			
+			NetScanBase::ThreadExit();
+			break;
 		}
 
 		if(pReceive->magic == MAGIC2_CODE)
@@ -257,8 +248,8 @@ void CNetScanVision::thrReceiver()
 			// parsing and update list
 			if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO_EXT)
 			{
-				pInfo		= (IPUTIL_INFO *)(this->m_pReceive_buffer + sizeof(HEADER2));
-				pInfo2		= (IPUTIL_INFO2*)(this->m_pReceive_buffer + sizeof(HEADER2));
+				pInfo = (IPUTIL_INFO *)(m_pszPacketBuff + sizeof(HEADER2));
+				pInfo2 = (IPUTIL_INFO2*)(m_pszPacketBuff + sizeof(HEADER2));
 
 				pScanInfo	= new SCAN_INFO;
 				if ( pScanInfo ) 
@@ -285,35 +276,35 @@ void CNetScanVision::thrReceiver()
 					// read extended field
 					if(pReceive->body_size > sizeof(IPUTIL_INFO2))
 					{
-						nToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
+						iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
 						nItemCount = 0;
 						i = 0;
 						nItemCount = 0;
 						lpCapt     = NULL;
 						
-						pExtField = (BYTE*)(this->m_pReceive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // set pointer
-						nToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
+						pExtField = (BYTE*)(m_pszPacketBuff + sizeof(HEADER2)+sizeof(IPUTIL_INFO2)); // set pointer
+						iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
 
-						while(nToRead > 0)
+						while (iToRead > 0)
 						{
 							lpCapt = (LPCAPTION_HEADER)pExtField;
 
 							pExtField = pExtField + (sizeof(CAPTION_HEADER) + lpCapt->nDataLen);
-							nToRead -= (sizeof(CAPTION_HEADER) + lpCapt->nDataLen);
+							iToRead -= (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
 							nItemCount++;
 						}
 
 						// read data into array
-						pExtField = (BYTE*)(this->m_pReceive_buffer + sizeof(HEADER2) + sizeof(IPUTIL_INFO2) ); // reset pointer
+						pExtField = (BYTE*)(m_pszPacketBuff + sizeof(HEADER2)+sizeof(IPUTIL_INFO2)); // reset pointer
 						if(nItemCount > 0)
 						{
-							nToRead = pReceive->body_size - (sizeof(HEADER2) + sizeof(IPUTIL_INFO2));
+							iToRead = pReceive->body_size - (sizeof(HEADER2)+sizeof(IPUTIL_INFO2));
 							pExtInfos = new SCAN_EXT_INFO[nItemCount];
 							if(pExtInfos)
 							{
 								memset(pExtInfos, 0, sizeof(SCAN_EXT_INFO) * nItemCount);
 								i = 0;
-								while(nToRead > 0)
+								while (iToRead > 0)
 								{
 									lpCapt = (LPCAPTION_HEADER)pExtField;
 
@@ -323,10 +314,10 @@ void CNetScanVision::thrReceiver()
 
 									pExtInfos[i].nValueLen = lpCapt->nDataLen + 2; // 2012-08-07 hkeins : 데이터 길이를 복사하지 않는 버그 수정
 
-									CHAR*	lpszTemp		= new CHAR[pExtInfos[i].nValueLen];
+									pszTemp = new CHAR[pExtInfos[i].nValueLen];
 
-									memset( lpszTemp, 0, sizeof(CHAR)*(pExtInfos[i].nValueLen ) );
-									memcpy( lpszTemp, (char*)(pExtField + sizeof(CAPTION_HEADER)), lpCapt->nDataLen );
+									memset( pszTemp, 0, sizeof(CHAR)*(pExtInfos[i].nValueLen));
+									memcpy( pszTemp, (char*)(pExtField + sizeof(CAPTION_HEADER)), lpCapt->nDataLen);
 
 									pExtInfos[i].lpszValue   = new WCHAR[pExtInfos[i].nValueLen];
 									memset( pExtInfos[i].lpszValue, 0, sizeof(WCHAR)*(pExtInfos[i].nValueLen) );
@@ -339,22 +330,21 @@ void CNetScanVision::thrReceiver()
 										}
 
 										// FIX ME: A2W가 문제될 거 같은데?
-										WideCopyStringFromAnsi( pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, lpszTemp ); 
+										WideCopyStringFromAnsi(pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, pszTemp);
 
  									//	TRACE( pExtInfos[i].lpszValue );
 										//TRACE( L"\n" );
 
 									}
-
-									if( lpszTemp )
-									{
-										delete [] lpszTemp;
-										lpszTemp	= NULL;
-									}
-
 									pExtField = pExtField + (sizeof(CAPTION_HEADER) + lpCapt->nDataLen);
-									nToRead -= (sizeof(CAPTION_HEADER) + lpCapt->nDataLen);
+									iToRead -= (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
 									i++;
+
+									if (NULL != pszTemp)
+									{
+										delete[] pszTemp;
+										pszTemp = NULL;
+									}
 								}
 
 								pScanInfo->pExtScanInfos    = pExtInfos;
@@ -413,24 +403,27 @@ void CNetScanVision::thrReceiver()
 			}
 		}
 	}
-
+	return;
 }
 
 
 BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/*=2700*/, int nHTTPPort/*=80*/)
 {
 	SOCKET sock;
+	char   send_buffer[255] = { 0 };
+	BOOL bEnable = FALSE;
+	SOCKADDR_IN TargetAddr;
+
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
-	char   send_buffer[255];
 
 	// broadcast 가능하도록 socket 옵션 조정
-	BOOL bEnable = TRUE;
+	bEnable = TRUE;
 
 	if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable) == SOCKET_ERROR))
 	{
 		return FALSE;
 	}
-	SOCKADDR_IN TargetAddr;
+	
 	TargetAddr.sin_family		= AF_INET;
 	TargetAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
 	TargetAddr.sin_addr.s_addr	= INADDR_BROADCAST; // broad casting
@@ -444,7 +437,7 @@ BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP,
 	//	DWORD   dwStreamPort;
 	//	DWORD	dwHTTPPort;
 	//}IPUTIL_INFO, *LPIPUTIL_INFO;
-	HEADER2    * pHeader = (HEADER2*)send_buffer;
+	HEADER2*	pHeader = (HEADER2*)send_buffer;
 	IPUTIL_INFO* pInfo = (IPUTIL_INFO*)(send_buffer + sizeof(HEADER2));
 	// header set
 	pHeader->magic = MAGIC2_CODE;
@@ -578,9 +571,9 @@ BOOL CNetScanVision::SendScanRequest()
 	pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
 	pSendHeader->body_size = 0;
 
-	if(sendto(m_hSockReceive, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+	if (SOCKET_ERROR == sendto(m_hSockReceive, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)))
 	{
-		TRACE("sendto to error = %d\n", WSAGetLastError());
+		TRACE("Vision sendto to error = %d\n", WSAGetLastError());
 		//closesocket(hSockSend);
 		return FALSE;
 	}
@@ -589,6 +582,12 @@ BOOL CNetScanVision::SendScanRequest()
 	//closesocket(hSockSend);
 	//// clear temp datas
 	//Sleep(300); // 0.3 seconds wait
+	return TRUE;
+}
+
+BOOL CNetScanVision::StopScan()
+{
+	this->StopScans(m_hSockReceive);
 	return TRUE;
 }
 

@@ -106,7 +106,7 @@ private:
 	CString				m_strPassword;
 	COXMaskedEdit		m_editMACAddr;
 
-	CNetScanVision*		m_pScanner;
+	CNetScanVision*		m_pViScanner;
 	CNetScanMarkIn*		m_pMKScanner;
 
 	CListItem*			m_pListItem;

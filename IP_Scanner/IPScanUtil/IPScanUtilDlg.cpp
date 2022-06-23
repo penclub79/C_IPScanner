@@ -282,7 +282,7 @@ BOOL CIPScanUtilDlg::OnInitDialog()
 
 	m_apScanner[0] = new CNetScanMarkIn();
 	m_apScanner[1] = new CNetScanVision();
-
+	
 	m_btnChangeIP.EnableWindow(TRUE);
 
 	m_bInit = TRUE;
@@ -383,7 +383,7 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 {
 	CString msg;
 
-	if(!m_bScanning)	
+	if(!m_bScanning) // SCAN¿ª ¥≠∑∂¿ª ∂ß
 	{
 		_ReadBindAddress();
 
@@ -412,7 +412,7 @@ void CIPScanUtilDlg::OnBnClickedScanBtn()
 		m_nScanAniCount = 0;
 		SetTimer(TM_SCANNING_ANI	, 1000		, NULL);
 	}
-	else
+	else // Stop¿ª ¥≠∑∂¿ª ∂ß
 	{
 		KillTimer(TM_SCANNING_ANI);
 
@@ -569,12 +569,13 @@ void CIPScanUtilDlg::OnBnClickedClearBtn()
 LRESULT CIPScanUtilDlg::OnScanMsg(WPARAM wParam, LPARAM lParam)
 {
 	CString		strTemp;
-	SCAN_INFO*	pScanInfo		= (SCAN_INFO*)wParam;
+	SCAN_INFO*	pScanInfo		= NULL;
 	SCAN_INFO*	pOldScanInfo	= NULL;
 	int			nCurrentItem	= -1;
 	int			i				= 0;
-	int			iCount			= 0;
 
+
+	pScanInfo = (SCAN_INFO*)wParam;
 	if(wParam == NULL)
 	{
 		OnBnClickedScanBtn();
@@ -1480,14 +1481,15 @@ void CIPScanUtilDlg::OnNMClickSvrList(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 {
-	int			i					= 0;
-	int			nSelScanInfoCount	= 0;
-	SCAN_INFO*	pSelScanInfo		= NULL;
-	int			nScanInfoCount		= 0;
-	SCAN_INFO*	pScanInfo			= NULL;
-	int			nTotalItemCnt		= 0;
-	int			nCurPos				= 0;
-	BOOL		bScanning			= m_bScanning;
+	int				i					= 0;
+	int				nSelScanInfoCount	= 0;
+	SCAN_INFO*		pSelScanInfo		= NULL;
+	int				nScanInfoCount		= 0;
+	SCAN_INFO*		pScanInfo			= NULL;
+	CIPChangeDlg2*	pDlg				= NULL;
+	int				nTotalItemCnt		= 0;
+	int				nCurPos				= 0;
+	BOOL			bScanning			= m_bScanning;
 
 	for(i = 0; i < m_cSvrList.GetItemCount(); i++)
 	{
@@ -1538,7 +1540,7 @@ void CIPScanUtilDlg::OnBnClickedChangeipBtn2()
 		OnBnClickedScanBtn();
 	}
 
-	CIPChangeDlg2* pDlg	= new CIPChangeDlg2;
+	pDlg = new CIPChangeDlg2;
 	pDlg->SetScanInfo( nScanInfoCount, pScanInfo, nSelScanInfoCount, pSelScanInfo);
 	//pDlg->SetScanner(m_pScannerVision);
 
