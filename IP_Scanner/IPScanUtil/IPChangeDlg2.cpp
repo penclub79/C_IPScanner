@@ -553,7 +553,7 @@ LRESULT CIPChangeDlg2::OnIPChangeMessage(WPARAM wParam, LPARAM lParam)
 				m_pViScanner->SendScanRequest();
 			else if (VERSION_2 == m_nVersion)
 			{
-				m_pViScanner->SendScanRequestExt();
+				m_pViScanner->SendScanRequest();
 				//m_pMKScanner->SendScanRequest();
 			}
 				

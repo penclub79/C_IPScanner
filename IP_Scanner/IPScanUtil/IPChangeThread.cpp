@@ -204,56 +204,56 @@ DWORD CIPChangeThread::ProcIPChange(LPVOID _lpParam)
 
 			if (MESSAGE_SUCESS_MAC == pIPChanageThreadInfo->IPChangeItem.iStatus)
 			{
-				if (pIPChanageThreadInfo->iVersion == VERSION_1)
-				{
-					CNetScanVision::RequestIPChange((LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szMACAddress,
-						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
-						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
-						pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
-						pIPChanageThreadInfo->IPChangeItem.iToHttpPort);
+				//if (pIPChanageThreadInfo->iVersion == VERSION_1)
+				//{
+				//	CNetScanVision::RequestIPChange((LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szMACAddress,
+				//		(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
+				//		(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
+				//		pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
+				//		pIPChanageThreadInfo->IPChangeItem.iToHttpPort);
 
-					TRACE(L"\n###### i = %d, m_strIPAddress = %s, m_strGatewayAddress = %s, m_strSubnetMask = %s\n", pIPChanageThreadInfo->iIndex,
-						pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
-						pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
-						pIPChanageThreadInfo->IPChangeItem.szToSubnetMask);
+				//	TRACE(L"\n###### i = %d, m_strIPAddress = %s, m_strGatewayAddress = %s, m_strSubnetMask = %s\n", pIPChanageThreadInfo->iIndex,
+				//		pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
+				//		pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
+				//		pIPChanageThreadInfo->IPChangeItem.szToSubnetMask);
 
-					TRACE(L"###### i = %d, m_nStreamPort = %d, m_nHTTPPort = %d\n\n", pIPChanageThreadInfo->iIndex,
-						pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
-						pIPChanageThreadInfo->IPChangeItem.iToHttpPort);
+				//	TRACE(L"###### i = %d, m_nStreamPort = %d, m_nHTTPPort = %d\n\n", pIPChanageThreadInfo->iIndex,
+				//		pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
+				//		pIPChanageThreadInfo->IPChangeItem.iToHttpPort);
 
-					PostMessage(pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
-					pIPChanageThreadInfo->IPChangeItem.iStatus = MESSAGE_REQUEST_IPCHANGE;
-				}
-				else if (pIPChanageThreadInfo->iVersion == VERSION_2)
-				{
-					CNetScanVision::RequestIPChange2((LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szMACAddress,
-						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
-						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
-						pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
-						pIPChanageThreadInfo->IPChangeItem.iToHttpPort,
-						pIPChanageThreadInfo->IPChangeItem.nToIsDHCP,
-						(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToSubnetMask,
-						pIPChanageThreadInfo->IPChangeItem.szUserID,
-						pIPChanageThreadInfo->IPChangeItem.szUserPW,
-						0);
+				//	PostMessage(pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
+				//	pIPChanageThreadInfo->IPChangeItem.iStatus = MESSAGE_REQUEST_IPCHANGE;
+				//}
+				//else if (pIPChanageThreadInfo->iVersion == VERSION_2)
+				//{
+				//	CNetScanVision::RequestIPChange2((LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szMACAddress,
+				//		(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
+				//		(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
+				//		pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
+				//		pIPChanageThreadInfo->IPChangeItem.iToHttpPort,
+				//		pIPChanageThreadInfo->IPChangeItem.nToIsDHCP,
+				//		(LPTSTR)(LPCTSTR)pIPChanageThreadInfo->IPChangeItem.szToSubnetMask,
+				//		pIPChanageThreadInfo->IPChangeItem.szUserID,
+				//		pIPChanageThreadInfo->IPChangeItem.szUserPW,
+				//		0);
 
-					TRACE(L"\n###### i = %d, m_strIPAddress = %s, m_strGatewayAddress = %s, m_strSubnetMask = %s\n", pIPChanageThreadInfo->iIndex,
-						pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
-						pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
-						pIPChanageThreadInfo->IPChangeItem.szToSubnetMask);
+				//	TRACE(L"\n###### i = %d, m_strIPAddress = %s, m_strGatewayAddress = %s, m_strSubnetMask = %s\n", pIPChanageThreadInfo->iIndex,
+				//		pIPChanageThreadInfo->IPChangeItem.szToIPAddress,
+				//		pIPChanageThreadInfo->IPChangeItem.szToGWAddress,
+				//		pIPChanageThreadInfo->IPChangeItem.szToSubnetMask);
 
-					TRACE(L"###### i = %d, m_nStreamPort = %d, m_nHTTPPort = %d\n\n", pIPChanageThreadInfo->iIndex,
-						pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
-						pIPChanageThreadInfo->IPChangeItem.iToHttpPort);
+				//	TRACE(L"###### i = %d, m_nStreamPort = %d, m_nHTTPPort = %d\n\n", pIPChanageThreadInfo->iIndex,
+				//		pIPChanageThreadInfo->IPChangeItem.iToStreamPort,
+				//		pIPChanageThreadInfo->IPChangeItem.iToHttpPort);
 
-					PostMessage(pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
-					pIPChanageThreadInfo->IPChangeItem.iStatus = MESSAGE_REQUEST_IPCHANGE;
-				}
-				else
-				{
-					PostMessage(pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_FAILED_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
-					pIPChanageThreadInfo->IPChangeItem.iStatus = MESSAGE_FAILED_REQUEST_IPCHANGE;
-				}
+				//	PostMessage(pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
+				//	pIPChanageThreadInfo->IPChangeItem.iStatus = MESSAGE_REQUEST_IPCHANGE;
+				//}
+				//else
+				//{
+				//	PostMessage(pIPChanageThreadInfo->hParent, WM_IPCHANGE_MESSAGE, MAKEWPARAM(MESSAGE_FAILED_REQUEST_IPCHANGE, pIPChanageThreadInfo->iIndex), NULL);
+				//	pIPChanageThreadInfo->IPChangeItem.iStatus = MESSAGE_FAILED_REQUEST_IPCHANGE;
+				//}
 			}
 
 			// Request IP Change //////////////////////////////////////////////////////////////////////////

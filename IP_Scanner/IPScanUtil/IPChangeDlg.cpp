@@ -152,24 +152,24 @@ void CIPChangeDlg::OnBnClickedOk()
 	m_nIsDHCP     = m_nCurrentIsDHCP;
 	// 데이터 유효성 검사?
 	// 변경 요청 후 다이얼로그 닫기
-	if(m_nVersion == VERSION_1)
-	{
-		CNetScanVision::RequestIPChange(
-			(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
-			m_nStreamPort, m_nHTTPPort);
-	}
-	if(m_nVersion == VERSION_2)
-	{
-	CNetScanVision::RequestIPChange2(
-		(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
-		m_nStreamPort, m_nHTTPPort, m_nIsDHCP, (LPTSTR)(LPCTSTR)m_strSubnetMask, m_strID.GetBuffer(1024), m_strPassword.GetBuffer(1024), 0);
-	m_strID.ReleaseBuffer();
-	m_strPassword.ReleaseBuffer();
-	}
-	else
-	{
-		ASSERT(0); // not support
-	}
+	//if(m_nVersion == VERSION_1)
+	//{
+	//	CNetScanVision::RequestIPChange(
+	//		(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
+	//		m_nStreamPort, m_nHTTPPort);
+	//}
+	//if(m_nVersion == VERSION_2)
+	//{
+	//CNetScanVision::RequestIPChange2(
+	//	(LPTSTR)(LPCTSTR)m_strMACAddress, (LPTSTR)(LPCTSTR)m_strIPAddress, (LPTSTR)(LPCTSTR)m_strGatewayAddress,
+	//	m_nStreamPort, m_nHTTPPort, m_nIsDHCP, (LPTSTR)(LPCTSTR)m_strSubnetMask, m_strID.GetBuffer(1024), m_strPassword.GetBuffer(1024), 0);
+	//m_strID.ReleaseBuffer();
+	//m_strPassword.ReleaseBuffer();
+	//}
+	//else
+	//{
+	//	ASSERT(0); // not support
+	//}
 	// wait a seconds progress dialog here
 	// FIX ME : show dialog:!
 

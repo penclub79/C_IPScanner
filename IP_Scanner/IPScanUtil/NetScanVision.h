@@ -22,21 +22,14 @@
 
 #include "NetScanBase.h"
 
+typedef struct tagCAPTION_HEADER
+{
+	char aszCaption[32];
+	int  nDataLen;
+}CAPTION_HEADER, *LPCAPTION_HEADER;
 
 class CNetScanVision : public NetScanBase
 {
-protected:
-	void thrReceiver();
-	static DWORD thrScanThread(LPVOID pParam);
-
-	//char*  m_pReceive_buffer; // allocate 64 kbytes memory
-	// 2010-08-26 hkeins : scanner routine
-	CWnd*		m_pScanDlg; // scan wait dialog
-	int			m_nScanTimeCount; // 30,29,28....0 then timeout
-	HWND		m_hReceiverWindow;
-	int			m_nListItemCount;
-	CDialog*	m_dlg;
-	//char*		m_pszPacketBuff;
 
 public:
 	CNetScanVision();
@@ -44,15 +37,15 @@ public:
 	
 	virtual BOOL StartScan();
 	virtual BOOL SendScanRequest();
-	//virtual BOOL StopScan();
-	virtual BOOL SocketBind();
-	//virtual void ThreadExit();
 
-
-	// 2010-08-27 hkeins : change IP configuration
-	static BOOL RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort = 2700, int nHTTPPort = 80);
-	static BOOL RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort = 2700, int nHTTPPort = 80, int cIsDHCP = 0, WCHAR* strNewsubnetMask = L"255.255.255.0", WCHAR* szID = L"", WCHAR* szPass = L"", int nEncMode = 0);
+	//// 2010-08-27 hkeins : change IP configuration
+	//static BOOL RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort = 2700, int nHTTPPort = 80);
+	//static BOOL RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort = 2700, int nHTTPPort = 80, int cIsDHCP = 0, WCHAR* strNewsubnetMask = L"255.255.255.0", WCHAR* szID = L"", WCHAR* szPass = L"", int nEncMode = 0);
 
 	//BOOL	SendScanRequest();
-	BOOL SendScanRequestExt(); // 확장 scan 정보 전송
+	//BOOL SendScanRequestExt(); // 확장 scan 정보 전송
+protected:
+	void thrReceiver();
+	static DWORD thrScanThread(LPVOID pParam);
+
 };

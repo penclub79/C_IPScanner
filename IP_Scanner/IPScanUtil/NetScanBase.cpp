@@ -75,7 +75,7 @@ BOOL NetScanBase::StopScan()
 	return TRUE;
 }
 
-BOOL NetScanBase::SocketBindF(int _iPort)
+BOOL NetScanBase::SocketBind()
 {
 	BOOL bEnable = FALSE;
 
@@ -94,11 +94,13 @@ BOOL NetScanBase::SocketBindF(int _iPort)
 		return FALSE;
 	}
 
-	m_stSockAddr.sin_family = AF_INET;
-	m_stSockAddr.sin_port = htons(_iPort);
-	m_stSockAddr.sin_addr.s_addr = m_ulBindAddress;
+	SOCKADDR_IN		stSockAddr;
 
-	if (SOCKET_ERROR == bind(m_hReceiveSock, (SOCKADDR*)&m_stSockAddr, sizeof(SOCKADDR)))
+	stSockAddr.sin_family = AF_INET;
+	stSockAddr.sin_port = htons(m_iRevPort);
+	stSockAddr.sin_addr.s_addr = m_ulBindAddress;
+
+	if (SOCKET_ERROR == bind(m_hReceiveSock, (SOCKADDR*)&stSockAddr, sizeof(SOCKADDR)))
 	{
 		//TRACE("Bind Error = %d\n", WSAGetLastError());
 		if (m_hNotifyWnd)
@@ -113,22 +115,22 @@ BOOL NetScanBase::SocketBindF(int _iPort)
 	return TRUE;
 }
 
-BOOL NetScanBase::SendScanRequestF(int _iPort)
-{	
-	char szSender;
-	//m_stSockAddr.sin_family = AF_INET;
-	m_stSockAddr.sin_port = htons(_iPort);
-	//m_stSockAddr.sin_addr.s_addr = INADDR_BROADCAST;
-	
-	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
-	if (SOCKET_ERROR == sendto(m_hReceiveSock, &szSender, sizeof(szSender), 0, (SOCKADDR*)&m_stSockAddr, sizeof(sockaddr_in)))
-	{
-		TRACE("sendto to error = %d\n", WSAGetLastError());
-		return FALSE;
-	}
-
-	return TRUE;
-}
+//BOOL NetScanBase::SendScanRequestF(int _iPort, char* pData, int iLength)
+//{	
+//	SOCKADDR_IN		stSockAddr;
+//	stSockAddr.sin_family = AF_INET;
+//	stSockAddr.sin_port = htons(_iPort);
+//	stSockAddr.sin_addr.s_addr = INADDR_BROADCAST;
+//
+//	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
+//	if (SOCKET_ERROR == sendto(m_hReceiveSock, pData, iLength, 0, (SOCKADDR*)&stSockAddr, sizeof(sockaddr_in)))
+//	{
+//		TRACE("sendto to error = %d\n", WSAGetLastError());
+//		return FALSE;
+//	}
+//
+//	return TRUE;
+//}
 
 // Bind Address Set
 void NetScanBase::SetBindAddress(ULONG _ulBindAddress)

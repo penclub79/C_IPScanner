@@ -125,10 +125,9 @@ CIPScanUtilDlg::CIPScanUtilDlg(CWnd* pParent /*=NULL*/)
 	InitializeCriticalSection(&m_mt);
 
 	m_bSortAscending = FALSE;
-	m_nSortOrient    = SUBITEM_IPADDRESS; // IP
+	m_nSortOrient = SUBITEM_IPADDRESS; // IP
 	//memset(m_szTempValue, 0, sizeof(m_szTempValue));
-	m_ulAcceptAddress= 0;
-
+	m_ulAcceptAddress = 0;
 }
 
 void CIPScanUtilDlg::DoDataExchange(CDataExchange* pDX)

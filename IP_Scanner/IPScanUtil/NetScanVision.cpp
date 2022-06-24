@@ -7,12 +7,6 @@
 
 CNetScanVision::CNetScanVision()
 {
-	m_pScanDlg			= NULL;
-	m_nScanTimeCount	= 0;
-	m_hReceiverWindow	= NULL;
-	m_nListItemCount	= 0;
-	m_dlg				= NULL;
-	//m_pszPacketBuff		= NULL;
 }
 
 CNetScanVision::~CNetScanVision(void)
@@ -27,7 +21,7 @@ void tagSCAN_STRUCT::SetReceiveTime()
 
 int   tagSCAN_STRUCT::_PrintValues()
 {
-	int i;
+	int i = 0;
 	CString str;
 
 	for(i = 0 ; i < nExtraFieldCount; i++)
@@ -152,28 +146,18 @@ DWORD CNetScanVision::thrScanThread(LPVOID pParam)
 BOOL CNetScanVision::StartScan()
 {
 	// 부모 함수 호출
-	//this->m_iRevPort = VH_UDP_SCAN_PORT;
+	m_iRevPort = VH_UDP_SCAN_PORT;
+
 	this->StartScanF((LPTHREAD_START_ROUTINE)thrScanThread);
+
 	return TRUE;
 }
 
-BOOL CNetScanVision::SocketBind()
-{
-	BOOL bResult = FALSE;
-	bResult = this->SocketBindF(VH_UDP_SCAN_PORT);
-	return bResult;
-}
 
 // 2010-08-26 hkeins : Camera scanning routine
 // scanner logic
 void CNetScanVision::thrReceiver()
 {
-	typedef struct tagCAPTION_HEADER
-	{
-		char aszCaption[32];
-		int  nDataLen;
-	}CAPTION_HEADER, *LPCAPTION_HEADER;
-
 	HEADER2*			pReceive		= NULL;
 	IPUTIL_INFO*		pInfo			= NULL;
 	IPUTIL_INFO2*		pInfo2			= NULL;
@@ -186,12 +170,11 @@ void CNetScanVision::thrReceiver()
 	int					i				= 0;
 	int					iSenderAddrLen	= 0;
 	LPCAPTION_HEADER	lpCapt			= NULL;
-	BOOL				bEnable			= TRUE;
 	DWORD				dwLastError		= 0;
-	//SOCKADDR_IN			ReceiverAddr;
-	BOOL				bIsSuccessBind = FALSE;
+	BOOL				bIsSuccessBind	= FALSE;
 
-	
+	SOCKADDR			stSockAddr;
+
 	bIsSuccessBind = SocketBind();
 
 	if (bIsSuccessBind)
@@ -216,7 +199,7 @@ void CNetScanVision::thrReceiver()
 
 		while (this->m_dwScanThreadID)
 		{
-			if (SOCKET_ERROR == recvfrom(m_hReceiveSock, m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&m_stSockAddr, &iSenderAddrLen))
+			if (SOCKET_ERROR == recvfrom(m_hReceiveSock, m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&stSockAddr, &iSenderAddrLen))
 			{
 				dwLastError = WSAGetLastError();
 				TRACE("Vision recvfrom error = %d\n", dwLastError);
@@ -308,10 +291,10 @@ void CNetScanVision::thrReceiver()
 
 										if (pExtInfos[i].lpszValue)
 										{
-											if (0 == wcscmp(pExtInfos[i].aszCaption, L"Upgrade Port"))
-											{
-												int it = 0;
-											}
+											//if (0 == wcscmp(pExtInfos[i].aszCaption, L"Upgrade Port"))
+											//{
+											//	//int it = 0;
+											//}
 
 											// FIX ME: A2W가 문제될 거 같은데?
 											WideCopyStringFromAnsi(pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, pszTemp);
@@ -342,9 +325,7 @@ void CNetScanVision::thrReceiver()
 							// PostMessage to MainWindow
 							::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
 						}
-
 					}
-					//::SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 				}
 				//			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
 				//			{
@@ -397,141 +378,146 @@ void CNetScanVision::thrReceiver()
 	return;
 }
 
-
-BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/*=2700*/, int nHTTPPort/*=80*/)
-{
-	SOCKET sock;
-	char   send_buffer[255] = { 0 };
-	BOOL bEnable = FALSE;
-	SOCKADDR_IN TargetAddr;
-
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-
-	// broadcast 가능하도록 socket 옵션 조정
-	bEnable = TRUE;
-
-	if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable) == SOCKET_ERROR))
-	{
-		return FALSE;
-	}
-	
-	TargetAddr.sin_family = AF_INET;
-	TargetAddr.sin_port = htons(VH_UDP_SCAN_PORT);
-	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // broad casting
-
-	memset(send_buffer, 0, sizeof(send_buffer));
-	//typedef struct tagIPUTIL_INFO
-	//{
-	//	char	szIPAddress[16];
-	//	char	szGatewayIP[16];
-	//	char	szMACAddress[20];
-	//	DWORD   dwStreamPort;
-	//	DWORD	dwHTTPPort;
-	//}IPUTIL_INFO, *LPIPUTIL_INFO;
-	HEADER2*	pHeader = (HEADER2*)send_buffer;
-	IPUTIL_INFO* pInfo = (IPUTIL_INFO*)(send_buffer + sizeof(HEADER2));
-	// header set
-	pHeader->magic = MAGIC2_CODE;
-	pHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	pHeader->protocol_mode = PROTOCOL_MODE_REQ_SET_IPINFO;
-	pHeader->body_size = sizeof(IPUTIL_INFO);
-	// body set
-	USES_CONVERSION;
-	strcpy_s(pInfo->szIPAddress, W2A(strNewIP));
-	strcpy_s(pInfo->szGatewayIP, W2A(strNewGateWay));
-	strcpy_s(pInfo->szMACAddress, W2A(strTargetServerMAC));
-	pInfo->dwHTTPPort	= nHTTPPort;
-	pInfo->dwStreamPort	= nStreamPort;
-
-	// send 
-	if(sendto(sock, send_buffer, sizeof(HEADER2)+sizeof(IPUTIL_INFO), 0, (sockaddr*)&TargetAddr, sizeof(TargetAddr)) == SOCKET_ERROR)
-	{
-		closesocket(sock);
-		return FALSE;
-	}
-	// clear temp datas
-	Sleep(300); // 0.3 seconds wait
-	closesocket(sock);
-	// clear temp datas
-	Sleep(300); // 0.3 seconds wait
-	
-	return TRUE;
-}
-
-BOOL CNetScanVision::RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/* = 2700*/, int nHTTPPort/* = 80*/, int cIsDHCP/* = 0*/, WCHAR* strNewsubnetMask/*=L"255.255.255.0"*/, WCHAR* szID /*= L""*/, WCHAR* szPass/* = L""*/, int nEncMode/* = 0*/)
-{
-	SOCKET sock;
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-	char   send_buffer[500];
-
-	// broadcast 가능하도록 socket 옵션 조정
-	BOOL bEnable = TRUE;
-
-	if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable) == SOCKET_ERROR))
-	{
-		return FALSE;
-	}
-	SOCKADDR_IN TargetAddr;
-	TargetAddr.sin_family = AF_INET;
-	TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
-	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // broad casting
-
-	memset(send_buffer, 0, sizeof(send_buffer));
-
-	//typedef struct tagIPUTIL_INFO2
-	//{
-	//	char	szIPAddress[16];
-	//	char	szGatewayIP[16];
-	//	char	szMACAddress[20];
-	//	DWORD   dwStreamPort;
-	//	DWORD	dwHTTPPort;
-	//  char	cIPMode;              // IPUTIL INFO version 2
-	//  char	szSubnetmask[16];
-	//}IPUTIL_INFO2, *LPIPUTIL_INFO2;
-
-	HEADER2    * pHeader = (HEADER2*)send_buffer;
-	IPUTIL_INFO2* pInfo = (IPUTIL_INFO2*)(send_buffer + sizeof(HEADER2));
-	IPUTIL_AUTH*  pAuth = (IPUTIL_AUTH*)((BYTE*)pInfo + sizeof(IPUTIL_INFO2));
-	// header set
-	pHeader->magic = MAGIC2_CODE;
-	pHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	pHeader->protocol_mode = PROTOCOL_MODE_REQ_SET_IPINFO;
-	pHeader->body_size = sizeof(IPUTIL_INFO2);
-	int nPacketSize = sizeof(HEADER2)+sizeof(IPUTIL_INFO2);
-	// body set
-	USES_CONVERSION;
-	strcpy_s(pInfo->szIPAddress, W2A(strNewIP));
-	strcpy_s(pInfo->szGatewayIP, W2A(strNewGateWay));
-	strcpy_s(pInfo->szMACAddress, W2A(strTargetServerMAC));
-	pInfo->dwHTTPPort	= nHTTPPort;
-	pInfo->dwStreamPort	= nStreamPort;
-	pInfo->cIsDHCP = (char)cIsDHCP;
-	strcpy_s(pInfo->szSubnetmask, W2A(strNewsubnetMask));
-
-	// ID가 설정된 경우에는 Login 정보를 패킷에 함께 보낸다
-	if(szID != NULL && wcscmp(szID, L"") != 0)
-	{
-		nPacketSize += sizeof(IPUTIL_AUTH);
-		pHeader->body_size += sizeof(IPUTIL_AUTH);
-		strcpy_s(pAuth->ID, 32, W2A(szID));
-		strcpy_s(pAuth->Password, 32, W2A(szPass));
-		pAuth->EncMode = nEncMode;
-		// FIX ME: encription 적용
-	}
-
-	// send
-	if(sendto(sock, send_buffer, nPacketSize, 0, (sockaddr*)&TargetAddr, sizeof(TargetAddr)) == SOCKET_ERROR)
-	{
-		closesocket(sock);
-		return FALSE;
-	}
-	Sleep(300); // 0.3 seconds wait
-	closesocket(sock);
-	// clear temp datas
-	Sleep(300); // 0.3 seconds wait
-
-	return TRUE;
-}
+//
+//BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/*=2700*/, int nHTTPPort/*=80*/)
+//{
+//	SOCKET sock;
+//	char   send_buffer[255] = { 0 };
+//	BOOL bEnable = FALSE;
+//	SOCKADDR_IN TargetAddr;
+//
+//	sock = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//	// broadcast 가능하도록 socket 옵션 조정
+//	bEnable = TRUE;
+//
+//	if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable) == SOCKET_ERROR))
+//	{
+//		return FALSE;
+//	}
+//	
+//	TargetAddr.sin_family = AF_INET;
+//	TargetAddr.sin_port = htons(VH_UDP_SCAN_PORT);
+//	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // broad casting
+//
+//	memset(send_buffer, 0, sizeof(send_buffer));
+//	//typedef struct tagIPUTIL_INFO
+//	//{
+//	//	char	szIPAddress[16];
+//	//	char	szGatewayIP[16];
+//	//	char	szMACAddress[20];
+//	//	DWORD   dwStreamPort;
+//	//	DWORD	dwHTTPPort;
+//	//}IPUTIL_INFO, *LPIPUTIL_INFO;
+//	HEADER2*	pHeader = (HEADER2*)send_buffer;
+//	IPUTIL_INFO* pInfo = (IPUTIL_INFO*)(send_buffer + sizeof(HEADER2));
+//	// header set
+//	pHeader->magic = MAGIC2_CODE;
+//	pHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
+//	pHeader->protocol_mode = PROTOCOL_MODE_REQ_SET_IPINFO;
+//	pHeader->body_size = sizeof(IPUTIL_INFO);
+//	// body set
+//	USES_CONVERSION;
+//	strcpy_s(pInfo->szIPAddress, W2A(strNewIP));
+//	strcpy_s(pInfo->szGatewayIP, W2A(strNewGateWay));
+//	strcpy_s(pInfo->szMACAddress, W2A(strTargetServerMAC));
+//	pInfo->dwHTTPPort	= nHTTPPort;
+//	pInfo->dwStreamPort	= nStreamPort;
+//
+//	// send 
+//	if(sendto(sock, send_buffer, sizeof(HEADER2)+sizeof(IPUTIL_INFO), 0, (sockaddr*)&TargetAddr, sizeof(TargetAddr)) == SOCKET_ERROR)
+//	{
+//		closesocket(sock);
+//		return FALSE;
+//	}
+//	// clear temp datas
+//	Sleep(300); // 0.3 seconds wait
+//	closesocket(sock);
+//	// clear temp datas
+//	Sleep(300); // 0.3 seconds wait
+//	
+//	return TRUE;
+//}
+//
+//BOOL CNetScanVision::RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP, WCHAR* strNewGateWay, int nStreamPort/* = 2700*/, int nHTTPPort/* = 80*/, int cIsDHCP/* = 0*/, WCHAR* strNewsubnetMask/*=L"255.255.255.0"*/, WCHAR* szID /*= L""*/, WCHAR* szPass/* = L""*/, int nEncMode/* = 0*/)
+//{
+//	SOCKET			sock;
+//	char			send_buffer[500] = { 0 };
+//	HEADER2*		pHeader = NULL;
+//	IPUTIL_INFO2*	pInfo = NULL;
+//	IPUTIL_AUTH*	pAuth = NULL;
+//
+//	// broadcast 가능하도록 socket 옵션 조정
+//	BOOL bEnable = TRUE;
+//
+//	sock = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//	if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable) == SOCKET_ERROR))
+//	{
+//		return FALSE;
+//	}
+//	SOCKADDR_IN TargetAddr;
+//	TargetAddr.sin_family = AF_INET;
+//	TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
+//	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // broad casting
+//
+//	memset(send_buffer, 0, sizeof(send_buffer));
+//
+//	//typedef struct tagIPUTIL_INFO2
+//	//{
+//	//	char	szIPAddress[16];
+//	//	char	szGatewayIP[16];
+//	//	char	szMACAddress[20];
+//	//	DWORD   dwStreamPort;
+//	//	DWORD	dwHTTPPort;
+//	//  char	cIPMode;              // IPUTIL INFO version 2
+//	//  char	szSubnetmask[16];
+//	//}IPUTIL_INFO2, *LPIPUTIL_INFO2;
+//
+//	pHeader = (HEADER2*)send_buffer;
+//	pInfo = (IPUTIL_INFO2*)(send_buffer + sizeof(HEADER2));
+//	pAuth = (IPUTIL_AUTH*)((BYTE*)pInfo + sizeof(IPUTIL_INFO2));
+//
+//	// header set
+//	pHeader->magic = MAGIC2_CODE;
+//	pHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
+//	pHeader->protocol_mode = PROTOCOL_MODE_REQ_SET_IPINFO;
+//	pHeader->body_size = sizeof(IPUTIL_INFO2);
+//	int nPacketSize = sizeof(HEADER2)+sizeof(IPUTIL_INFO2);
+//	// body set
+//	USES_CONVERSION;
+//	strcpy_s(pInfo->szIPAddress, W2A(strNewIP));
+//	strcpy_s(pInfo->szGatewayIP, W2A(strNewGateWay));
+//	strcpy_s(pInfo->szMACAddress, W2A(strTargetServerMAC));
+//	pInfo->dwHTTPPort	= nHTTPPort;
+//	pInfo->dwStreamPort	= nStreamPort;
+//	pInfo->cIsDHCP = (char)cIsDHCP;
+//	strcpy_s(pInfo->szSubnetmask, W2A(strNewsubnetMask));
+//
+//	// ID가 설정된 경우에는 Login 정보를 패킷에 함께 보낸다
+//	if(szID != NULL && wcscmp(szID, L"") != 0)
+//	{
+//		nPacketSize += sizeof(IPUTIL_AUTH);
+//		pHeader->body_size += sizeof(IPUTIL_AUTH);
+//		strcpy_s(pAuth->ID, 32, W2A(szID));
+//		strcpy_s(pAuth->Password, 32, W2A(szPass));
+//		pAuth->EncMode = nEncMode;
+//		// FIX ME: encription 적용
+//	}
+//
+//	// send
+//	if(sendto(sock, send_buffer, nPacketSize, 0, (sockaddr*)&TargetAddr, sizeof(TargetAddr)) == SOCKET_ERROR)
+//	{
+//		closesocket(sock);
+//		return FALSE;
+//	}
+//	Sleep(300); // 0.3 seconds wait
+//	closesocket(sock);
+//	// clear temp datas
+//	Sleep(300); // 0.3 seconds wait
+//
+//	return TRUE;
+//}
 
 BOOL CNetScanVision::SendScanRequest()
 {
@@ -574,59 +560,19 @@ BOOL CNetScanVision::SendScanRequest()
 	////// clear temp datas
 	////Sleep(300); // 0.3 seconds wait
 	//return TRUE;
+
+
+
 	BOOL bResult = FALSE;
-	HEADER2* pSender = NULL;
+	//HEADER2* pSender = NULL;
 
-	pSender = (HEADER2*)m_apszSendBuff;
-	pSender->magic = MAGIC2_CODE;
-	pSender->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	pSender->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
-	pSender->body_size = 0;
+	//pSender = (HEADER2*)m_apszSendBuff;
+	//pSender->magic = MAGIC2_CODE;
+	//pSender->protocol_type = PROTOCOL_TYPE_IPUTILITY;
+	//pSender->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO_EXT;
+	//pSender->body_size = 0;
 
-	bResult = this->SendScanRequestF(VH_UDP_SCAN_PORT);
+	//bResult = this->SendScanRequestF(VH_UDP_SCAN_PORT);
 
 	return bResult;
 }
-
-BOOL CNetScanVision::SendScanRequestExt()
-{
-	char send_buffer[255];
-	sockaddr_in TargetAddr;
-
-	BOOL bEnable = TRUE;
-	SOCKET hSockSend = NULL;
-
-//	TRACE(_T("Send broadcast extended ping request\n"));
-	//hSockSend = socket(AF_INET, SOCK_DGRAM, 0);
-	//if(setsockopt(hSockSend, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
-	//{
-	//	TRACE("SendScanRequestExt setsocketopt error = %d\n", WSAGetLastError());
-	//	closesocket(hSockSend);
-	//	return FALSE;
-	//}
-
-	TargetAddr.sin_family		= AF_INET;
-	TargetAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
-	TargetAddr.sin_addr.s_addr	= INADDR_BROADCAST; // FIX ME : TEST
-
-	memset(send_buffer, 0, sizeof(send_buffer));
-
-	HEADER2* pSendHeader = (HEADER2*)send_buffer;
-	pSendHeader->magic = MAGIC2_CODE;
-	pSendHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO_EXT;
-	pSendHeader->body_size = 0;
-
-	if (sendto(m_hReceiveSock, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
-	{
-		TRACE("sendto to error = %d\n", WSAGetLastError());
-		//closesocket(hSockSend);
-		return FALSE;
-	}
-	// clear temp datas
-	//Sleep(300); // 0.3 seconds wait
-	//closesocket(hSockSend);
-
-	return TRUE;
-}
-

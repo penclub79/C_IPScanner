@@ -142,7 +142,6 @@ typedef struct tagSCAN_STRUCT
 				if (0 != wcscmp(this->pExtScanInfos[i].lpszValue, src.pExtScanInfos[i].lpszValue))		return FALSE;
 			}
 		}
-
 		return TRUE;
 	}
 
@@ -185,16 +184,14 @@ protected:
 	BOOL			m_bUserCancel;
 	ULONG			m_ulBindAddress;
 	DWORD			m_dwScanThreadID;
-	SOCKADDR_IN		m_stSockAddr;
 	//////////////////////////////////////////////////////////// ---------/
 
 
 	//////////////////////////////////////////////////////////// Function
 	BOOL	StartScanF(LPTHREAD_START_ROUTINE _pThreadFunc);
-	BOOL	SendScanRequestF(int _iPort);
+	BOOL	SendScanRequestF(int _iPort, char* pData, int iLength);
 	void	WideCopyStringFromAnsi(WCHAR* _pwszString, int _iMaxBufferLen, char* _pszString);
-	
-	BOOL SocketBindF(int _iPort);
+	BOOL	SocketBind();
 	//////////////////////////////////////////////////////////// ---------/
 
 public:
@@ -204,8 +201,7 @@ public:
 	//////////////////////////////////////////////////////////// Function
 	virtual BOOL StartScan() = 0;
 	virtual BOOL SendScanRequest() = 0;
-	virtual BOOL SocketBind() = 0;
-	//virtual void ThreadExit() = 0;
+	
 
 	BOOL	StopScan();
 	void	SetBindAddress(ULONG _ulBindAddress);

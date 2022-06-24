@@ -34,16 +34,9 @@ DWORD CNetScanMarkIn::thrMarkInScanThread(LPVOID pParam)
 
 BOOL CNetScanMarkIn::StartScan()
 {
+	m_iRevPort = MK_UDP_RSP_PORT;
 	this->StartScanF((LPTHREAD_START_ROUTINE)thrMarkInScanThread);
 	return TRUE;
-}
-
-BOOL CNetScanMarkIn::SocketBind()
-{
-	BOOL bResult = FALSE;
-
-	bResult = this->SocketBindF(MK_UDP_RSP_PORT);
-	return bResult;
 }
 
 // Thread -> MarkIn Data Receiver
@@ -51,24 +44,20 @@ void CNetScanMarkIn::thrMarkInReceiver()
 {
 	// Local ----------------------------------------------------------
 	//SOCKADDR_IN			ReceiverAddr;
-	CString				strConver;
-	BOOL				bEnable				= TRUE;
 	int					iSenderAddrLen		= 0;
 	HEADER_BODY*		pReceive			= NULL;
 	SCAN_INFO*			pScanInfo			= NULL;
 	char				aszModelName[30]	= { 0 };
-	int					iDeviceType			= 0;
-	TCHAR*				pwszDeviceType		= NULL;
 	char				aszIpAddress[32]	= { 0 };
-	char				aszSubnet[32]		= { 0 };
 	char				aszGateWay[32]		= { 0 };
 	char				aszMacAdrs[32]		= { 0 };
 	char				aszVersion[30]		= { 0 };
 	DWORD				dwLastError			= 0;
-	BOOL				bIsSuccessBind = FALSE;
-	//SOCKADDR_IN			SenderAddr;
-	
-	//-------------------------------------------------------------------------------------------------------------------------------------
+	BOOL				bIsSuccessBind = FALSE;	
+	SOCKADDR			stSockAddr;
+
+
+	//--------------------------------------------------------- ----------------------------------------------------------------------------
 	//SOCKADDR_IN			ReceiverAddr;
 	//this->m_hReceiveSock = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -111,7 +100,7 @@ void CNetScanMarkIn::thrMarkInReceiver()
 		// Recev Data Thread live
 		while (this->m_dwScanThreadID)
 		{
-			if (SOCKET_ERROR == recvfrom(this->m_hReceiveSock, m_pReceive_buffer, sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO), 0, (SOCKADDR*)&m_stSockAddr, &iSenderAddrLen))
+			if (SOCKET_ERROR == recvfrom(this->m_hReceiveSock, m_pReceive_buffer, sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO), 0, (SOCKADDR*)&stSockAddr, &iSenderAddrLen))
 			{
 				dwLastError = WSAGetLastError();
 				TRACE("MarkIn recvfrom error = %d\n", dwLastError);
@@ -231,9 +220,7 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 
 		// xx:xx:xx:xx:xx 4개의 콜론
 		if (4 > i)
-		{
 			iValIdx += 3;
-		}	
 	}
 }
 
@@ -241,13 +228,13 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 BOOL CNetScanMarkIn::SendScanRequest()
 {
 	BOOL bResult			= FALSE;
-	PACKET_HEADER* pSender	= NULL;
+	//PACKET_HEADER* pSender	= NULL;
 
-	pSender = (PACKET_HEADER*)this->m_apszSendBuff;
-	memset(this->m_apszSendBuff, 0, sizeof(char)* sizeof(this->m_apszSendBuff));
-	pSender->uiCommand = MARKIN_PACKET_REQ_DEVICEINFO;
-	
-	bResult = this->SendScanRequestF(MK_UDP_REQ_PORT);
+	//pSender = (PACKET_HEADER*)this->m_apszSendBuff;
+	//memset(this->m_apszSendBuff, 0, sizeof(char)* sizeof(this->m_apszSendBuff));
+	//pSender->uiCommand = MARKIN_PACKET_REQ_DEVICEINFO;
+	//
+	//bResult = this->SendScanRequestF(MK_UDP_REQ_PORT);
 	return bResult;
 }
 
