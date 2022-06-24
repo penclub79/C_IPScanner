@@ -81,8 +81,8 @@ typedef struct _HEADER_BODY
 class CNetScanMarkIn : public NetScanBase
 {
 private:
-	SOCKET	m_hSockReceive;
-	char*	m_pszPacketBuff;
+	
+	//char*	m_pszPacketBuff;
 	void	ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
 	void	ConversionNetInfo(unsigned char* _upszIp, char* _pszVal);
 	void	ConversionMac(char* _pszMac, char* _pszVal);
@@ -99,14 +99,15 @@ public:
 	//////////////////////////////////////////////////////////// Function
 	virtual BOOL StartScan();
 	virtual BOOL SendScanRequest();
-	virtual BOOL StopScan();
+	//virtual BOOL StopScan();
+	virtual BOOL SocketBind();
+	//virtual void ThreadExit();
 
 	void	thrMarkInReceiver();
 	void	SetBindAddress(ULONG _ulBindAddress);
 	void	SetNotifyWindow(HWND hWnd, LONG msg);
 	void	SetCloseMsgRecvWindow(HWND hWnd, LONG msg/* = WM_CLOSE*/);
-	
-	void	SocketBind();
+	//BOOL	SendScanRequest();
 	void	SetScanPort();
 	//////////////////////////////////////////////////////////// ---------/
 };

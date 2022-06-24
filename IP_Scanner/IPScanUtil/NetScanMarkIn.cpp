@@ -8,16 +8,16 @@
 CNetScanMarkIn::CNetScanMarkIn()
 {
 	m_bUserCancel		= FALSE;
-	m_pszPacketBuff = NULL;
+	//m_pszPacketBuff = NULL;
 }
 
 CNetScanMarkIn::~CNetScanMarkIn(void)
 {
-	if (NULL != m_pszPacketBuff)
-	{
-		delete[] m_pszPacketBuff;
-		m_pszPacketBuff = NULL;
-	}
+	//if (NULL != m_pszPacketBuff)
+	//{
+	//	delete[] m_pszPacketBuff;
+	//	m_pszPacketBuff = NULL;
+	//}
 }
 
 // static
@@ -38,11 +38,19 @@ BOOL CNetScanMarkIn::StartScan()
 	return TRUE;
 }
 
+BOOL CNetScanMarkIn::SocketBind()
+{
+	BOOL bResult = FALSE;
+
+	bResult = this->SocketBindF(MK_UDP_RSP_PORT);
+	return bResult;
+}
+
 // Thread -> MarkIn Data Receiver
 void CNetScanMarkIn::thrMarkInReceiver()
 {
 	// Local ----------------------------------------------------------
-	//sockaddr_in			ReceiverAddr;
+	//SOCKADDR_IN			ReceiverAddr;
 	CString				strConver;
 	BOOL				bEnable				= TRUE;
 	int					iSenderAddrLen		= 0;
@@ -57,123 +65,135 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	char				aszMacAdrs[32]		= { 0 };
 	char				aszVersion[30]		= { 0 };
 	DWORD				dwLastError			= 0;
+	BOOL				bIsSuccessBind = FALSE;
 	//SOCKADDR_IN			SenderAddr;
-	SOCKADDR_IN			ReceiverAddr;
-	// ----------------------------------------------------------------
+	
+	//-------------------------------------------------------------------------------------------------------------------------------------
+	//SOCKADDR_IN			ReceiverAddr;
+	//this->m_hReceiveSock = socket(AF_INET, SOCK_DGRAM, 0);
 
-	this->m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
+	//// broadcast 
+	//if (SOCKET_ERROR == setsockopt(this->m_hReceiveSock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+	//{
+	//	TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
+	//	if (this->m_hNotifyWnd)
+	//		::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+	//	
+	//	this->ThreadExit();
+	//	return;
+	//}
 
-	// broadcast 
-	if (SOCKET_ERROR == setsockopt(this->m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
-	{
-		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
-		if (this->m_hNotifyWnd)
-			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
-		
-		NetScanBase::ThreadExit();
-		return;
-	}
+	//m_stSockAddr.sin_family = AF_INET;
+	//m_stSockAddr.sin_port = htons(MK_UDP_RSP_PORT);
+	//m_stSockAddr.sin_addr.s_addr = this->m_ulBindAddress; // htonl(m_ulBindAddress);
 
-	ReceiverAddr.sin_family = AF_INET;
-	ReceiverAddr.sin_port = htons(MK_UDP_RSP_PORT);
-	ReceiverAddr.sin_addr.s_addr = this->m_ulBindAddress; // htonl(m_ulBindAddress);
-
-	if (SOCKET_ERROR == bind(this->m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))
-	{
-		TRACE("Bind error = %d\n", WSAGetLastError());
-		if (this->m_hNotifyWnd)
-			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
-		
-		NetScanBase::ThreadExit();
-		return;
-	}
+	//if (SOCKET_ERROR == bind(this->m_hReceiveSock, (SOCKADDR*)&m_stSockAddr, sizeof(SOCKADDR)))
+	//{
+	//	TRACE("Bind error = %d\n", WSAGetLastError());
+	//	if (this->m_hNotifyWnd)
+	//		::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
+	//	
+	//	this->ThreadExit();
+	//	return;
+	//}
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
-	iSenderAddrLen = sizeof(SOCKADDR_IN);
+	bIsSuccessBind = SocketBind();
 
-	m_pszPacketBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE];
-	pReceive = (HEADER_BODY*)m_pszPacketBuff; // 할당 메모리 크기로 구조체 사용
-	memset(m_pszPacketBuff, 0, sizeof(char) * SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
-
-	// Recev Data Thread live
-	while (this->m_dwScanThreadID)
+	if (bIsSuccessBind)
 	{
-		if (SOCKET_ERROR == recvfrom(this->m_hSockReceive, m_pszPacketBuff, sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO), 0, (SOCKADDR*)&ReceiverAddr, &iSenderAddrLen))
-		{
-			dwLastError = WSAGetLastError();
-			TRACE("MarkIn recvfrom error = %d\n", dwLastError);
-			if (this->m_hNotifyWnd && dwLastError != 10004)
-				::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_RECV);
-			
-			NetScanBase::ThreadExit();
-			break;
-		}
+		iSenderAddrLen = sizeof(SOCKADDR_IN);
 
-		if (pReceive)
+		m_pReceive_buffer = new char[SCAN_INFO_m_pReceive_buffer_SIZE];
+		pReceive = (HEADER_BODY*)m_pReceive_buffer; // 할당 메모리 크기로 구조체 사용
+		memset(m_pReceive_buffer, 0, sizeof(char)* SCAN_INFO_m_pReceive_buffer_SIZE);		// 초기화
+
+		// Recev Data Thread live
+		while (this->m_dwScanThreadID)
 		{
-			// Data Little Endian -> Big Endian all Change
-			ToBigEndian(pReceive);
-			
-			// Data Respose Success
-			if (MARKIN_PACKET_RSP_DEVICEINFO == pReceive->stPacket.uiCommand)
+			if (SOCKET_ERROR == recvfrom(this->m_hReceiveSock, m_pReceive_buffer, sizeof(PACKET_HEADER)+sizeof(DEVICE_INFO), 0, (SOCKADDR*)&m_stSockAddr, &iSenderAddrLen))
 			{
-				if (pReceive)
+				dwLastError = WSAGetLastError();
+				TRACE("MarkIn recvfrom error = %d\n", dwLastError);
+				if (this->m_hNotifyWnd && dwLastError != 10004)
+					::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_RECV);
+
+				this->ThreadExit();
+				break;
+			}
+
+			if (pReceive)
+			{
+				// Data Little Endian -> Big Endian all Change
+				ToBigEndian(pReceive);
+
+				// Data Respose Success
+				if (MARKIN_PACKET_RSP_DEVICEINFO == pReceive->stPacket.uiCommand)
 				{
-					pScanInfo = new SCAN_INFO;
-					if (pScanInfo)
+					if (pReceive)
 					{
-						memset(pScanInfo, 0, sizeof(SCAN_INFO));
+						pScanInfo = new SCAN_INFO;
+						if (pScanInfo)
+						{
+							memset(pScanInfo, 0, sizeof(SCAN_INFO));
 
-						pScanInfo->iScanType = 2;
-						//// Model Name
-						if ( 0 < strlen(pReceive->stDevInfo.aszModel_name) )
-							ConversionModelName(pReceive->stDevInfo.aszModel_name, &aszModelName[0]);
+							pScanInfo->iScanType = 2;
+							//// Model Name
+							if (0 < strlen(pReceive->stDevInfo.aszModel_name))
+								ConversionModelName(pReceive->stDevInfo.aszModel_name, &aszModelName[0]);
 
-						//// IP - info
-						if ( 0 < pReceive->stDevInfo.stNetwork_info.aszIp[0]) 
-							ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszIp, &aszIpAddress[0]);
-						else
-							wsprintf(pScanInfo->szAddr, _T("N/A"));
-						
-						//// Gateway
-						if (0 < pReceive->stDevInfo.stNetwork_info.aszGateway[0])
-							ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszGateway, &aszGateWay[0]);
-						else
-							wsprintf(pScanInfo->szGateWay, _T("N/A"));
+							//// IP - info
+							if (0 < pReceive->stDevInfo.stNetwork_info.aszIp[0])
+								ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszIp, &aszIpAddress[0]);
+							else
+								wsprintf(pScanInfo->szAddr, _T("N/A"));
 
-						//// MAC
-						if ( 0 < strlen(pReceive->stDevInfo.stNetwork_info.szMac_address))
-							ConversionMac(pReceive->stDevInfo.stNetwork_info.szMac_address, &aszMacAdrs[0]);
-						else
-							wsprintf(pScanInfo->szMAC, _T("N/A"));
+							//// Gateway
+							if (0 < pReceive->stDevInfo.stNetwork_info.aszGateway[0])
+								ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszGateway, &aszGateWay[0]);
+							else
+								wsprintf(pScanInfo->szGateWay, _T("N/A"));
 
-						//// SW Version
-						if (0 < pReceive->stDevInfo.stSw_version.szMajor) 
-							ConversionVersion(&pReceive->stDevInfo.stSw_version, &aszVersion[0]);
-						else
-							wsprintf(pScanInfo->szSwVersion, _T("N/A"));
+							//// MAC
+							if (0 < strlen(pReceive->stDevInfo.stNetwork_info.szMac_address))
+								ConversionMac(pReceive->stDevInfo.stNetwork_info.szMac_address, &aszMacAdrs[0]);
+							else
+								wsprintf(pScanInfo->szMAC, _T("N/A"));
 
-						this->WideCopyStringFromAnsi(pScanInfo->szAddr,		30, aszIpAddress);
-						this->WideCopyStringFromAnsi(pScanInfo->szGateWay,	30, aszGateWay);
-						this->WideCopyStringFromAnsi(pScanInfo->szMAC,		30, aszMacAdrs);
-						this->WideCopyStringFromAnsi(pScanInfo->szSwVersion,	30, aszVersion);
-						this->WideCopyStringFromAnsi(pScanInfo->szModelName,	30, aszModelName);
+							//// SW Version
+							if (0 < pReceive->stDevInfo.stSw_version.szMajor)
+								ConversionVersion(&pReceive->stDevInfo.stSw_version, &aszVersion[0]);
+							else
+								wsprintf(pScanInfo->szSwVersion, _T("N/A"));
 
-						pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
-						pScanInfo->iBasePort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
-						pScanInfo->iVideoCnt = pReceive->stDevInfo.szMax_channel;
+							this->WideCopyStringFromAnsi(pScanInfo->szAddr, 30, aszIpAddress);
+							this->WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, aszGateWay);
+							this->WideCopyStringFromAnsi(pScanInfo->szMAC, 30, aszMacAdrs);
+							this->WideCopyStringFromAnsi(pScanInfo->szSwVersion, 30, aszVersion);
+							this->WideCopyStringFromAnsi(pScanInfo->szModelName, 30, aszModelName);
 
-						TRACE("<< MarkIn SendMessage\n");
+							pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
+							pScanInfo->iBasePort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
+							pScanInfo->iVideoCnt = pReceive->stDevInfo.szMax_channel;
 
-						if (this->m_hNotifyWnd)
-							::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+							TRACE("<< MarkIn SendMessage\n");
 
-						TRACE("MarkIn SendMessage >> \n");  
+							if (this->m_hNotifyWnd)
+								::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+
+							TRACE("MarkIn SendMessage >> \n");
+						}
 					}
 				}
 			}
 		}
 	}
+	else
+	{
+		TRACE("Bind Fail = %d\n", WSAGetLastError());
+		return;
+	}
+	
 	return;
 }
 
@@ -220,35 +240,15 @@ void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
 // Send Packet Set
 BOOL CNetScanMarkIn::SendScanRequest()
 {
-	char send_buffer[255];
-	sockaddr_in		stSockaddr;
-	SOCKET			stSockSend	= NULL;
-	PACKET_HEADER*	pSender		= NULL;
-	char			szSendBuff;
+	BOOL bResult			= FALSE;
+	PACKET_HEADER* pSender	= NULL;
 
-	stSockaddr.sin_family = AF_INET;
-	stSockaddr.sin_port = htons(MK_UDP_REQ_PORT);
-	stSockaddr.sin_addr.s_addr = INADDR_BROADCAST;
-
-	pSender = (PACKET_HEADER*)send_buffer;
-	memset(send_buffer, 0, sizeof(char) * sizeof(send_buffer));
-
+	pSender = (PACKET_HEADER*)this->m_apszSendBuff;
+	memset(this->m_apszSendBuff, 0, sizeof(char)* sizeof(this->m_apszSendBuff));
 	pSender->uiCommand = MARKIN_PACKET_REQ_DEVICEINFO;
-
-	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
-	if (SOCKET_ERROR == sendto(m_hSockReceive, &szSendBuff, sizeof(szSendBuff), 0, (SOCKADDR*)&stSockaddr, sizeof(sockaddr_in)))
-	{
-		TRACE("MarkIn sendto to error = %d\n", WSAGetLastError());
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-BOOL CNetScanMarkIn::StopScan()
-{
-	this->StopScans(m_hSockReceive);
-	return TRUE;
+	
+	bResult = this->SendScanRequestF(MK_UDP_REQ_PORT);
+	return bResult;
 }
 
 
@@ -260,7 +260,7 @@ void CNetScanMarkIn::ToBigEndian(HEADER_BODY* _pstReceiveData)
 	int				iCommandVal = 0;
 
 	pstHeaderBody = _pstReceiveData;
-
+	
 	aiByte[0] = ((pstHeaderBody->stPacket.uiCommand >> 24) & 0xff);
 	aiByte[1] = ((pstHeaderBody->stPacket.uiCommand >> 16) & 0xff);
 	aiByte[2] = ((pstHeaderBody->stPacket.uiCommand >> 8) & 0xff);

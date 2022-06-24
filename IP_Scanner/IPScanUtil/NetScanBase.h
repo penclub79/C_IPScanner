@@ -173,24 +173,28 @@ private:
 
 protected:
 	//////////////////////////////////////////////////////////// Variable
-	NetScanBase*	m_pScanner;
 	HWND			m_hNotifyWnd;
 	LONG			m_lNotifyMsg;
 	HWND			m_hCloseMsgRecvWnd; 
 	LONG			m_lCloseMsg;
-	SOCKET			m_hSockReceive;		
+	SOCKET			m_hReceiveSock;
+	//SOCKET			m_hVisionSock;
 	char*			m_pReceive_buffer;
+	char			m_apszSendBuff[255];
 	int				m_iRevPort;
 	BOOL			m_bUserCancel;
 	ULONG			m_ulBindAddress;
 	DWORD			m_dwScanThreadID;
+	SOCKADDR_IN		m_stSockAddr;
 	//////////////////////////////////////////////////////////// ---------/
 
 
 	//////////////////////////////////////////////////////////// Function
 	BOOL	StartScanF(LPTHREAD_START_ROUTINE _pThreadFunc);
+	BOOL	SendScanRequestF(int _iPort);
 	void	WideCopyStringFromAnsi(WCHAR* _pwszString, int _iMaxBufferLen, char* _pszString);
-	BOOL	StopScans(SOCKET _hSocket);
+	
+	BOOL SocketBindF(int _iPort);
 	//////////////////////////////////////////////////////////// ---------/
 
 public:
@@ -200,9 +204,10 @@ public:
 	//////////////////////////////////////////////////////////// Function
 	virtual BOOL StartScan() = 0;
 	virtual BOOL SendScanRequest() = 0;
-	virtual BOOL StopScan() = 0;
+	virtual BOOL SocketBind() = 0;
+	//virtual void ThreadExit() = 0;
 
-	//void	SocketBind();
+	BOOL	StopScan();
 	void	SetBindAddress(ULONG _ulBindAddress);
 	void	SetNotifyWindow(HWND _hWnd, LONG _msg);
 	void	SetCloseMsgRecvWindow(HWND _hWnd, LONG _msg/* = WM_CLOSE*/);

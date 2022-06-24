@@ -12,7 +12,7 @@ CNetScanVision::CNetScanVision()
 	m_hReceiverWindow	= NULL;
 	m_nListItemCount	= 0;
 	m_dlg				= NULL;
-	m_pszPacketBuff		= NULL;
+	//m_pszPacketBuff		= NULL;
 }
 
 CNetScanVision::~CNetScanVision(void)
@@ -152,11 +152,17 @@ DWORD CNetScanVision::thrScanThread(LPVOID pParam)
 BOOL CNetScanVision::StartScan()
 {
 	// 부모 함수 호출
-	this->m_iRevPort = VH_UDP_SCAN_PORT;
+	//this->m_iRevPort = VH_UDP_SCAN_PORT;
 	this->StartScanF((LPTHREAD_START_ROUTINE)thrScanThread);
 	return TRUE;
 }
 
+BOOL CNetScanVision::SocketBind()
+{
+	BOOL bResult = FALSE;
+	bResult = this->SocketBindF(VH_UDP_SCAN_PORT);
+	return bResult;
+}
 
 // 2010-08-26 hkeins : Camera scanning routine
 // scanner logic
@@ -182,227 +188,212 @@ void CNetScanVision::thrReceiver()
 	LPCAPTION_HEADER	lpCapt			= NULL;
 	BOOL				bEnable			= TRUE;
 	DWORD				dwLastError		= 0;
-	sockaddr_in			ReceiverAddr;
+	//SOCKADDR_IN			ReceiverAddr;
+	BOOL				bIsSuccessBind = FALSE;
+
 	
+	bIsSuccessBind = SocketBind();
 
-	m_hSockReceive = socket(AF_INET, SOCK_DGRAM, 0);
-
-	// broadcast 
-	if (SOCKET_ERROR == setsockopt(m_hSockReceive, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+	if (bIsSuccessBind)
 	{
-		TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
-		if (m_hNotifyWnd)
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
+		// 서버의 응답을 기다린다
+		iSenderAddrLen = sizeof(SOCKADDR_IN);
 
-		NetScanBase::ThreadExit();
-		return;
-	}
-
-	ReceiverAddr.sin_family = AF_INET;
-	ReceiverAddr.sin_port = htons(VH_UDP_SCAN_PORT);
-	ReceiverAddr.sin_addr.s_addr = m_ulBindAddress; // htonl(m_ulBindAddress);
-
-	if (SOCKET_ERROR == bind(m_hSockReceive, (SOCKADDR*)&ReceiverAddr, sizeof(SOCKADDR)))
-	{
-		TRACE("Bind error = %d\n", WSAGetLastError());
-		if (m_hNotifyWnd)
-			::PostMessage(m_hNotifyWnd, m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
-		
-		NetScanBase::ThreadExit();
-		return;
-	}
-
-	// 서버의 응답을 기다린다
-	iSenderAddrLen = sizeof(SOCKADDR_IN);
-	
-	m_pszPacketBuff = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
-	if (m_pszPacketBuff == NULL)
-	{
-		if (this->m_hNotifyWnd)
-			::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
-		
-		NetScanBase::ThreadExit();
-		return;
-	}
-	memset(m_pszPacketBuff, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
-
-	pReceive = (HEADER2*)m_pszPacketBuff;
-	iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
-	USES_CONVERSION;
-	
-	while( this->m_dwScanThreadID )
-	{
-		if (SOCKET_ERROR == recvfrom(m_hSockReceive, m_pszPacketBuff, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&ReceiverAddr, &iSenderAddrLen))
+		m_pReceive_buffer = new char[SCAN_INFO_m_pReceive_buffer_SIZE]; // allocate 64 k bytes buffer
+		if (m_pReceive_buffer == NULL)
 		{
-			dwLastError = WSAGetLastError();
-			TRACE("Vision recvfrom error = %d\n", dwLastError);
-			if (this->m_hNotifyWnd && dwLastError != 10004)
-				::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
-			
-			NetScanBase::ThreadExit();
-			break;
+			if (this->m_hNotifyWnd)
+				::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_MEMORY); // PostMessage to MainWindow
+
+			this->ThreadExit();
+			return;
 		}
+		memset(m_pReceive_buffer, 0, SCAN_INFO_m_pReceive_buffer_SIZE);
 
-		if(pReceive->magic == MAGIC2_CODE)
+		pReceive = (HEADER2*)m_pReceive_buffer;
+		iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
+		USES_CONVERSION;
+
+		while (this->m_dwScanThreadID)
 		{
-			// parsing and update list
-			if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO_EXT)
+			if (SOCKET_ERROR == recvfrom(m_hReceiveSock, m_pReceive_buffer, SCAN_INFO_m_pReceive_buffer_SIZE, 0, (SOCKADDR*)&m_stSockAddr, &iSenderAddrLen))
 			{
-				pInfo = (IPUTIL_INFO *)(m_pszPacketBuff + sizeof(HEADER2));
-				pInfo2 = (IPUTIL_INFO2*)(m_pszPacketBuff + sizeof(HEADER2));
+				dwLastError = WSAGetLastError();
+				TRACE("Vision recvfrom error = %d\n", dwLastError);
+				if (this->m_hNotifyWnd && dwLastError != 10004)
+					::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_RECV); // PostMessage to MainWindow
 
-				pScanInfo	= new SCAN_INFO;
-				if ( pScanInfo ) 
+				this->ThreadExit();
+				break;
+			}
+
+			if (pReceive->magic == MAGIC2_CODE)
+			{
+				// parsing and update list
+				if (pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO_EXT)
 				{
-					pScanInfo->iScanType = 1;
-					//USES_CONVERSION;
+					pInfo = (IPUTIL_INFO *)(m_pReceive_buffer + sizeof(HEADER2));
+					pInfo2 = (IPUTIL_INFO2*)(m_pReceive_buffer + sizeof(HEADER2));
 
-					WideCopyStringFromAnsi(pScanInfo->szAddr, 30, pInfo->szIPAddress);
-					WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
-					WideCopyStringFromAnsi(pScanInfo->szMAC, 30, pInfo->szMACAddress);
-
-					//pScanInfo->nStreamPort	= pInfo->dwStreamPort;
-					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
-					//pScanInfo->version      = VERSION_2; // IPUTIL version 1
-					 
-					if(pReceive->body_size >= sizeof(IPUTIL_INFO2)) // read extend field
+					pScanInfo = new SCAN_INFO;
+					if (pScanInfo)
 					{
-						pScanInfo->cIsDHCP      = pInfo2->cIsDHCP;
-						//WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo2->szGatewayIP);
-						WideCopyStringFromAnsi(pScanInfo->szSubnetMask, 30, pInfo2->szSubnetmask); // 2012-07-10 hkeins : scan utility subnet mask reading 오류 수정
-					}
+						pScanInfo->iScanType = 1;
+						//USES_CONVERSION;
 
-					pExtField = NULL;
-					// read extended field
-					if(pReceive->body_size > sizeof(IPUTIL_INFO2))
-					{
-						iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
-						nItemCount = 0;
-						i = 0;
-						nItemCount = 0;
-						lpCapt     = NULL;
-						
-						pExtField = (BYTE*)(m_pszPacketBuff + sizeof(HEADER2)+sizeof(IPUTIL_INFO2)); // set pointer
-						iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
+						WideCopyStringFromAnsi(pScanInfo->szAddr, 30, pInfo->szIPAddress);
+						WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
+						WideCopyStringFromAnsi(pScanInfo->szMAC, 30, pInfo->szMACAddress);
 
-						while (iToRead > 0)
+						//pScanInfo->nStreamPort	= pInfo->dwStreamPort;
+						pScanInfo->nHTTPPort = pInfo->dwHTTPPort;
+						//pScanInfo->version      = VERSION_2; // IPUTIL version 1
+
+						if (pReceive->body_size >= sizeof(IPUTIL_INFO2)) // read extend field
 						{
-							lpCapt = (LPCAPTION_HEADER)pExtField;
-
-							pExtField = pExtField + (sizeof(CAPTION_HEADER) + lpCapt->nDataLen);
-							iToRead -= (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
-							nItemCount++;
+							pScanInfo->cIsDHCP = pInfo2->cIsDHCP;
+							//WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo2->szGatewayIP);
+							WideCopyStringFromAnsi(pScanInfo->szSubnetMask, 30, pInfo2->szSubnetmask); // 2012-07-10 hkeins : scan utility subnet mask reading 오류 수정
 						}
 
-						// read data into array
-						pExtField = (BYTE*)(m_pszPacketBuff + sizeof(HEADER2)+sizeof(IPUTIL_INFO2)); // reset pointer
-						if(nItemCount > 0)
+						pExtField = NULL;
+						// read extended field
+						if (pReceive->body_size > sizeof(IPUTIL_INFO2))
 						{
-							iToRead = pReceive->body_size - (sizeof(HEADER2)+sizeof(IPUTIL_INFO2));
-							pExtInfos = new SCAN_EXT_INFO[nItemCount];
-							if(pExtInfos)
+							iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
+							nItemCount = 0;
+							i = 0;
+							nItemCount = 0;
+							lpCapt = NULL;
+
+							pExtField = (BYTE*)(m_pReceive_buffer + sizeof(HEADER2)+sizeof(IPUTIL_INFO2)); // set pointer
+							iToRead = pReceive->body_size - sizeof(IPUTIL_INFO2);
+
+							while (iToRead > 0)
 							{
-								memset(pExtInfos, 0, sizeof(SCAN_EXT_INFO) * nItemCount);
-								i = 0;
-								while (iToRead > 0)
+								lpCapt = (LPCAPTION_HEADER)pExtField;
+
+								pExtField = pExtField + (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
+								iToRead -= (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
+								nItemCount++;
+							}
+
+							// read data into array
+							pExtField = (BYTE*)(m_pReceive_buffer + sizeof(HEADER2)+sizeof(IPUTIL_INFO2)); // reset pointer
+							if (nItemCount > 0)
+							{
+								iToRead = pReceive->body_size - (sizeof(HEADER2)+sizeof(IPUTIL_INFO2));
+								pExtInfos = new SCAN_EXT_INFO[nItemCount];
+								if (pExtInfos)
 								{
-									lpCapt = (LPCAPTION_HEADER)pExtField;
-
-									WideCopyStringFromAnsi(pExtInfos[i].aszCaption, 32, lpCapt->aszCaption);
-									//TRACE( pExtInfos[i].aszCaption );
-									//TRACE( L" = " );
-
-									pExtInfos[i].nValueLen = lpCapt->nDataLen + 2; // 2012-08-07 hkeins : 데이터 길이를 복사하지 않는 버그 수정
-
-									pszTemp = new CHAR[pExtInfos[i].nValueLen];
-
-									memset( pszTemp, 0, sizeof(CHAR)*(pExtInfos[i].nValueLen));
-									memcpy( pszTemp, (char*)(pExtField + sizeof(CAPTION_HEADER)), lpCapt->nDataLen);
-
-									pExtInfos[i].lpszValue   = new WCHAR[pExtInfos[i].nValueLen];
-									memset( pExtInfos[i].lpszValue, 0, sizeof(WCHAR)*(pExtInfos[i].nValueLen) );
-
-									if(pExtInfos[i].lpszValue)
+									memset(pExtInfos, 0, sizeof(SCAN_EXT_INFO)* nItemCount);
+									i = 0;
+									while (iToRead > 0)
 									{
-										if( 0 == wcscmp( pExtInfos[i].aszCaption, L"Upgrade Port" ) )
+										lpCapt = (LPCAPTION_HEADER)pExtField;
+
+										WideCopyStringFromAnsi(pExtInfos[i].aszCaption, 32, lpCapt->aszCaption);
+										//TRACE( pExtInfos[i].aszCaption );
+										//TRACE( L" = " );
+
+										pExtInfos[i].nValueLen = lpCapt->nDataLen + 2; // 2012-08-07 hkeins : 데이터 길이를 복사하지 않는 버그 수정
+
+										pszTemp = new CHAR[pExtInfos[i].nValueLen];
+
+										memset(pszTemp, 0, sizeof(CHAR)*(pExtInfos[i].nValueLen));
+										memcpy(pszTemp, (char*)(pExtField + sizeof(CAPTION_HEADER)), lpCapt->nDataLen);
+
+										pExtInfos[i].lpszValue = new WCHAR[pExtInfos[i].nValueLen];
+										memset(pExtInfos[i].lpszValue, 0, sizeof(WCHAR)*(pExtInfos[i].nValueLen));
+
+										if (pExtInfos[i].lpszValue)
 										{
-											int it=0;
+											if (0 == wcscmp(pExtInfos[i].aszCaption, L"Upgrade Port"))
+											{
+												int it = 0;
+											}
+
+											// FIX ME: A2W가 문제될 거 같은데?
+											WideCopyStringFromAnsi(pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, pszTemp);
+
+											//	TRACE( pExtInfos[i].lpszValue );
+											//TRACE( L"\n" );
+
 										}
+										pExtField = pExtField + (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
+										iToRead -= (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
+										i++;
 
-										// FIX ME: A2W가 문제될 거 같은데?
-										WideCopyStringFromAnsi(pExtInfos[i].lpszValue, pExtInfos[i].nValueLen, pszTemp);
-
- 									//	TRACE( pExtInfos[i].lpszValue );
-										//TRACE( L"\n" );
-
+										if (NULL != pszTemp)
+										{
+											delete[] pszTemp;
+											pszTemp = NULL;
+										}
 									}
-									pExtField = pExtField + (sizeof(CAPTION_HEADER) + lpCapt->nDataLen);
-									iToRead -= (sizeof(CAPTION_HEADER)+lpCapt->nDataLen);
-									i++;
 
-									if (NULL != pszTemp)
-									{
-										delete[] pszTemp;
-										pszTemp = NULL;
-									}
+									pScanInfo->pExtScanInfos = pExtInfos;
+									pScanInfo->nExtraFieldCount = nItemCount;
 								}
-
-								pScanInfo->pExtScanInfos    = pExtInfos;
-								pScanInfo->nExtraFieldCount = nItemCount;
 							}
 						}
-					}
 
-					if (this->m_hNotifyWnd)
-					{
-						// PostMessage to MainWindow
-						::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+						if (this->m_hNotifyWnd)
+						{
+							// PostMessage to MainWindow
+							::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
+						}
+
 					}
-				
+					//::SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
 				}
-				//::SendMessage(m_hCloseMsgRecvWnd, m_lCloseMsg, 0, 0);
-			}
-//			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
-//			{
-//				//TRACE("Response received\n");
-//				// 정보를 찍어준다
-//				pInfo   = (IPUTIL_INFO *)(m_pReceive_buffer+sizeof(HEADER2));
-//				pInfo2  = (IPUTIL_INFO2*)(m_pReceive_buffer+sizeof(HEADER2));
-//
-///*				TRACE("1IP  : %s\n",		pInfo->szIPAddress);
-//				TRACE("Gateway: %s\n",		pInfo->szGatewayIP);
-//				TRACE("MAC : %s\n",			pInfo->szMACAddress);
-//				TRACE("StreamPort: %d\n",	pInfo->dwStreamPort);
-//				TRACE("HttpPort: %d\n",		pInfo->dwHTTPPort);
-//*/
-//				pScanInfo = new SCAN_INFO;
-//				if ( pScanInfo )
-//				{
-//					//USES_CONVERSION;
-//
-//					WideCopyStringFromAnsi(pScanInfo->szAddr,    30 ,pInfo->szIPAddress);
-//					WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
-//					WideCopyStringFromAnsi(pScanInfo->szMAC,     30, pInfo->szMACAddress);
-//
-//					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
-//					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
-//					//pScanInfo->version      = VERSION_1; // IPUTIL version 1
-//
-//					if(pReceive->body_size == sizeof(IPUTIL_INFO2)) // read extend field
-//					{
-//						pScanInfo->cIsDHCP      = pInfo2->cIsDHCP;
-//						WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo2->szGatewayIP);
-//					}
-//
-//					if(m_hNotifyWnd)
-//						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
-//				}
-//			  }
-			else
-			{
+				//			else if(pReceive->protocol_mode == PROTOCOL_MODE_RSP_GET_IPINFO)
+				//			{
+				//				//TRACE("Response received\n");
+				//				// 정보를 찍어준다
+				//				pInfo   = (IPUTIL_INFO *)(m_pReceive_buffer+sizeof(HEADER2));
+				//				pInfo2  = (IPUTIL_INFO2*)(m_pReceive_buffer+sizeof(HEADER2));
+				//
+				///*				TRACE("1IP  : %s\n",		pInfo->szIPAddress);
+				//				TRACE("Gateway: %s\n",		pInfo->szGatewayIP);
+				//				TRACE("MAC : %s\n",			pInfo->szMACAddress);
+				//				TRACE("StreamPort: %d\n",	pInfo->dwStreamPort);
+				//				TRACE("HttpPort: %d\n",		pInfo->dwHTTPPort);
+				//*/
+				//				pScanInfo = new SCAN_INFO;
+				//				if ( pScanInfo )
+				//				{
+				//					//USES_CONVERSION;
+				//
+				//					WideCopyStringFromAnsi(pScanInfo->szAddr,    30 ,pInfo->szIPAddress);
+				//					WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo->szGatewayIP);
+				//					WideCopyStringFromAnsi(pScanInfo->szMAC,     30, pInfo->szMACAddress);
+				//
+				//					pScanInfo->nStreamPort	= pInfo->dwStreamPort;
+				//					pScanInfo->nHTTPPort	= pInfo->dwHTTPPort;
+				//					//pScanInfo->version      = VERSION_1; // IPUTIL version 1
+				//
+				//					if(pReceive->body_size == sizeof(IPUTIL_INFO2)) // read extend field
+				//					{
+				//						pScanInfo->cIsDHCP      = pInfo2->cIsDHCP;
+				//						WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, pInfo2->szGatewayIP);
+				//					}
+				//
+				//					if(m_hNotifyWnd)
+				//						::PostMessage(m_hNotifyWnd, m_lNotifyMsg, (WPARAM)pScanInfo, 0); // PostMessage to MainWindow
+				//				}
+				//			  }
+				else
+				{
+				}
 			}
 		}
 	}
+	else
+	{
+		TRACE("Bind Fail = %d\n", WSAGetLastError());
+		return;
+	}
+	
 	return;
 }
 
@@ -424,9 +415,9 @@ BOOL CNetScanVision::RequestIPChange(WCHAR* strTargetServerMAC, WCHAR* strNewIP,
 		return FALSE;
 	}
 	
-	TargetAddr.sin_family		= AF_INET;
-	TargetAddr.sin_port			= htons(VH_UDP_SCAN_PORT);
-	TargetAddr.sin_addr.s_addr	= INADDR_BROADCAST; // broad casting
+	TargetAddr.sin_family = AF_INET;
+	TargetAddr.sin_port = htons(VH_UDP_SCAN_PORT);
+	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // broad casting
 
 	memset(send_buffer, 0, sizeof(send_buffer));
 	//typedef struct tagIPUTIL_INFO
@@ -544,51 +535,57 @@ BOOL CNetScanVision::RequestIPChange2(WCHAR* strTargetServerMAC, WCHAR* strNewIP
 
 BOOL CNetScanVision::SendScanRequest()
 {
-	char send_buffer[255];
-	sockaddr_in TargetAddr;
+	//char send_buffer[255];
+	//sockaddr_in TargetAddr;
 
-	BOOL bEnable = TRUE;
-	SOCKET hSockSend = NULL;
+	//BOOL bEnable = TRUE;
+	//SOCKET hSockSend = NULL;
 
-	////TRACE(_T("Send broadcast ping request\n"));
-	//hSockSend = socket(AF_INET, SOCK_DGRAM, 0);
-	//if(setsockopt(hSockSend, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
+	//////TRACE(_T("Send broadcast ping request\n"));
+	////hSockSend = socket(AF_INET, SOCK_DGRAM, 0);
+	////if(setsockopt(hSockSend, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
+	////{
+	////	TRACE("1.setsocketopt error = %d\n", WSAGetLastError());
+	////	closesocket(hSockSend);
+	////	return FALSE;
+	////}
+
+	//TargetAddr.sin_family = AF_INET;
+	//TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
+	//TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
+
+	//memset(send_buffer, 0, sizeof(send_buffer));
+
+	//HEADER2* pSendHeader = (HEADER2*)send_buffer;
+	//pSendHeader->magic = MAGIC2_CODE;
+	//pSendHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
+	//pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
+	//pSendHeader->body_size = 0;
+
+	//if (SOCKET_ERROR == sendto(m_hReceiveSock, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)))
 	//{
-	//	TRACE("1.setsocketopt error = %d\n", WSAGetLastError());
-	//	closesocket(hSockSend);
+	//	TRACE("Vision sendto to error = %d\n", WSAGetLastError());
+	//	//closesocket(hSockSend);
 	//	return FALSE;
 	//}
+	////// clear temp datas
+	////Sleep(300); // 0.3 seconds wait
+	////closesocket(hSockSend);
+	////// clear temp datas
+	////Sleep(300); // 0.3 seconds wait
+	//return TRUE;
+	BOOL bResult = FALSE;
+	HEADER2* pSender = NULL;
 
-	TargetAddr.sin_family = AF_INET;
-	TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
-	TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
+	pSender = (HEADER2*)m_apszSendBuff;
+	pSender->magic = MAGIC2_CODE;
+	pSender->protocol_type = PROTOCOL_TYPE_IPUTILITY;
+	pSender->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
+	pSender->body_size = 0;
 
-	memset(send_buffer, 0, sizeof(send_buffer));
+	bResult = this->SendScanRequestF(VH_UDP_SCAN_PORT);
 
-	HEADER2* pSendHeader = (HEADER2*)send_buffer;
-	pSendHeader->magic = MAGIC2_CODE;
-	pSendHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
-	pSendHeader->body_size = 0;
-
-	if (SOCKET_ERROR == sendto(m_hSockReceive, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)))
-	{
-		TRACE("Vision sendto to error = %d\n", WSAGetLastError());
-		//closesocket(hSockSend);
-		return FALSE;
-	}
-	//// clear temp datas
-	//Sleep(300); // 0.3 seconds wait
-	//closesocket(hSockSend);
-	//// clear temp datas
-	//Sleep(300); // 0.3 seconds wait
-	return TRUE;
-}
-
-BOOL CNetScanVision::StopScan()
-{
-	this->StopScans(m_hSockReceive);
-	return TRUE;
+	return bResult;
 }
 
 BOOL CNetScanVision::SendScanRequestExt()
@@ -620,7 +617,7 @@ BOOL CNetScanVision::SendScanRequestExt()
 	pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO_EXT;
 	pSendHeader->body_size = 0;
 
-	if(sendto(m_hSockReceive, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+	if (sendto(m_hReceiveSock, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
 	{
 		TRACE("sendto to error = %d\n", WSAGetLastError());
 		//closesocket(hSockSend);

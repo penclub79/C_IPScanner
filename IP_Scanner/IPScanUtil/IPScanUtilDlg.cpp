@@ -855,7 +855,6 @@ void CIPScanUtilDlg::OnTimer(UINT_PTR nIDEvent)
 					if (m_apScanner[i])
 						m_apScanner[i]->SendScanRequest();
 				}
-			
 			}
 
 			int i;
