@@ -179,7 +179,6 @@ protected:
 	SOCKET			m_hReceiveSock;
 	//SOCKET			m_hVisionSock;
 	char*			m_pReceive_buffer;
-	char			m_apszSendBuff[255];
 	int				m_iRevPort;
 	BOOL			m_bUserCancel;
 	ULONG			m_ulBindAddress;
@@ -202,7 +201,6 @@ public:
 	virtual BOOL StartScan() = 0;
 	virtual BOOL SendScanRequest() = 0;
 	
-
 	BOOL	StopScan();
 	void	SetBindAddress(ULONG _ulBindAddress);
 	void	SetNotifyWindow(HWND _hWnd, LONG _msg);

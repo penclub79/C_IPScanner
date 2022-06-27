@@ -75,7 +75,6 @@ public:
 	virtual BOOL StartScan();
 	virtual BOOL SendScanRequest();
 
-
 	//////////////////////////////////////////////////////////// ---------/
 		
 protected:
@@ -83,10 +82,5 @@ protected:
 	void	thrMarkInReceiver();
 
 private:
-	void	ToBigEndian(HEADER_BODY* _pstReceiveData); // Little -> Big Endian
-	void	ConversionNetInfo(unsigned char* _upszIp, char* _pszVal); // 함수 빼고 적용
-	void	ConversionMac(char* _pszMac, char* _pszVal);
-	void	ConversionVersion(VER_INFO* _pszVer, char* _pszVal);
-	void	ConversionModelName(char* _pszModel, char* _pszVal);
 
 };

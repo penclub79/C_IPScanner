@@ -53,39 +53,9 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	char				aszMacAdrs[32]		= { 0 };
 	char				aszVersion[30]		= { 0 };
 	DWORD				dwLastError			= 0;
-	BOOL				bIsSuccessBind = FALSE;	
+	BOOL				bIsSuccessBind		= FALSE;	
 	SOCKADDR			stSockAddr;
 
-
-	//--------------------------------------------------------- ----------------------------------------------------------------------------
-	//SOCKADDR_IN			ReceiverAddr;
-	//this->m_hReceiveSock = socket(AF_INET, SOCK_DGRAM, 0);
-
-	//// broadcast 
-	//if (SOCKET_ERROR == setsockopt(this->m_hReceiveSock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
-	//{
-	//	TRACE("2.setsocketopt error = %d\n", WSAGetLastError());
-	//	if (this->m_hNotifyWnd)
-	//		::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_SOCKET_OPT); // PostMessage to MainWindow
-	//	
-	//	this->ThreadExit();
-	//	return;
-	//}
-
-	//m_stSockAddr.sin_family = AF_INET;
-	//m_stSockAddr.sin_port = htons(MK_UDP_RSP_PORT);
-	//m_stSockAddr.sin_addr.s_addr = this->m_ulBindAddress; // htonl(m_ulBindAddress);
-
-	//if (SOCKET_ERROR == bind(this->m_hReceiveSock, (SOCKADDR*)&m_stSockAddr, sizeof(SOCKADDR)))
-	//{
-	//	TRACE("Bind error = %d\n", WSAGetLastError());
-	//	if (this->m_hNotifyWnd)
-	//		::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, 0, SCAN_ERR_BIND); // PostMessage to MainWindow
-	//	
-	//	this->ThreadExit();
-	//	return;
-	//}
-	//-------------------------------------------------------------------------------------------------------------------------------------
 
 	bIsSuccessBind = SocketBind();
 
@@ -114,7 +84,9 @@ void CNetScanMarkIn::thrMarkInReceiver()
 			if (pReceive)
 			{
 				// Data Little Endian -> Big Endian all Change
-				ToBigEndian(pReceive);
+				pReceive->stPacket.uiCommand = htonl(pReceive->stPacket.uiCommand);
+				pReceive->stDevInfo.stNetwork_info.uiHttp_port = htonl(pReceive->stDevInfo.stNetwork_info.uiHttp_port);
+				pReceive->stDevInfo.stNetwork_info.uiBase_port = htonl(pReceive->stDevInfo.stNetwork_info.uiBase_port);
 
 				// Data Respose Success
 				if (MARKIN_PACKET_RSP_DEVICEINFO == pReceive->stPacket.uiCommand)
@@ -129,29 +101,61 @@ void CNetScanMarkIn::thrMarkInReceiver()
 							pScanInfo->iScanType = 2;
 							//// Model Name
 							if (0 < strlen(pReceive->stDevInfo.aszModel_name))
-								ConversionModelName(pReceive->stDevInfo.aszModel_name, &aszModelName[0]);
+								sprintf_s(aszModelName, 30, "%s", pReceive->stDevInfo.aszModel_name);
+								//ConversionModelName(pReceive->stDevInfo.aszModel_name, &aszModelName[0]);
 
 							//// IP - info
 							if (0 < pReceive->stDevInfo.stNetwork_info.aszIp[0])
-								ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszIp, &aszIpAddress[0]);
+							{
+								sprintf_s(aszIpAddress, 32, "%d.%d.%d.%d",
+									pReceive->stDevInfo.stNetwork_info.aszIp[0],
+									pReceive->stDevInfo.stNetwork_info.aszIp[1],
+									pReceive->stDevInfo.stNetwork_info.aszIp[2],
+									pReceive->stDevInfo.stNetwork_info.aszIp[3]);
+							}	
 							else
 								wsprintf(pScanInfo->szAddr, _T("N/A"));
 
 							//// Gateway
 							if (0 < pReceive->stDevInfo.stNetwork_info.aszGateway[0])
-								ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszGateway, &aszGateWay[0]);
+							{
+								//ConversionNetInfo(pReceive->stDevInfo.stNetwork_info.aszGateway, &aszGateWay[0]);
+								sprintf_s(aszGateWay, 32, "%d.%d.%d.%d",
+									pReceive->stDevInfo.stNetwork_info.aszGateway[0],
+									pReceive->stDevInfo.stNetwork_info.aszGateway[1],
+									pReceive->stDevInfo.stNetwork_info.aszGateway[2],
+									pReceive->stDevInfo.stNetwork_info.aszGateway[3]);
+							}
 							else
 								wsprintf(pScanInfo->szGateWay, _T("N/A"));
 
 							//// MAC
 							if (0 < strlen(pReceive->stDevInfo.stNetwork_info.szMac_address))
-								ConversionMac(pReceive->stDevInfo.stNetwork_info.szMac_address, &aszMacAdrs[0]);
+							{
+								//ConversionMac(pReceive->stDevInfo.stNetwork_info.szMac_address, &aszMacAdrs[0]);
+
+								int iMacLen = strlen(pReceive->stDevInfo.stNetwork_info.szMac_address);
+								int iValIdx = 2;
+								for (int i = 0; i < iMacLen / 2; i++)
+								{
+									// 2글자씩 복사
+									memcpy(&aszMacAdrs[i * 3], &pReceive->stDevInfo.stNetwork_info.szMac_address[i * 2], 2);
+									aszMacAdrs[iValIdx] = ':';
+
+									// xx:xx:xx:xx:xx 4개의 콜론
+									if (4 > i)
+										iValIdx += 3;
+								}
+							}
 							else
 								wsprintf(pScanInfo->szMAC, _T("N/A"));
 
 							//// SW Version
 							if (0 < pReceive->stDevInfo.stSw_version.szMajor)
-								ConversionVersion(&pReceive->stDevInfo.stSw_version, &aszVersion[0]);
+							{
+								//ConversionVersion(&pReceive->stDevInfo.stSw_version, &aszVersion[0]);
+								sprintf_s(aszVersion, 30, "%d.%d.%d", pReceive->stDevInfo.stSw_version.szMajor, pReceive->stDevInfo.stSw_version.szMinor, pReceive->stDevInfo.stSw_version.szRevision);
+							}
 							else
 								wsprintf(pScanInfo->szSwVersion, _T("N/A"));
 
@@ -165,12 +169,9 @@ void CNetScanMarkIn::thrMarkInReceiver()
 							pScanInfo->iBasePort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
 							pScanInfo->iVideoCnt = pReceive->stDevInfo.szMax_channel;
 
-							TRACE("<< MarkIn SendMessage\n");
-
 							if (this->m_hNotifyWnd)
 								::PostMessage(this->m_hNotifyWnd, this->m_lNotifyMsg, (WPARAM)pScanInfo, 0);
 
-							TRACE("MarkIn SendMessage >> \n");
 						}
 					}
 				}
@@ -186,95 +187,35 @@ void CNetScanMarkIn::thrMarkInReceiver()
 	return;
 }
 
-// int 배열 -> TCHAR 배열 복사
-void CNetScanMarkIn::ConversionNetInfo(unsigned char* _upszIp, char* _pszVal)
-{
-	// 버퍼 오버플로 방지를 위해서 stprintf에 _s가 붙은 매크로 함수를 쓰는 것을 권장.
-	sprintf_s(_pszVal, 32, "%d.%d.%d.%d", _upszIp[0], _upszIp[1], _upszIp[2], _upszIp[3]);
-}
-
-void CNetScanMarkIn::ConversionModelName(char* _pszModel, char* _pszVal)
-{
-	sprintf_s(_pszVal, 30, "%s", _pszModel);
-}
-
-void CNetScanMarkIn::ConversionVersion(VER_INFO* _pszVer, char* _pszVal)
-{
-	sprintf_s(_pszVal, 30, "%d.%d.%d", _pszVer->szMajor, _pszVer->szMinor, _pszVer->szRevision);
-}
-
-// MAC 주소 포맷으로 변환 함수
-void CNetScanMarkIn::ConversionMac(char* _pszMac, char* _pszVal)
-{
-	char	aszStr[30]	= { 0 };
-	int		iMacLen		= 0;
-	int		iValIdx		= 2;
-
-	iMacLen = strlen(_pszMac);
-	
-	for (int i = 0; i < iMacLen / 2; i++)
-	{
-		// 2글자씩 복사
-		memcpy(&_pszVal[i * 3], &_pszMac[i * 2], 2);
-		_pszVal[iValIdx] = ':';
-
-		// xx:xx:xx:xx:xx 4개의 콜론
-		if (4 > i)
-			iValIdx += 3;
-	}
-}
-
 // Send Packet Set
 BOOL CNetScanMarkIn::SendScanRequest()
 {
-	BOOL bResult			= FALSE;
-	//PACKET_HEADER* pSender	= NULL;
+	char send_buffer[255] = { 0 };
+	sockaddr_in MarkInSendSock;
+	BOOL bEnable = TRUE;
+	SOCKET hSendSock = NULL;
+	PACKET_HEADER* pSendHeader = NULL;
 
-	//pSender = (PACKET_HEADER*)this->m_apszSendBuff;
-	//memset(this->m_apszSendBuff, 0, sizeof(char)* sizeof(this->m_apszSendBuff));
-	//pSender->uiCommand = MARKIN_PACKET_REQ_DEVICEINFO;
-	//
-	//bResult = this->SendScanRequestF(MK_UDP_REQ_PORT);
-	return bResult;
-}
+	TRACE(_T("Send Broadcast Ping Request\n"));
+	hSendSock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (SOCKET_ERROR == setsockopt(hSendSock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+	{
+		TRACE(_T("SetSocket Error = %d\n", WSAGetLastError()));
+		return FALSE;
+	}
 
+	MarkInSendSock.sin_family = AF_INET;
+	MarkInSendSock.sin_port = htons(MK_UDP_REQ_PORT);
+	MarkInSendSock.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
 
-// 빅엔디언 치환 함수
-void CNetScanMarkIn::ToBigEndian(HEADER_BODY* _pstReceiveData)
-{
-	HEADER_BODY*	pstHeaderBody = NULL;
-	int				aiByte[4] = { 0 };
-	int				iCommandVal = 0;
+	pSendHeader = (PACKET_HEADER*)send_buffer;
+	pSendHeader->uiCommand = MARKIN_PACKET_REQ_DEVICEINFO;
 
-	pstHeaderBody = _pstReceiveData;
+	if (SOCKET_ERROR == sendto(hSendSock, send_buffer, sizeof(PACKET_HEADER), 0, (SOCKADDR*)&MarkInSendSock, sizeof(sockaddr_in)))
+	{
+		TRACE("Vision sendto to error = %d\n", WSAGetLastError());
+		return FALSE;
+	}
 	
-	aiByte[0] = ((pstHeaderBody->stPacket.uiCommand >> 24) & 0xff);
-	aiByte[1] = ((pstHeaderBody->stPacket.uiCommand >> 16) & 0xff);
-	aiByte[2] = ((pstHeaderBody->stPacket.uiCommand >> 8) & 0xff);
-	aiByte[3] = ((pstHeaderBody->stPacket.uiCommand >> 0) & 0xff);
-
-	pstHeaderBody->stPacket.uiCommand = ((unsigned int)aiByte[0]) |
-		((unsigned int)aiByte[1] << 8) |
-		((unsigned int)aiByte[2] << 16) |
-		((unsigned int)aiByte[3] << 24);
-
-	aiByte[0] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiHttp_port >> 24) & 0xff);
-	aiByte[1] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiHttp_port >> 16) & 0xff);
-	aiByte[2] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiHttp_port >> 8) & 0xff);
-	aiByte[3] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiHttp_port >> 0) & 0xff);
-
-	pstHeaderBody->stDevInfo.stNetwork_info.uiHttp_port = ((unsigned int)aiByte[0]) |
-		((unsigned int)aiByte[1] << 8) |
-		((unsigned int)aiByte[2] << 16) |
-		((unsigned int)aiByte[3] << 24);
-
-	aiByte[0] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiBase_port >> 24) & 0xff);
-	aiByte[1] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiBase_port >> 16) & 0xff);
-	aiByte[2] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiBase_port >> 8) & 0xff);
-	aiByte[3] = ((pstHeaderBody->stDevInfo.stNetwork_info.uiBase_port >> 0) & 0xff);
-
-	pstHeaderBody->stDevInfo.stNetwork_info.uiBase_port = ((unsigned int)aiByte[0]) |
-		((unsigned int)aiByte[1] << 8) |
-		((unsigned int)aiByte[2] << 16) |
-		((unsigned int)aiByte[3] << 24);
+	return TRUE;
 }

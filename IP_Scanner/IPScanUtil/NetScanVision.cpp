@@ -80,33 +80,33 @@ int  tagSCAN_STRUCT::_CompareScanInfo(int nItemColumn, tagSCAN_STRUCT* pInfo1, t
 	int nResult = 0;
 	switch(nItemColumn)
 	{
-	case 0: // IP
-		nResult = _CompareIP(pInfo1->szAddr, pInfo2->szAddr);
-		break;
-	case 1: // MAC
-		nResult = wcscmp(pInfo1->szMAC, pInfo2->szMAC);
-		break;
+	//case 0: // IP
+	//	nResult = _CompareIP(pInfo1->szAddr, pInfo2->szAddr);
+	//	break;
+	//case 1: // MAC
+	//	nResult = wcscmp(pInfo1->szMAC, pInfo2->szMAC);
+	//	break;
 	//case 2: // Stream Port
 	//	nResult = pInfo1->nStreamPort - pInfo2->nStreamPort;
 	//	break;
-	case 3: // Http Port
-		nResult = pInfo1->nHTTPPort - pInfo2->nHTTPPort;
-		break;
+	//case 3: // Http Port
+	//	nResult = pInfo1->nHTTPPort - pInfo2->nHTTPPort;
+	//	break;
 	//case 4: // Server Name
 	//	nResult = pInfo1->_ReadValue(L"System Name").Compare(pInfo2->_ReadValue(L"System Name"));
 	//	break;
-	case 5: // Model
-		nResult = pInfo1->_ReadValue(L"Model Type").Compare(pInfo2->_ReadValue(L"Model Type"));
-		break;
-	case 6: // Firmware Version
-		nResult = pInfo1->_ReadValue(L"Firmware Version").Compare(pInfo2->_ReadValue(L"Firmware Version"));
-		break;
-	case 7: // Video Count
-		nResult = pInfo1->_ReadValue(L"S/W Version").Compare(pInfo2->_ReadValue(L"S/W Version"));
-		break;
-	case 8: // Video Count
-		nResult = pInfo1->_ReadValue(L"Video Count").Compare(pInfo2->_ReadValue(L"Video Count"));
-		break;
+	//case 5: // Model
+	//	nResult = pInfo1->_ReadValue(L"Model Type").Compare(pInfo2->_ReadValue(L"Model Type"));
+	//	break;
+	//case 6: // Firmware Version
+	//	nResult = pInfo1->_ReadValue(L"Firmware Version").Compare(pInfo2->_ReadValue(L"Firmware Version"));
+	//	break;
+	//case 7: // Video Count
+	//	nResult = pInfo1->_ReadValue(L"S/W Version").Compare(pInfo2->_ReadValue(L"S/W Version"));
+	//	break;
+	//case 8: // Video Count
+	//	nResult = pInfo1->_ReadValue(L"Video Count").Compare(pInfo2->_ReadValue(L"Video Count"));
+	//	break;
 	//case 7: // Resolution
 	//	nResult = pInfo1->_ReadValue(L"Support Resolution").Compare(pInfo2->_ReadValue(L"Support Resolution"));
 	//	break;
@@ -521,58 +521,40 @@ void CNetScanVision::thrReceiver()
 
 BOOL CNetScanVision::SendScanRequest()
 {
-	//char send_buffer[255];
-	//sockaddr_in TargetAddr;
+	char send_buffer[255] = { 0 };
+	sockaddr_in VisionSendSock;
+	BOOL bEnable = TRUE;
+	SOCKET hSockSend = NULL;
+	HEADER2* pSendHeader = NULL;
 
-	//BOOL bEnable = TRUE;
-	//SOCKET hSockSend = NULL;
+	//TRACE(_T("Send broadcast ping request\n"));
+	hSockSend = socket(AF_INET, SOCK_DGRAM, 0);
+	if (SOCKET_ERROR == setsockopt(hSockSend, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)))
+	{
+		TRACE("1.setsocketopt error = %d\n", WSAGetLastError());
+		return FALSE;
+	}
 
-	//////TRACE(_T("Send broadcast ping request\n"));
-	////hSockSend = socket(AF_INET, SOCK_DGRAM, 0);
-	////if(setsockopt(hSockSend, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable)) == SOCKET_ERROR)
-	////{
-	////	TRACE("1.setsocketopt error = %d\n", WSAGetLastError());
-	////	closesocket(hSockSend);
-	////	return FALSE;
-	////}
+	VisionSendSock.sin_family = AF_INET;
+	VisionSendSock.sin_port = htons(VH_UDP_SCAN_PORT);
+	VisionSendSock.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
 
-	//TargetAddr.sin_family = AF_INET;
-	//TargetAddr.sin_port   = htons(VH_UDP_SCAN_PORT);
-	//TargetAddr.sin_addr.s_addr = INADDR_BROADCAST; // FIX ME : TEST
+	pSendHeader = (HEADER2*)send_buffer;
+	pSendHeader->magic = MAGIC2_CODE;
+	pSendHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
+	pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
+	pSendHeader->body_size = 0;
 
-	//memset(send_buffer, 0, sizeof(send_buffer));
-
-	//HEADER2* pSendHeader = (HEADER2*)send_buffer;
-	//pSendHeader->magic = MAGIC2_CODE;
-	//pSendHeader->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	//pSendHeader->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO;
-	//pSendHeader->body_size = 0;
-
-	//if (SOCKET_ERROR == sendto(m_hReceiveSock, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&TargetAddr, sizeof(sockaddr_in)))
-	//{
-	//	TRACE("Vision sendto to error = %d\n", WSAGetLastError());
-	//	//closesocket(hSockSend);
-	//	return FALSE;
-	//}
-	////// clear temp datas
-	////Sleep(300); // 0.3 seconds wait
-	////closesocket(hSockSend);
-	////// clear temp datas
-	////Sleep(300); // 0.3 seconds wait
-	//return TRUE;
-
-
-
-	BOOL bResult = FALSE;
-	//HEADER2* pSender = NULL;
-
-	//pSender = (HEADER2*)m_apszSendBuff;
-	//pSender->magic = MAGIC2_CODE;
-	//pSender->protocol_type = PROTOCOL_TYPE_IPUTILITY;
-	//pSender->protocol_mode = PROTOCOL_MODE_REQ_GET_IPINFO_EXT;
-	//pSender->body_size = 0;
-
-	//bResult = this->SendScanRequestF(VH_UDP_SCAN_PORT);
-
-	return bResult;
+	if (SOCKET_ERROR == sendto(hSockSend, send_buffer, sizeof(HEADER2), 0, (SOCKADDR*)&VisionSendSock, sizeof(sockaddr_in)))
+	{
+		TRACE("Vision sendto to error = %d\n", WSAGetLastError());
+		//closesocket(hSockSend);
+		return FALSE;
+	}
+	//// clear temp datas
+	//Sleep(300); // 0.3 seconds wait
+	//closesocket(hSockSend);
+	//// clear temp datas
+	//Sleep(300); // 0.3 seconds wait
+	return TRUE;
 }

@@ -12,7 +12,6 @@ NetScanBase::NetScanBase()
 	m_hNotifyWnd		= NULL;
 	m_hCloseMsgRecvWnd	= NULL;
 	m_dwScanThreadID	= NULL;
-	//m_hSockReceive		= NULL;
 	m_hNotifyWnd		= NULL;
 	m_pReceive_buffer	= NULL;
 	m_bUserCancel		= FALSE;
@@ -20,7 +19,6 @@ NetScanBase::NetScanBase()
 	m_ulBindAddress		= 0;
 	m_iRevPort			= 0;
 	m_lCloseMsg			= 0;
-	m_apszSendBuff[255] = { 0 };
 }
 
 NetScanBase::~NetScanBase()
@@ -114,23 +112,6 @@ BOOL NetScanBase::SocketBind()
 
 	return TRUE;
 }
-
-//BOOL NetScanBase::SendScanRequestF(int _iPort, char* pData, int iLength)
-//{	
-//	SOCKADDR_IN		stSockAddr;
-//	stSockAddr.sin_family = AF_INET;
-//	stSockAddr.sin_port = htons(_iPort);
-//	stSockAddr.sin_addr.s_addr = INADDR_BROADCAST;
-//
-//	// [소켓], [보낼 값], [보낼 값의 크기], [전송 모드인데 WinSock에서는 그냥 0], [보낼 주소], [보낼 주소 길이]
-//	if (SOCKET_ERROR == sendto(m_hReceiveSock, pData, iLength, 0, (SOCKADDR*)&stSockAddr, sizeof(sockaddr_in)))
-//	{
-//		TRACE("sendto to error = %d\n", WSAGetLastError());
-//		return FALSE;
-//	}
-//
-//	return TRUE;
-//}
 
 // Bind Address Set
 void NetScanBase::SetBindAddress(ULONG _ulBindAddress)
