@@ -48,6 +48,18 @@
     <ClCompile Include="MessageQueue.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="NetDef.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="NetDef2.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="NetServerScan.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="NetUtil.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="OSDChangeDlg.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -79,18 +91,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="VHNetworkAdaptorInfo.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="NetScanVision.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="NetScanMarkIn.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="xmlite\XMLite.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="NetScanBase.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,7 +128,19 @@
     <ClInclude Include="MessageQueue.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="NetDef.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="NetDef2.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="NetDef_IPUTIL.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="NetServerScan.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="NetUtil.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="OSDChangeDlg.h">
@@ -176,30 +188,12 @@
     <ClInclude Include="VHNetworkAdaptorInfo.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="NetScanVision.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="NetScanMarkIn.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="NetCommon.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="xmlite\XMLite.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="NetScanBase.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\checkboxes.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
     <Image Include="res\IPScanUtil.ico">
-      <Filter>리소스 파일</Filter>
-    </Image>
-    <Image Include="res\IP-scaner_Icon.ico">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>

@@ -13,11 +13,6 @@ CNetScanMarkIn::CNetScanMarkIn()
 
 CNetScanMarkIn::~CNetScanMarkIn(void)
 {
-	//if (NULL != m_pszPacketBuff)
-	//{
-	//	delete[] m_pszPacketBuff;
-	//	m_pszPacketBuff = NULL;
-	//}
 }
 
 // static
@@ -159,12 +154,11 @@ void CNetScanMarkIn::thrMarkInReceiver()
 							else
 								wsprintf(pScanInfo->szSwVersion, _T("N/A"));
 
-							this->WideCopyStringFromAnsi(pScanInfo->szAddr, 30, aszIpAddress);
-							this->WideCopyStringFromAnsi(pScanInfo->szGateWay, 30, aszGateWay);
+							this->WideCopyStringFromAnsi(pScanInfo->szAddr, 32, aszIpAddress);
+							this->WideCopyStringFromAnsi(pScanInfo->szGateWay, 32, aszGateWay);
 							this->WideCopyStringFromAnsi(pScanInfo->szMAC, 30, aszMacAdrs);
 							this->WideCopyStringFromAnsi(pScanInfo->szSwVersion, 30, aszVersion);
 							this->WideCopyStringFromAnsi(pScanInfo->szModelName, 30, aszModelName);
-
 							pScanInfo->nHTTPPort = pReceive->stDevInfo.stNetwork_info.uiHttp_port;
 							pScanInfo->iBasePort = pReceive->stDevInfo.stNetwork_info.uiBase_port;
 							pScanInfo->iVideoCnt = pReceive->stDevInfo.szMax_channel;

@@ -15,6 +15,7 @@
 #include "xmlite\XMLite.h"
 #include "NetCommon.h"				// 공통적인 변수 사용
 
+
 #pragma comment(lib, "version.lib")
 
 
@@ -2030,6 +2031,8 @@ void CIPScanUtilDlg::OnClickedOpenXml()
 	LPXNode lpBodyCommon	= NULL;
 	LPXNode lpItemData		= NULL;
 	XNode	stNode;
+	
+
 
 	pFile = fopen("D:\\C_IPScanner\\IP_Scanner\\ProbeMatches.txt", "rb");
 	fseek(pFile, 0, SEEK_END);
@@ -2085,10 +2088,6 @@ void CIPScanUtilDlg::OnClickedOpenXml()
 		fclose(pFile);
 		pFile = NULL;
 	}
-
-	void GetData();
-	{
-
-	}
+	
 	
 }

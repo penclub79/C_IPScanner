@@ -1,4 +1,6 @@
 #pragma once
+#include "NetCommon.h"
+
 
 typedef struct tagSCAN_EXT_INFO_STRUCT
 {

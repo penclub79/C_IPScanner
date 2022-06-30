@@ -41,7 +41,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -68,7 +68,6 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -77,7 +76,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)IPScan Utility_d.exe</OutputFile>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -129,9 +128,10 @@
     <ClCompile Include="IPScanUtilDlg.cpp" />
     <ClCompile Include="ListItem.cpp" />
     <ClCompile Include="MessageQueue.cpp" />
-    <ClCompile Include="NetScanBase.cpp" />
-    <ClCompile Include="NetScanMarkIn.cpp" />
-    <ClCompile Include="NetScanVision.cpp" />
+    <ClCompile Include="NetDef.cpp" />
+    <ClCompile Include="NetDef2.cpp" />
+    <ClCompile Include="NetServerScan.cpp" />
+    <ClCompile Include="NetUtil.cpp" />
     <ClCompile Include="OSDChangeDlg.cpp" />
     <ClCompile Include="OSDChangeThread.cpp" />
     <ClCompile Include="OXMaskedEdit.cpp" />
@@ -146,7 +146,6 @@
     <ClCompile Include="UpgradeThreadHttp.cpp" />
     <ClCompile Include="UpgradeThreadTcp.cpp" />
     <ClCompile Include="VHNetworkAdaptorInfo.cpp" />
-    <ClCompile Include="xmlite\XMLite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ARP.h" />
@@ -160,11 +159,11 @@
     <ClInclude Include="IPScanUtilDlg.h" />
     <ClInclude Include="ListItem.h" />
     <ClInclude Include="MessageQueue.h" />
-    <ClInclude Include="NetCommon.h" />
+    <ClInclude Include="NetDef.h" />
+    <ClInclude Include="NetDef2.h" />
     <ClInclude Include="NetDef_IPUTIL.h" />
-    <ClInclude Include="NetScanBase.h" />
-    <ClInclude Include="NetScanMarkIn.h" />
-    <ClInclude Include="NetScanVision.h" />
+    <ClInclude Include="NetServerScan.h" />
+    <ClInclude Include="NetUtil.h" />
     <ClInclude Include="OSDChangeDlg.h" />
     <ClInclude Include="OSDChangeThread.h" />
     <ClInclude Include="OXDllExt.h" />
@@ -180,11 +179,9 @@
     <ClInclude Include="UpgradeThreadHttp.h" />
     <ClInclude Include="UpgradeThreadTcp.h" />
     <ClInclude Include="VHNetworkAdaptorInfo.h" />
-    <ClInclude Include="xmlite\XMLite.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\checkboxes.bmp" />
-    <Image Include="res\IP-scaner_Icon.ico" />
     <Image Include="res\IPScanUtil.ico" />
   </ItemGroup>
   <ItemGroup>

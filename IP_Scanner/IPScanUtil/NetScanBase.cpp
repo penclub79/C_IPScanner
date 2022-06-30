@@ -1,9 +1,5 @@
 #include "stdafx.h"
 #include "NetScanBase.h"
-#include "NetCommon.h"
-#include "NetScanVision.h"
-#include "NetScanMarkIn.h"
-
 
 
 NetScanBase::NetScanBase()
